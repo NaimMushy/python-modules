@@ -10,9 +10,13 @@
 #                                                                              #
 # **************************************************************************** #
 
-def ft_count_harvest_iterative(day = 0, count = 1):
+def ft_count_harvest_recursive(day:int = 0, count:int = 1) ->None:
     if day == 0:
         day = int(input("Days until harvest: "))
-    while count <= day:
+    if count <= day:
         print(f"Day {count}")
-        ft_count_harvest_iterative(day, count + 1)
+        ft_count_harvest_recursive(day, count + 1)
+    else:
+        print("Harvest time!")
+
+ft_count_harvest_recursive()

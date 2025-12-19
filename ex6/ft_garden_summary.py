@@ -1,20 +1,19 @@
 # **************************************************************************** #
 #                                                                              #
 #                                                         :::      ::::::::    #
-#    ft_water_reminder.py                               :+:      :+:    :+:    #
+#    ft_garden_summary.py                               :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
 #    By: ibady <ibady@student.42lyon.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2025/12/19 17:57:16 by ibady             #+#    #+#              #
-#    Updated: 2025/12/19 18:00:11 by ibady            ###   ########.fr        #
+#    Created: 2025/12/19 22:09:19 by ibady             #+#    #+#              #
+#    Updated: 2025/12/19 22:11:55 by ibady            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-def ft_water_reminder() ->None:
-    last_watering = int(input("Days since last watering: "))
-    if last_watering > 2:
-        print("Water the plants!")
-    else:
-        print("Plants are fine")
+def ft_garden_summary() ->None:
+    g_name = input("Enter garden name: ")
+    nb_plants = input("Enter number of plants: ")
+    status_msg = "They are dying."
+    print(f"Garden: {g_name}\nPlants: {nb_plants}\nStatus: {status_msg}")
 
-ft_water_reminder()
+ft_garden_summary()
