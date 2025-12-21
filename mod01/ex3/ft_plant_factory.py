@@ -1,12 +1,12 @@
 # **************************************************************************** #
 #                                                                              #
 #                                                         :::      ::::::::    #
-#    ft_garden_data.py                                  :+:      :+:    :+:    #
+#    ft_plant_factory.py                                :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
 #    By: ibady <ibady@student.42lyon.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2025/12/19 22:50:05 by ibady             #+#    #+#              #
-#    Updated: 2025/12/19 23:03:48 by ibady            ###   ########.fr        #
+#    Created: 2025/12/21 23:47:11 by ibady             #+#    #+#              #
+#    Updated: 2025/12/21 23:55:14 by ibady            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -15,20 +15,18 @@ class Plant:
         self.name = name
         self.height = height
         self.age = age
+        print(f"Created: {self.name} ({self.height}cm, {self.age} days)")
 
-    def display_info(self) ->None:
-        print(f"{self.name}: {self.height}cm, {self.age} days old")
-
-def ft_garden_data() ->None:
+def ft_plant_factory() ->None:
     plants = []
-    plant1 = Plant("Anneau de cinabre", 40075017000, 666)
-    plant2 = Plant("Baltrou", -10000000, 53)
-    plant3 = Plant("Trou qui pète", 1, 0)
-    plants.append(plant1)
-    plants.append(plant2)
-    plants.append(plant3)
-    print("=== Garden Plant Registry ===")
-    for plant in plants:
-        plant.display_info()
+    print("=== Plant Factory Output ===")
+    for i in range(0, 5):
+        name = input("Name of plant: ")
+        height = int(input("Height of plant: "))
+        age = int(input("Age of plant: "))
+        plant = Plant(name, height, age)
+        plants.append(plant)
+    print(f"Total plants created: {len(plants)}")
 
-ft_garden_data()
+ft_plant_factory()
+
