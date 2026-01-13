@@ -14,22 +14,24 @@ class Plant:
     def __init__(self, name):
         self.name = name
 
+class NameError(Exception):
+    def __init__(self, name):
+        self.msg = "error: cannot water " + str(name) + " - invalid name!\n"
+
 def water_plants(plant_list)->None:
     print("opening watering system\n")
     try:
-        invalid_name = "none"
         for plant in plant_list:
             name = plant.name
             if type(name) == str:
                 print(f"watering {name}")
             else:
-                invalid_name = name
-                break
-    except invalid_name != "none":
-        print(f"error: cannot water {invalid_name} - invalid name!")
+                raise NameError(name)
+    except NameError as ne:
+        print(ne.msg)
     finally:
         print("closing watering system (cleanup)\n")
-        if invalid_name == "none":
+        if type(name) == str:
             print("watering completed without issues!\n")
 
 def test_watering_system()->None:
