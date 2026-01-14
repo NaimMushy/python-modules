@@ -1,32 +1,25 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    ft_plant_factory.py                                :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: ibady <ibady@student.42lyon.fr>            +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2025/12/21 23:47:11 by ibady             #+#    #+#              #
-#    Updated: 2025/12/21 23:55:14 by ibady            ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
-
 class Plant:
-    def __init__(self, name, height, age):
+    def __init__(self, name: str, height: int, age: int) -> None:
         self.name = name
         self.height = height
         self.age = age
-        print(f"Created: {self.name} ({self.height}cm, {self.age} days)")
+        print(
+            f"created: {self.name.capitalize()} "
+            f"({self.height}cm, {self.age} days)"
+        )
 
-def ft_plant_factory() ->None:
-    plants = []
+
+def ft_plant_factory() -> None:
+    plants: list[Plant] = []
     print("=== Plant Factory Output ===")
     for i in range(0, 5):
-        name = input("Name of plant: ")
-        height = int(input("Height of plant: "))
-        age = int(input("Age of plant: "))
+        name: str = input("name of plant: ")
+        height: int = int(input("height of plant: "))
+        age: int = int(input("age of plant: "))
         plant = Plant(name, height, age)
         plants.append(plant)
-    print(f"Total plants created: {len(plants)}")
+    print(f"total plants created: {len(plants)}")
 
-ft_plant_factory()
 
+if __name__ == "__main__":
+    ft_plant_factory()

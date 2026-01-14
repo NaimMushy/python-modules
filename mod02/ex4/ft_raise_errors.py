@@ -1,38 +1,44 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    ft_raise_errors.py                                 :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: ibady <ibady@student.42lyon.fr>            +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2026/01/13 13:03:59 by ibady             #+#    #+#              #
-#    Updated: 2026/01/13 13:18:12 by ibady            ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
+MIN_WATER_LVL = 1
+MAX_WATER_LVL = 10
+MIN_SUN_H = 2
+MAX_SUN_H = 12
 
-def check_plant_health(plant_name, water_level, sunlight_hours)->None:
+
+def check_plant_health(
+    plant_name: str,
+    water_level: int,
+    sunlight_hours: int
+) -> None:
     try:
-        name_msg = "error: plant name cannot be empty!\n"
-        low_water_msg = "error: water level " + str(water_level) + " is too low (min 1)!\n"
-        high_water_msg = "error: water level " + str(water_level) + " is too high (max 10)!\n"
-        low_sunlight_msg = "error: sunlight hours " + str(sunlight_hours) + " is too low (min 2)!\n" 
-        high_sunlight_msg = "error: sunlight hours " + str(sunlight_hours) + " is too high (max 12)!\n" 
         if plant_name == "":
-            raise ValueError(name_msg)
-        if water_level < 1:
-            raise ValueError(low_water_msg)
-        if water_level > 10:
-            raise ValueError(high_water_msg)
-        if sunlight_hours < 2:
-            raise ValueError(low_sunlight_msg)
-        if sunlight_hours > 12:
-            raise ValueError(high_sunlight_msg)
+            raise ValueError("ValueError: plant name cannot be empty!")
+        if water_level < MIN_WATER_LVL:
+            raise ValueError(
+                f"ValueError: water level {water_level} "
+                f"is too low (min {MIN_WATER_LVL})"
+            )
+        if water_level > MAX_WATER_LVL:
+            raise ValueError(
+                f"ValueError: water level {water_level} "
+                f"is too high (max {MAX_WATER_LVL})"
+            )
+        if sunlight_hours < MIN_SUN_H:
+            raise ValueError(
+                f"ValueError: sunlight hours {sunlight_hours} "
+                f"is too low (min {MIN_SUN_H})"
+            )
+        if sunlight_hours > MAX_SUN_H:
+            raise ValueError(
+                f"ValueError: sunlight hours {sunlight_hours} "
+                f"is too high (max {MAX_SUN_H})"
+            )
     except ValueError as ve:
         print(ve)
     else:
         print(f"plant {plant_name} is healthy!\n")
 
-def test_plant_checks()->None:
+
+def test_plant_checks() -> None:
     print("=== Garden Plant Health Checker ===\n")
     print("testing good values...")
     check_plant_health("eggplant", 4, 9)
@@ -48,4 +54,6 @@ def test_plant_checks()->None:
     check_plant_health("eggplant", 4, 1)
     print("all error raising tests completed!\n")
 
-test_plant_checks()
+
+if __name__ == "__main__":
+    test_plant_checks()

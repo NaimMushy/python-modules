@@ -1,17 +1,5 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    ft_garden_analytics.py                             :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: ibady <ibady@student.42lyon.fr>            +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2026/01/06 12:41:28 by ibady             #+#    #+#              #
-#    Updated: 2026/01/06 14:07:59 by ibady            ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
-
 class GardenManager:
-    
+
     garden_helper = GardenStats()
 
     def create_garden_network(cls):
@@ -28,7 +16,7 @@ class GardenManager:
                 plant.display_info()
             print(f"Plants added: {garden.size}, Total growth: {garden.total_growth}cm")
             print(f"Plant types: {garden.regular_plants} regular, {garden.flowering_plants} flowering, {garden.prize_plants} prize flowers")
-        
+
         def all_gardens_info(gardens):
             for grd in gardens:
                 GardenStats.display_stats(grd)
@@ -39,7 +27,8 @@ class GardenManager:
                 else:
                     print(f"{gardens[grd].owner}: {gardens[grd].score}")
             print(f"Total gardens managed: {len(gardens)}")
-    
+
+
 class Garden:
 
     def __init__(self, owner):
@@ -74,7 +63,8 @@ class Garden:
         else:
             self.prize_plants += 1
             self.score += 20
-            
+
+
 
 class Plant:
     def __init__(self, name, height, age, spec = "regular"):
@@ -89,9 +79,10 @@ class Plant:
 
     def display_info(self):
         if self.spec != "regular":
-            print(f"- {self.name}: {self.height}cm, "end='')
+            print(f"- {self.name}: {self.height}cm, ", end='')
         else:
             print(f"- {self.name}: {self.height}cm")
+
 
 class FloweringPlant(Plant):
     def __init__(self, name, height, age, color, spec = "flowering"):
@@ -108,6 +99,7 @@ class FloweringPlant(Plant):
             print(f"{self.color} flowers ({self.bloom_state}), ", end='')
         else:
             print(f"{self.color} flowers ({self.bloom_state})")
+
 
 class PrizeFlower(FloweringPlant):
     def __init__(self, name, height, age, color, prize_points, spec = "prize"):

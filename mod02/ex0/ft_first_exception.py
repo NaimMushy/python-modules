@@ -1,18 +1,6 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    ft_first_exception.py                              :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: ibady <ibady@student.42lyon.fr>            +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2026/01/08 11:07:17 by ibady             #+#    #+#              #
-#    Updated: 2026/01/08 11:22:21 by ibady            ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
-
-def check_temperature(temp_str)->str:
+def check_temperature(temp_str: str)->int:
     try:
-        temp = int(temp_str)
+        temp: int = int(temp_str)
     except ValueError:
         print(f"error: '{temp_str}' is not a valid number\n")
     else:
@@ -24,12 +12,15 @@ def check_temperature(temp_str)->str:
             print(f"temperature {temp}°C is perfect for plants!\n")
             return (temp)
 
+
 def test_temperature_input()->None:
-    temp_str = input("enter a test temperature: ")
+    temp_str: str = input("enter a test temperature: ")
     while temp_str != "stop":
         print(f"testing temperature: {temp_str}\n")
         check_temperature(temp_str)
         temp_str = input("enter a test temperature: ")
     print("all tests completed: program didn't crash!\n")
 
-test_temperature_input()
+
+if __name__ == "__main__":
+    test_temperature_input()

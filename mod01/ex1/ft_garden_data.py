@@ -1,29 +1,18 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    ft_garden_data.py                                  :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: ibady <ibady@student.42lyon.fr>            +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2025/12/19 22:50:05 by ibady             #+#    #+#              #
-#    Updated: 2025/12/19 23:03:48 by ibady            ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
-
 class Plant:
-    def __init__(self, name, height, age):
+    def __init__(self, name: str, height: int, age: int) -> None:
         self.name = name
         self.height = height
         self.age = age
 
-    def display_info(self) ->None:
+    def display_info(self) -> None:
         print(f"{self.name}: {self.height}cm, {self.age} days old")
 
-def ft_garden_data() ->None:
-    plants = []
-    plant1 = Plant("Anneau de cinabre", 40075017000, 666)
-    plant2 = Plant("Baltrou", -10000000, 53)
-    plant3 = Plant("Trou qui pète", 1, 0)
+
+def ft_garden_data() -> None:
+    plants: list[Plant] = []
+    plant1 = Plant("anneau de cinabre", 40075017000, 666)
+    plant2 = Plant("baltrou", -10000000, 53)
+    plant3 = Plant("trou qui pète", 1, 0)
     plants.append(plant1)
     plants.append(plant2)
     plants.append(plant3)
@@ -31,4 +20,6 @@ def ft_garden_data() ->None:
     for plant in plants:
         plant.display_info()
 
-ft_garden_data()
+
+if __name__ == "__main__":
+    ft_garden_data()
