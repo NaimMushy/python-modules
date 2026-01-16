@@ -9,11 +9,11 @@ def ft_seed_inventory(
     Parameters
     ----------
     seed_type
-        the type of the seed
+        The type of the seed.
     quantity
-        the quantity available of a seed
+        The quantity available of a seed.
     unit
-        the unit type of a seed (packets, grams or square meters)
+        The unit type of a seed (packets, grams or square meters).
     """
     if unit == "packets":
         print(f"{seed_type.capitalize()} seeds: {quantity} packets available")

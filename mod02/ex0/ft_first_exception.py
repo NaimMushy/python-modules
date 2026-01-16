@@ -5,12 +5,12 @@ def check_temperature(temp_str: str) -> int:
     Parameters
     ----------
     temp_str
-        the temperature to check
+        The temperature to check.
 
     Returns
     -------
     int
-        the temperature if valid, and 0 otherwise
+        The temperature if valid, and 0 otherwise.
     """
     try:
         temp: int = int(temp_str)

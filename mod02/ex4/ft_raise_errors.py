@@ -15,20 +15,20 @@ def check_plant_health(
     Parameters
     ----------
     plant_name
-        the plant's name
+        The plant's name.
     water_level
-        the plant's water level
+        The plant's water level.
     sunlight_hours
-        the plant's sunlight hours
+        The plant's sunlight hours.
 
     Raises
     ------
     ValueError:
-        raised if the plant's name is empty
+        Raised if the plant's name is empty.
     ValueError:
-        raised if the water level is inadequate (too low or too high)
+        Raised if the water level is inadequate (too low or too high).
     ValueError:
-        raised if the sunlight hours are inadequate (too low or too high)
+        Raised if the sunlight hours are inadequate (too low or too high).
     """
     try:
         if plant_name == "":

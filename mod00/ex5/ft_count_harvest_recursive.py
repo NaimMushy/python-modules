@@ -8,9 +8,9 @@ def ft_count_harvest_recursive(
     Parameters
     ----------
     day
-        number of days remaining before harvest
+        Number of days remaining before harvest.
     count
-        current day for the countdown
+        Current day for the countdown.
     """
     if day == 0:
         day = int(input("days until harvest: "))

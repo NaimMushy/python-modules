@@ -14,11 +14,11 @@ class Plant:
         Parameters
         ----------
         name
-            the plant's name
+            The plant's name.
         height
-            the plant's height
+            The plant's height.
         age
-            the plant's age
+            The plant's age.
         """
         self.name = name
         print(f"plant created: {self.name}")
@@ -32,7 +32,7 @@ class Plant:
         Parameters
         ----------
         new_height
-            the plant's new height
+            The plant's new height.
         """
         if type(new_height) is int and new_height >= 0:
             self._height = new_height
@@ -52,7 +52,7 @@ class Plant:
         Parameters
         ----------
         new_age
-            the plant's new age
+            The plant's new age.
         """
         if type(new_age) is int and new_age >= 0:
             self._age = new_age
@@ -67,20 +67,18 @@ class Plant:
 
     def get_height(self) -> int:
         """
-
         Returns
         -------
         int
-            the plant's height
+            The plant's height.
         """
         return self._height
 
     def get_age(self) -> int:
         """
-
         Returns
         -------
         int
-            the plant's age
+            The plant's age.
         """
         return self._age

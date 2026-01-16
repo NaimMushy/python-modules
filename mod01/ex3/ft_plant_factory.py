@@ -9,11 +9,11 @@ class Plant:
         Parameters
         ----------
         name
-            the plant's name
+            The plant's name.
         height
-            the plant's height
+            The plant's height.
         age
-            the plant's age
+            The plant's age.
         """
         self.name = name
         self.height = height

@@ -5,8 +5,8 @@ def garden_operations(error_type: str) -> None:
     Parameters
     ----------
     error_type
-        the type of the error:
-        (ValueError, ZeroDivisionError, FileNotFoundError, KeyError)
+        The type of the error
+        (ValueError, ZeroDivisionError, FileNotFoundError, KeyError).
     """
     if error_type == "ve":
         int("abc")

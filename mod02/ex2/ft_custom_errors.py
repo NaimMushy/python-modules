@@ -9,9 +9,9 @@ class Plant:
         Parameters
         ----------
         name
-            the plant's name
+            The plant's name.
         state
-            the plant's state
+            The plant's state.
         """
         self.name = name
         self.state = state
@@ -23,7 +23,7 @@ class Plant:
         Parameters
         ----------
         new_state
-            the plant's new state
+            The plant's new state.
         """
         self.state = new_state
 
@@ -37,7 +37,7 @@ class Garden:
         Initializes the garden's data.
         """
         self.plants: list[Plant] = []
-        self.tank_amount: int = 100
+        self.set_tank_amount(100)
 
     def add_plant(self, new_plant: Plant) -> None:
         """
@@ -46,20 +46,36 @@ class Garden:
         Parameters
         ----------
         new_plant
-            the plant to add
+            The plant to add.
         """
         self.plants.append(new_plant)
 
     def set_tank_amount(self, new_amount: int) -> None:
         """
-        Updates the garden's tank amount.
+        Verifies and updates the garden's tank amount.
 
         Parameters
         ----------
         new_amount
-            the new amount of the garden's tank
+            The new amount of the garden's tank.
         """
-        self.tank_amount = new_amount
+        if new_amount >= 0:
+            self._tank_amount = new_amount
+        else:
+            self._tank_amount = 0
+            print(
+                f"error: amount {new_amount} "
+                f"for the garden's tank - invalid [REJECTED]"
+            )
+
+    def get_tank_amount(self) -> None:
+        """
+        Returns
+        -------
+        int
+            The garden's tank amount.
+        """
+        return (self._tank_amount)
 
 
 class GardenError(Exception):
@@ -84,15 +100,15 @@ def testing_plant_error(
     Parameters
     ----------
     plants
-        a list of plants
+        A list of plants.
     error_type
-        the type of the error:
-        (GardenError or PlantError)
+        The type of the error
+        (GardenError or PlantError).
 
     Raises
     ------
     PlantError:
-        raised if a plant is withering
+        Raised if a plant is withering.
     """
     err_count: int = 0
     for plant in plants:
@@ -118,15 +134,15 @@ def testing_water_error(
     Parameters
     ----------
     tank_amount
-        the garden's tank amount
+        The garden's tank amount.
     error_type
-        the type of error:
-        (GardenError or WaterError)
+        The type of error
+        (GardenError or WaterError).
 
     Raises
     ------
     WaterError:
-        raised if the tank amount is too low
+        Raised if the tank amount is too low.
     """
     try:
         if tank_amount < 30:
@@ -146,10 +162,10 @@ def testing_garden_errors(garden: Garden) -> None:
     Parameters
     ----------
     garden
-        the garden to check
+        The garden to check.
     """
     testing_plant_error(garden.plants, "GardenError")
-    testing_water_error(garden.tank_amount, "GardenError")
+    testing_water_error(garden.get_tank_amount(), "GardenError")
 
 
 def main() -> None:
@@ -164,10 +180,10 @@ def main() -> None:
     print("testing PlantError...")
     testing_plant_error(garden.plants)
     print("testing WaterError...")
-    testing_water_error(garden.tank_amount)
+    testing_water_error(garden.get_tank_amount())
     garden.set_tank_amount(25)
     print("testing WaterError...")
-    testing_water_error(garden.tank_amount)
+    testing_water_error(garden.get_tank_amount())
     print("testing catching all garden errors...")
     testing_garden_errors(garden)
     print("all custom error types work correctly!\n")

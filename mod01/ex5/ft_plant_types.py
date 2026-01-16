@@ -15,13 +15,13 @@ class Plant:
         Parameters
         ----------
         name
-            the plant's name
+            The plant's name.
         height
-            the plant's height
+            The plant's height.
         age
-            the plant's age
+            The plant's age.
         spec
-            the plant's type
+            The plant's type.
         """
         self.name = name.capitalize()
         self.set_height(height)
@@ -36,7 +36,7 @@ class Plant:
         Parameters
         ----------
         new_height
-            the plant's new height
+            The plant's new height.
         """
         if type(new_height) is int and new_height >= 0:
             self._height = new_height
@@ -51,7 +51,7 @@ class Plant:
         Parameters
         ----------
         new_age
-            the plant's new age
+            The plant's new age.
         """
         if type(new_age) is int and new_age >= 0 :
             self._age = new_age
@@ -61,21 +61,19 @@ class Plant:
 
     def get_height(self) -> int:
         """
-
         Returns
         -------
         int
-            the plant's height
+            The plant's height.
         """
         return self._height
 
     def get_age(self) -> int:
         """
-
         Returns
         -------
         int
-            the plant's age.
+            The plant's age.
         """
         return self._age
 
@@ -112,13 +110,13 @@ class Flower(Plant):
         Parameters
         ----------
         name
-            the flower's name
+            The flower's name.
         height
-            the flower's height
+            The flower's height.
         age
-            the flower's age
+            The flower's age.
         color
-            the flower's color
+            The flower's color.
         """
         self.color = color
         super().__init__(name, height, age, "Flower")
@@ -156,13 +154,13 @@ class Tree(Plant):
         Parameters
         ----------
         name
-            the tree's name
+            The tree's name.
         height
-            the tree's height
+            The tree's height.
         age
-            the tree's age
+            The tree's age.
         trunk_diameter
-            the tree's trunk diameter
+            The tree's trunk diameter.
         """
         self.set_trunk_dia(trunk_diameter)
         super().__init__(name, height, age, "Tree")
@@ -174,7 +172,7 @@ class Tree(Plant):
         Parameters
         ----------
         new_trunk_dia
-            the tree trunk's new diameter
+            The tree trunk's new diameter.
         """
         if type(new_trunk_dia) is int and new_trunk_dia >= 0:
             self._trunk_diameter = new_trunk_dia
@@ -184,11 +182,10 @@ class Tree(Plant):
 
     def get_trunk_dia(self) -> int:
         """
-
         Returns
         -------
         int
-            the trunk's diameter
+            The trunk's diameter.
         """
         return self._trunk_diameter
 
@@ -206,7 +203,7 @@ class Tree(Plant):
         Parameters
         ----------
         shade
-            the shade produced by the tree
+            The shade produced by the tree.
         """
         print(f"{self.name} provides {shade} square meters of shade")
 
@@ -229,15 +226,15 @@ class Vegetable(Plant):
         Parameters
         ----------
         name
-            the vegetable's name
+            The vegetable's name.
         height
-            the vegetable's height
+            The vegetable's height.
         age
-            the vegetable's age
+            The vegetable's age.
         harvest_season
-            the vegetable's harvest season
+            The vegetable's harvest season.
         nutri_val
-            the vegetable's nutritional value
+            The vegetable's nutritional value.
         """
         self.harvest_season = harvest_season
         super().__init__(name, height, age, "Vegetable")
@@ -258,7 +255,7 @@ class Vegetable(Plant):
         Parameters
         ----------
         nutri_val
-            the vegetable's nutritional value
+            The vegetable's nutritional value.
         """
         self.nutri_val = nutri_val
         print(f"{self.name} is rich in {self.nutri_val}")

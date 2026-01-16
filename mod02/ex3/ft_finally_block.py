@@ -9,12 +9,12 @@ def water_plants(plant_list: list[str]) -> None:
     Parameters
     ----------
     plant_list
-        a list of plants
+        A list of plants.
 
     Raises
     ------
     NameError:
-        raised if the name of a plant is invalid
+        Raised if the name of a plant is invalid.
     """
     print("opening watering system\n")
     try:
