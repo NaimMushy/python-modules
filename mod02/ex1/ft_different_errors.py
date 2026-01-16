@@ -1,4 +1,13 @@
-def garden_operations(error_type: str)->None:
+def garden_operations(error_type: str) -> None:
+    """
+    Provokes an error based on error_type.
+
+    Parameters
+    ----------
+    error_type
+        the type of the error:
+        (ValueError, ZeroDivisionError, FileNotFoundError, KeyError)
+    """
     if error_type == "ve":
         int("abc")
     if error_type == "zde":
@@ -15,7 +24,10 @@ def garden_operations(error_type: str)->None:
         fav_tigercub_songs[4]
 
 
-def test_error_types()->None:
+def test_error_types() -> None:
+    """
+    Tests the different error types.
+    """
     print("=== Garden Error Types Demo ===\n")
     print("testing ValueError...")
     try:
@@ -48,5 +60,9 @@ def test_error_types()->None:
     print("all error types tested successfully!\n")
 
 
-if __name__ == "__main__":
+def main() -> None:
     test_error_types()
+
+
+if __name__ == "__main__":
+    main()

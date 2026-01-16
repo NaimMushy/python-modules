@@ -1,5 +1,20 @@
 class Plant:
+    """
+    A class that represents a plant.
+    """
     def __init__(self, name: str, height: int, age: int) -> None:
+        """
+        Initializes the plant's data.
+
+        Parameters
+        ----------
+        name
+            the plant's name
+        height
+            the plant's height
+        age
+            the plant's age
+        """
         self.name = name
         self.height = height
         self.age = age
@@ -10,6 +25,9 @@ class Plant:
 
 
 def ft_plant_factory() -> None:
+    """
+    Creates a list of plants based on user input.
+    """
     plants: list[Plant] = []
     print("=== Plant Factory Output ===")
     for i in range(0, 5):
@@ -21,5 +39,9 @@ def ft_plant_factory() -> None:
     print(f"total plants created: {len(plants)}")
 
 
-if __name__ == "__main__":
+def main() -> None:
     ft_plant_factory()
+
+
+if __name__ == "__main__":
+    main()
