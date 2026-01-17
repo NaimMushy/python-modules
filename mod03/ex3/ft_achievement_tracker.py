@@ -1,16 +1,11 @@
-def get_rare(players: dict) -> set:
+def get_rare_ach(players: dict) -> None:
     """
-    Returns a set containing all the rare achievements.
+    Displays all the rare achievements.
 
     Parameters
     ----------
     players
         A dictionary containing the players' names and achievements.
-
-    Returns
-    -------
-    set
-        A set of rare achievements.
     """
     rare_ach: set = set({})
     all_ach: list[set] = list(players.values())
@@ -23,7 +18,8 @@ def get_rare(players: dict) -> set:
         fst: set = all_ach[0]
         all_ach = all_ach[1:]
         all_ach.append(fst)
-    return (rare_ach)
+    if len(rare_ach) > 0:
+        print(f"rare achievements (1 player): {rare_ach}")
 
 
 def compare_players(players: dict, fst: str, scd: str) -> None:
@@ -44,9 +40,54 @@ def compare_players(players: dict, fst: str, scd: str) -> None:
     print(f"{scd} unique: {players[scd].difference(players[fst])}")
 
 
+def tracker_system(players: dict) -> None:
+    """
+    Displays the achievements of the players.
+
+    Parameters
+    ----------
+    players
+        A dictionary containing the players' names and achievements.
+    """
+    print("=== Achievement Tracker System ===\n")
+    for pk, pv in players.items():
+        print(f"player {pk} achievements: {pv}")
+
+
+def get_unique_ach(players: dict) -> None:
+    """
+    Displays all the unique achievements.
+
+    Parameters
+    ----------
+    players
+        A dictionary containing the players' names and achievements.
+    """
+    u: set = set()
+    for ach in players.values():
+        u = u.union(ach)
+    print(f"all unique achievements: {u}")
+    print(f"total unique achievements: {len(u)}\n")
+
+
+def get_common_ach(players: dict) -> None:
+    """
+    Displays the achievements common to all players.
+
+    Parameters
+    ----------
+    players
+        A dictionary containing the players' names and achievements.
+    """
+    com: set = list(players.values())[0]
+    for ach in players.values():
+        com = com.intersection(ach)
+    print(f"common to all players: {com}")
+
+
 def main() -> None:
     """
-    Tracks and analyzes the achievements of multiple players.
+    Manages and displays information about the achievements of multiple players.
     """
     a: set = {'first_kill', 'level_10', 'treasure_hunter', 'speed_demon'}
     b: set = {'first_kill', 'level_10', 'boss_slayer', 'collector'}
@@ -56,18 +97,11 @@ def main() -> None:
         "bob": b,
         "charlie": c
         }
-    print("=== Achievement Tracker System ===\n")
-    for pk, pv in players.items():
-        print(f"player {pk} achievements: {pv}")
+    tracker_system(players)
     print("\n=== Achievement Analytics ===")
-    u: set = (a.union(b)).union(c)
-    print(f"all unique achievements: {u}")
-    print(f"total unique achievements: {len(u)}\n")
-    com: set = (a.intersection(b)).intersection(c)
-    print(f"common to all players: {com}")
-    rare: set = get_rare(players)
-    if len(rare) > 0:
-        print(f"rare achievements (1 player): {rare}")
+    get_unique_ach(players)
+    get_common_ach(players)
+    get_rare_ach(players)
     compare_players(players, "alice", "bob")
 
 
