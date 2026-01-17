@@ -60,7 +60,7 @@ def main() -> None:
                     f"with base 10: '{c}'\n"
                 )
             else:
-                coor_tup = (nb_coor[0], nb_coor[1], nb_coor[2])
+                coor_tup = tuple(nb_coor)
                 calculate_dist((0, 0, 0), coor_tup)
                 pos_tab.append(coor_tup)
     unpack_demon(pos_tab[-1])
