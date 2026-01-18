@@ -4,6 +4,10 @@ from typing import Generator
 import time
 
 
+DEFAULT_PLAYERS = ["alice", "bob", "charlie"]
+DEFAULT_EVENT_NB = 20
+
+
 class Player:
     """
     A class that represents a player.
@@ -107,7 +111,7 @@ def choose_player(all_players: list[Player]) -> Player:
     Player
         The player chosen at random.
     """
-    random_pl = random.randint(0, len(all_players) - 1)
+    random_pl: int = random.randint(0, len(all_players) - 1)
     return all_players[random_pl]
 
 
@@ -182,52 +186,6 @@ def process_events(
         Event.event_count += 1
         if event.important:
             yield event
-
-
-def check_nb_event(nb: str) -> int:
-    """
-    Verifies if the number of events given is correct.
-
-    Parameters
-    ----------
-    nb
-        The number of events to be generated.
-
-    Returns
-    -------
-    int
-        The number of events to generate,
-        the parameter given if correct, the default value otherwise.
-    """
-    try:
-        conv_nb: int = int(nb)
-    except ValueError:
-        print("ValueError: invalid type for integer literal")
-        print("resorting to default = 1000\n")
-        return 1000
-    else:
-        if conv_nb >= 1:
-            return conv_nb
-        else:
-            print(
-                f"{conv_nb} number of events is insuffisant, "
-                f"resorting to default = 1000.\n"
-            )
-            return 1000
-
-
-def add_players(players: list[Player]) -> None:
-    """
-    Adds multiple players to the list of players.
-
-    Parameters
-    ----------
-    players
-        The list of players to fill.
-    """
-    players.append(Player("alice"))
-    players.append(Player("bob"))
-    players.append(Player("charlie"))
 
 
 def stream_analytics(players: list[Player]) -> None:
@@ -316,21 +274,79 @@ def gen_demon() -> None:
     print(*all_primes)
 
 
+def is_integer(to_convert: str) -> bool:
+    """
+    Checks if the given string can be converted to an integer.
+
+    Returns
+    -------
+    bool
+        True if the string can be converted, False otherwise.
+    """
+    try:
+        int(to_convert)
+    except ValueError:
+        return False
+    else:
+        return True
+
+
+def parse_args(
+    args: list[str]
+) -> (int, list[Player]):
+    """
+    Parses a list of arguments and determines
+    both the number of events to generate and the list of players.
+
+    Parameters
+    ----------
+    args
+        The arguments to parse, either from the command line, or the default.
+
+    Returns
+    -------
+    int
+        The number of events to generate.
+    list[Player]
+        The generator containing all the players.
+    """
+    start: int = 0
+    event_nb: int = 0
+    players: list[Player] = []
+    if is_integer(args[0]):
+        if int(args[0]) >= 1:
+            event_nb = int(args[0])
+        else:
+            print(
+                f"error: {int(args[0])} number of events "
+                f"is insuffisant - resorting to default {DEFAULT_EVENT_NB}\n"
+            )
+            event_nb = DEFAULT_EVENT_NB
+        start += 1
+    else:
+        event_nb = DEFAULT_EVENT_NB
+    for pl in range(start, len(args)):
+        if not is_integer(args[pl]):
+            players.append(Player(args[pl]))
+        else:
+            print(
+                f"ValueError: invalid type integer '{args[pl]}' "
+                f"for character name - character creation [IGNORED]\n"
+            )
+    return event_nb, players
+
+
 def main() -> None:
     """
     Manages and displays data about randomized events using generators.
     """
-    start: float = time.time()
-    all_players: list[Player] = []
-    add_players(all_players)
-    if len(sys.argv) == 1:
-        event_nb: int = 1000
-    elif len(sys.argv) == 2:
-        event_nb = check_nb_event(sys.argv[1])
-    else:
-        print("too many arguments, resorting to default = 1000\n")
-        event_nb = 1000
     print("=== Game Data Stream Processor ===\n")
+    start: float = time.time()
+    if len(sys.argv) == 1:
+        args: list[str] = DEFAULT_PLAYERS
+    else:
+        args = sys.argv[1:] + DEFAULT_PLAYERS
+    event_nb, all_players = parse_args(args)
     print(f"processing {event_nb} game events...\n")
     events: Generator[Event, None, None] = generate_events(
         event_nb, all_players
