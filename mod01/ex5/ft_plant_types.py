@@ -53,7 +53,7 @@ class Plant:
         new_age
             The plant's new age.
         """
-        if type(new_age) is int and new_age >= 0 :
+        if type(new_age) is int and new_age >= 0:
             self._age = new_age
         else:
             self._age = 0

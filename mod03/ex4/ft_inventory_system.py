@@ -11,7 +11,7 @@ def get_total(inventory: dict) -> int:
     total: int = 0
     for quantity in inventory.values():
         total += quantity
-    return (total)
+    return total
 
 
 def system_analysis(inventory: dict) -> None:

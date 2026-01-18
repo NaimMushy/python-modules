@@ -3,6 +3,7 @@ MAX_WATER_LVL = 10
 MIN_SUN_H = 2
 MAX_SUN_H = 12
 
+
 class GardenError(Exception):
     pass
 
@@ -77,23 +78,23 @@ class Plant:
                 f"for {self.name} - invalid [REJECTED]"
             )
 
-    def get_water_lvl(self) -> None:
+    def get_water_lvl(self) -> int:
         """
         Returns
         -------
         int
             The plant's water level.
         """
-        return (self._water_lvl)
+        return self._water_lvl
 
-    def get_sun_h(self) -> None:
+    def get_sun_h(self) -> int:
         """
         Returns
         -------
         int
             The plant's sunlight hours.
         """
-        return (self._sun_h)
+        return self._sun_h
 
     def water(self) -> None:
         """
@@ -275,20 +276,18 @@ class GardenManager:
         self.check_plant_health("GardenError")
 
 
-p1 = Plant("lilac", 12, 9)
-p2 = Plant("", 5, 6)
-p3 = Plant("eggplant", 4, 3)
-p4 = Plant("hibiscus", 8, 1)
-p5 = Plant("zucchini", 0, 11)
-p6 = Plant("pumpkin", 9, 5)
-
-
 def test_all() -> None:
     """
     Tests the correct behavior of the garden manager.
     """
     print("=== Garden Management System ===\n")
     garden = GardenManager("Naïm")
+    p1 = Plant("lilac", 12, 9)
+    p2 = Plant("", 5, 6)
+    p3 = Plant("eggplant", 4, 3)
+    p4 = Plant("hibiscus", 8, 1)
+    p5 = Plant("zucchini", 0, 11)
+    p6 = Plant("pumpkin", 9, 5)
     print("adding plants to garden...")
     garden.add_plant(p1)
     garden.add_plant(p2)

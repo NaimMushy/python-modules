@@ -71,7 +71,7 @@ class Plant:
         int
             The plant's height.
         """
-        return (self._height)
+        return self._height
 
     def get_age(self) -> int:
         """
@@ -80,7 +80,7 @@ class Plant:
         int
             The plant's age
         """
-        return (self._age)
+        return self._age
 
     def grow(self, growth: int) -> None:
         """
@@ -303,7 +303,7 @@ class GardenManager:
             )
 
         @staticmethod
-        def all_gardens_info(gardens: list[Garden]):
+        def all_gardens_info(gardens: list[Garden]) -> None:
             """
             Displays the data of every garden in the garden network.
 
@@ -328,7 +328,7 @@ class GardenManager:
     garden_helper: GardenStats = GardenStats()
 
     @classmethod
-    def create_garden_network(cls: GardenManager) -> None:
+    def create_garden_network(cls) -> None:
         """
         Creates the garden network.
 
@@ -340,7 +340,7 @@ class GardenManager:
         cls.gardens = []
 
     @classmethod
-    def add_garden(cls: GardenManager, new_garden: Garden) -> None:
+    def add_garden(cls, new_garden: Garden) -> None:
         """
         Adds a garden to the garden network managed.
 
