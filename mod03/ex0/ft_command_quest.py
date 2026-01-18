@@ -1,5 +1,6 @@
 import sys
 
+
 def main() -> None:
     """
     Displays the arguments given from the command line.

@@ -49,7 +49,7 @@ def main() -> None:
     if len(sys.argv) > 1:
         for coor in range(1, len(sys.argv)):
             print(f"parsing coordinates: \"{sys.argv[coor]}\"")
-            coor_str: str = sys.argv[coor].split(",")
+            coor_str: list[str] = sys.argv[coor].split(",")
             nb_coor: list[int] = []
             try:
                 for c in coor_str:

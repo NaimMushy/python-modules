@@ -39,8 +39,8 @@ def current_inventory(inventory: dict) -> None:
     """
     print("=== Current Inventory ===")
     sorted_inventory: dict = {}
-    max_quantity: int = inventory[max(inventory, key=inventory.get)]
-    min_quantity: int = inventory[min(inventory, key=inventory.get)]
+    max_quantity: int = max(inventory.values())
+    min_quantity: int = min(inventory.values())
     while max_quantity >= min_quantity:
         for item, quantity in inventory.items():
             if quantity == max_quantity:
@@ -108,7 +108,7 @@ def management_sugg(inventory: dict) -> None:
     """
     print("\n=== Management Suggestions ===")
     restock: list[str] = []
-    min_quantity: int = inventory[min(inventory, key=inventory.get)]
+    min_quantity: int = max(inventory.values())
     for item in inventory.keys():
         if inventory[item] == min_quantity:
             restock.append(item)
@@ -127,7 +127,10 @@ def dict_prop_demo(inventory: dict, sample_item: str) -> None:
     print("=== Dictionary Properties Demo ===")
     print(f"dictionary keys: {inventory.keys()}")
     print(f"dictionary values: {inventory.values()}")
-    print(f"sample lookup - '{sample_item}' in inventory: {sample_item in inventory}")
+    print(
+        f"sample lookup - '{sample_item}' in inventory: "
+        f"{sample_item in inventory}"
+    )
 
 
 def main() -> None:
@@ -135,7 +138,7 @@ def main() -> None:
     Manages an inventory and displays its data.
     """
     if len(sys.argv) == 1:
-	    print("inventory empty.")
+        print("inventory empty.")
     else:
         inventory: dict = {}
         for item in range(1, len(sys.argv)):

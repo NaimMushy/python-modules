@@ -87,16 +87,23 @@ def get_common_ach(players: dict) -> None:
 
 def main() -> None:
     """
-    Manages and displays information about the achievements of multiple players.
+    Manages and displays information
+    about the achievements of multiple players.
     """
     a: set = {'first_kill', 'level_10', 'treasure_hunter', 'speed_demon'}
     b: set = {'first_kill', 'level_10', 'boss_slayer', 'collector'}
-    c: set = {'level_10', 'treasure_hunter', 'boss_slayer', 'speed_demon', 'perfectionist'}
+    c: set = {
+        'level_10',
+        'treasure_hunter',
+        'boss_slayer',
+        'speed_demon',
+        'perfectionist'
+    }
     players: dict = {
         "alice": a,
         "bob": b,
         "charlie": c
-        }
+    }
     tracker_system(players)
     print("\n=== Achievement Analytics ===")
     get_unique_ach(players)

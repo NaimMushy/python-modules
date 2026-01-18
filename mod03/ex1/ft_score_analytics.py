@@ -1,5 +1,6 @@
 import sys
 
+
 def main() -> None:
     """
     Displays player scores given from the command line.
