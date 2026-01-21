@@ -293,7 +293,7 @@ def is_integer(to_convert: str) -> bool:
 
 def parse_args(
     args: list[str]
-) -> (int, list[Player]):
+) -> tuple[int, list[Player]]:
     """
     Parses a list of arguments and determines
     both the number of events to generate and the list of players.
