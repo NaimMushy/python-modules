@@ -24,7 +24,7 @@ MIXED_BATCH: list[any] = [
 class DataStream(ABC):
     def __init__(self, stream_id: str) -> None:
         self.stream_id: str = stream_id
-        self._stats: dict[str, union[str, int, float]] = {}
+        self._stats: dict[str, any] = {}
 
     @abstractmethod
     def process_batch(self, data_batch: list[any]) -> str:
@@ -44,7 +44,13 @@ class DataStream(ABC):
         return filtered_data
 
     def get_stats(self) -> dict[str, union[str, int, float]]:
-        return self._stats
+        stats: dict[str, any] = {}
+        for key, val in self._stats.items():
+            if isinstance(val, list):
+                stats[key] = sum(val)
+            else:
+                stats[key] = val
+        return stats
 
 
 class SensorStream(DataStream):
@@ -54,7 +60,11 @@ class SensorStream(DataStream):
             print("initializing sensor stream...")
             print(f"stream ID: {self.stream_id} - type: environmental data")
 
-    def add_to_stats(self, env_var: str, mesure: int | float) -> None:
+    def add_to_stats(
+        self,
+        env_var: str,
+        mesure: any
+    ) -> None:
         if env_var not in self._stats.keys():
             self._stats[env_var] = [mesure]
         else:
@@ -71,7 +81,7 @@ class SensorStream(DataStream):
             else:
                 self._stats[prev_stat] = 0
 
-    def validate_batch(self, data: any) -> (str, int | float):
+    def validate_batch(self, data: any) -> tuple[str, int | float]:
         if (match := re.match("([a-z]+):([0-9.]+)", data, re.I)):
             env_var: str = match.group(1)
             if env_var == "temp":
@@ -90,9 +100,9 @@ class SensorStream(DataStream):
         self.reset_stats()
         for data in data_batch:
             try:
-                validated_data: tuple(
+                validated_data: tuple[
                     str, union[int, float]
-                ) = self.validate_batch(data)
+                ] = self.validate_batch(data)
             except TypeError as te:
                 print(f"caught TypeError: {te}")
             else:
@@ -109,17 +119,15 @@ class SensorStream(DataStream):
         filtered_batch: list[any] = []
         for data in data_batch:
             try:
-                validated_data: tuple(
+                validated_data: tuple[
                     str, union[int, float]
-                ) = self.validate_batch(data)
+                ] = self.validate_batch(data)
             except TypeError as te:
                 print(f"caught TypeError: {te}")
             else:
                 env_var: str = validated_data[0]
                 mesure: int | float = validated_data[1]
-                if ((
-                    criteria == "high-priority"
-                ) or (
+                if (criteria == "high-priority" and (
                     env_var == "temp" and mesure > 40
                 ) or (
                     env_var == "humidity" and mesure > 80
@@ -134,14 +142,16 @@ class SensorStream(DataStream):
         for env_var, mesure in self._stats.items():
             if isinstance(mesure, list):
                 if len(mesure):
-                    stats["avg_" + env_var]: float = round(sum(mesure) // len(mesure))
+                    stats["avg_" + env_var] = round(
+                        sum(mesure) / len(mesure), 1
+                    )
             else:
                 if mesure != 0:
-                    stats[env_var]: int | float = mesure
+                    stats[env_var] = mesure
         return stats
 
 
-def TransactionStream(DataStream):
+class TransactionStream(DataStream):
     def __init__(self, stream_id: str, silent_mode: bool = True) -> None:
         super().__init__(stream_id)
         if not silent_mode:
@@ -165,7 +175,7 @@ def TransactionStream(DataStream):
             else:
                 self._stats[prev_stat] = 0
 
-    def validate_batch(self, data: any) -> (str, int | float):
+    def validate_batch(self, data: any) -> tuple[str, int]:
         if (match := re.match("([a-z]+):([0-9]+)", data, re.I)):
             op: str = match.group(1)
             op_val: int = int(match.group(2))
@@ -181,9 +191,9 @@ def TransactionStream(DataStream):
         self.reset_stats()
         for data in data_batch:
             try:
-                validated_data: tuple(
-                    str, union[int, float]
-                ) = self.validate_batch(data)
+                validated_data: tuple[
+                    str, int
+                ] = self.validate_batch(data)
             except TypeError as te:
                 print(f"caught TypeError: {te}")
             else:
@@ -200,9 +210,9 @@ def TransactionStream(DataStream):
         filtered_batch: list[any] = []
         for data in data_batch:
             try:
-                validated_data: tuple(
-                    str, union[int, float]
-                ) = self.validate_batch(data)
+                validated_data: tuple[
+                    str, int
+                ] = self.validate_batch(data)
             except TypeError as te:
                 print(f"caught TypeError: {te}")
             else:
@@ -215,17 +225,17 @@ def TransactionStream(DataStream):
         return filtered_batch
 
     def get_stats(self) -> dict[str, union[str, int, float]]:
-        stats: dict[str, union[str, int, float]] = {}
+        stats: dict[str, any] = {}
         stats["net_flow"] = 0
         for op, op_val in self._stats.items():
             if isinstance(op_val, list) and len(op_val):
-                if op_val == "buy":
+                if op == "buy":
                     stats["net_flow"] += sum(op_val)
-                elif op_val == "sell":
+                elif op == "sell":
                     stats["net_flow"] -= sum(op_val)
             else:
                 if op_val != 0:
-                    stats[op]: int = op_val
+                    stats[op] = op_val
         if stats["net_flow"] >= 0:
             stats["net_flow"] = "+" + str(stats["net_flow"])
         else:
@@ -233,7 +243,7 @@ def TransactionStream(DataStream):
         return stats
 
 
-def EventStream(DataStream):
+class EventStream(DataStream):
     def __init__(self, stream_id: str, silent_mode: bool = True) -> None:
         super().__init__(stream_id)
         if not silent_mode:
@@ -241,7 +251,7 @@ def EventStream(DataStream):
             print(f"stream ID: {self.stream_id} - type: system events")
 
     def add_to_stats(self, event: str) -> None:
-        if event in self._stats.keys():
+        if event not in self._stats.keys():
             self._stats[event] = 1
         else:
             self._stats[event] += 1
@@ -268,7 +278,7 @@ def EventStream(DataStream):
         self.reset_stats()
         for data in data_batch:
             try:
-                event: str = validate_batch(data)
+                event: str = self.validate_batch(data)
             except TypeError as te:
                 print(f"caught TypeError: {te}")
             else:
@@ -285,7 +295,7 @@ def EventStream(DataStream):
         filtered_batch: list[any] = []
         for data in data_batch:
             try:
-                event: str = validate_batch(data)
+                event: str = self.validate_batch(data)
             except TypeError as te:
                 print(f"caught TypeError: {te}")
             else:
@@ -310,12 +320,12 @@ class StreamProcessor:
         data_batch: list[any],
         criteria: optional[str] = None
     ) -> dict[str, int]:
-        results: dict[str, int] = {}
-        sensor: SensorStream = SensorStream("R2D2")
+        results: dict[str, any] = {}
+        sensor = SensorStream("R2D2")
         sensor_data_batch: list[any] = []
-        transaction: TransactionStream = TransactionStream("K-Tching")
+        transaction = TransactionStream("K-Tching")
         trans_data_batch: list[any] = []
-        event: EventStream = EventStream("E-T")
+        event = EventStream("E-T")
         event_data_batch: list[any] = []
         for data in data_batch:
             if "buy" in data or "sell" in data:
@@ -332,6 +342,11 @@ class StreamProcessor:
                 "logout" in data
             ):
                 event_data_batch.append(data)
+            else:
+                print(
+                    f"error: this data {data} doesn't correspond "
+                    "to a specific data processor - [IGNORED]\n"
+                )
         sensor.process_batch(
             sensor.filter_data(sensor_data_batch, criteria)
         )
@@ -353,38 +368,38 @@ def main() -> None:
     print(sensor_stream.process_batch(SENSOR_BATCH))
     sensor_stats: dict[str, union[str, int, float]] = sensor_stream.get_stats()
     print(
-        f"sensor analysis: {sensor_stats["readings"]} readings processed, "
-        f"avg temp: {sensor_stats["avg_temp"]}°C\n"
+        f"sensor analysis: {sensor_stats['readings']} readings processed, "
+        f"avg temp: {sensor_stats['avg_temp']}°C\n"
     )
-    trans_stream: TransactionStream = TransactionStream("TRANS_001", False)
+    trans_stream = TransactionStream("TRANS_001", False)
     print(trans_stream.process_batch(TRANS_BATCH))
     trans_stats: dict[str, union[str, int, float]] = trans_stream.get_stats()
     print(
-        f"transaction analysis: {trans_stats["operations"]} operations, "
-        f"net flow: {trans_stats["net_flow"]} units\n"
+        f"transaction analysis: {trans_stats['operations']} operations, "
+        f"net flow: {trans_stats['net_flow']} units\n"
     )
-    event_stream: EventStream = EventStream("EVENT_001", False)
+    event_stream = EventStream("EVENT_001", False)
     print(event_stream.process_batch(EVENT_BATCH))
     event_stats: dict[str, union[str, int, float]] = event_stream.get_stats()
     print(
-        f"event analysis: {event_stats["events"]} events, "
-        f"{event_stats["error"]} error detected\n"
+        f"event analysis: {event_stats['events']} events, "
+        f"{event_stats['error']} error detected\n"
     )
     print("=== Polymorphic Stream Processing ===")
     print("processing mixed stream types through unified interface...\n")
     stream_proc: StreamProcessor = StreamProcessor()
     results: dict[str, int] = stream_proc.process_stream(MIXED_BATCH)
     print("batch 1 results: ")
-    print(f"- sensor data: {results["sensor"]} readings processed")
-    print(f"- transaction data: {results["transaction"]} operations processed")
-    print(f"- event data: {results["event"]} events processed")
+    print(f"- sensor data: {results['sensor']} readings processed")
+    print(f"- transaction data: {results['transaction']} operations processed")
+    print(f"- event data: {results['event']} events processed")
     print("\nstream filtering active: high-priority data only")
     results = stream_proc.process_stream(MIXED_BATCH, "high-priority")
     print(
         f"filtered results: "
-        f"{results["sensor"]} critical sensor alerts, "
-        f"{results["transaction"]} large transaction, "
-        f"{results["event"]} errors or warnings\n"
+        f"{results['sensor']} critical sensor alerts, "
+        f"{results['transaction']} large transaction, "
+        f"{results['event']} errors or warnings\n"
     )
     print("all streams processed successfully - nexus throughput optimal")
 
