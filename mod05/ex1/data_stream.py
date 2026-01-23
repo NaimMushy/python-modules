@@ -22,12 +22,36 @@ MIXED_BATCH: list[any] = [
 
 
 class DataStream(ABC):
+    """
+    A class that represents a data stream.
+    """
     def __init__(self, stream_id: str) -> None:
+        """
+        Initializes the data stream's properties.
+
+        Parameters
+        ----------
+        stream_id
+            The stream's ID.
+        """
         self.stream_id: str = stream_id
         self._stats: dict[str, any] = {}
 
     @abstractmethod
     def process_batch(self, data_batch: list[any]) -> str:
+        """
+        Processes the data batch given as parameter.
+
+        Parameters
+        ----------
+        data_batch
+            The data batch to process.
+
+        Returns
+        -------
+        str
+            The processed data.
+        """
         pass
 
     def filter_data(
@@ -35,15 +59,37 @@ class DataStream(ABC):
         data_batch: list[any],
         criteria: optional[str] = None
     ) -> list[any]:
-        if criteria:
-            filtered_data: list[any] = [
+        """
+        Filters a data batch based on a specific criteria.
+
+        Parameters
+        ----------
+        data_batch
+            The data batch to filter.
+        criteria
+            The criteria used to filter the batch.
+
+        Returns
+        -------
+        list[any]
+            The filtered data batch.
+        """
+        if not criteria:
+            return data_batch
+        filtered_data: list[any] = [
                 data for data in data_batch if criteria in data
             ]
-        else:
-            filtered_data = data_batch
         return filtered_data
 
     def get_stats(self) -> dict[str, union[str, int, float]]:
+        """
+        Gives the analyzed stats of the data batch.
+
+        Returns
+        -------
+        dict[str, union[str, int, float]]
+            The dictionary containing the analyzed stats of the data batch.
+        """
         stats: dict[str, any] = {}
         for key, val in self._stats.items():
             if isinstance(val, list):
@@ -54,7 +100,20 @@ class DataStream(ABC):
 
 
 class SensorStream(DataStream):
+    """
+    A class that represents a sensor stream.
+    """
     def __init__(self, stream_id: str, silent_mode: bool = True) -> None:
+        """
+        Initialized the sensor stream's properties.
+
+        Parameters
+        ----------
+        stream_id
+            The stream's ID.
+        silent_mode
+            Whether or not the initialization of the stream is announced.
+        """
         super().__init__(stream_id)
         if not silent_mode:
             print("initializing sensor stream...")
@@ -65,6 +124,16 @@ class SensorStream(DataStream):
         env_var: str,
         mesure: any
     ) -> None:
+        """
+        Adds the stats from the processed data to the stream's stats.
+
+        Parameters
+        ----------
+        env_var
+            The environment variable mesured in the data.
+        mesure
+            The mesure noted in the data.
+        """
         if env_var not in self._stats.keys():
             self._stats[env_var] = [mesure]
         else:
@@ -75,6 +144,9 @@ class SensorStream(DataStream):
             self._stats["readings"] = 1
 
     def reset_stats(self) -> None:
+        """
+        Resets the stream's stats in between batches.
+        """
         for prev_stat in self._stats.keys():
             if isinstance(self._stats[prev_stat], list):
                 self._stats[prev_stat] = []
@@ -82,6 +154,24 @@ class SensorStream(DataStream):
                 self._stats[prev_stat] = 0
 
     def validate_batch(self, data: any) -> tuple[str, int | float]:
+        """
+        Verifies whether or not the data is of the correct format.
+
+        Parameters
+        ----------
+        data
+            The data to validate.
+
+        Returns
+        -------
+        tuple[str, int | float]
+            The verified data separated as environment variable and mesure.
+
+        Raises
+        ------
+        TypeError:
+            Raised if the data given isn't formatted correctly.
+        """
         if (match := re.match("([a-z]+):([0-9.]+)", data, re.I)):
             env_var: str = match.group(1)
             if env_var == "temp":
@@ -97,6 +187,19 @@ class SensorStream(DataStream):
             )
 
     def process_batch(self, data_batch: list[any]) -> str:
+        """
+        Processed the data batch given as parameter.
+
+        Parameters
+        ----------
+        data_batch
+            The data batch to process.
+
+        Returns
+        -------
+        str
+            The processed data batch.
+        """
         self.reset_stats()
         for data in data_batch:
             try:
@@ -114,6 +217,21 @@ class SensorStream(DataStream):
         data_batch: list[any],
         criteria: optional[str] = None
     ) -> list[any]:
+        """
+        Filters a data batch based on a specific criteria.
+
+        Parameters
+        ----------
+        data_batch
+            The data batch to filter.
+        criteria
+            The criteria used to filter the batch.
+
+        Returns
+        -------
+        list[any]
+            The filtered data batch.
+        """
         if not criteria:
             return data_batch
         filtered_batch: list[any] = []
@@ -138,6 +256,14 @@ class SensorStream(DataStream):
         return filtered_batch
 
     def get_stats(self) -> dict[str, union[str, int, float]]:
+        """
+        Gives the analyzed stats of the data batch.
+
+        Returns
+        -------
+        dict[str, union[str, int, float]]
+            The dictionary containing the analyzed stats of the data batch.
+        """
         stats: dict[str, union[str, int, float]] = {}
         for env_var, mesure in self._stats.items():
             if isinstance(mesure, list):
@@ -152,13 +278,36 @@ class SensorStream(DataStream):
 
 
 class TransactionStream(DataStream):
+    """
+    A class that represents a transaction stream.
+    """
     def __init__(self, stream_id: str, silent_mode: bool = True) -> None:
+        """
+        Initialized the transaction stream's properties.
+
+        Parameters
+        ----------
+        stream_id
+            The stream's ID.
+        silent_mode
+            Whether or not the initialization of the stream is announced.
+        """
         super().__init__(stream_id)
         if not silent_mode:
             print("initializing transaction stream...")
             print(f"stream ID: {self.stream_id} - type: financial data")
 
     def add_to_stats(self, op: str, op_val: int) -> None:
+        """
+        Adds the stats from the processed data to the stream's stats.
+
+        Parameters
+        ----------
+        op
+            The financial operation processed in the data.
+        op_val
+            The value of the financial operation processed.
+        """
         if op not in self._stats.keys():
             self._stats[op] = [op_val]
         else:
@@ -169,6 +318,9 @@ class TransactionStream(DataStream):
             self._stats["operations"] = 1
 
     def reset_stats(self) -> None:
+        """
+        Resets the stream's stats in between batches.
+        """
         for prev_stat in self._stats.keys():
             if isinstance(self._stats[prev_stat], list):
                 self._stats[prev_stat] = []
@@ -176,6 +328,24 @@ class TransactionStream(DataStream):
                 self._stats[prev_stat] = 0
 
     def validate_batch(self, data: any) -> tuple[str, int]:
+        """
+        Verifies whether or not the data is of the correct format.
+
+        Parameters
+        ----------
+        data
+            The data to validate.
+
+        Returns
+        -------
+        tuple[str, int | float]
+            The verified data separated as financial operation and value.
+
+        Raises
+        ------
+        TypeError:
+            Raised if the data given isn't formatted correctly.
+        """
         if (match := re.match("([a-z]+):([0-9]+)", data, re.I)):
             op: str = match.group(1)
             op_val: int = int(match.group(2))
@@ -188,6 +358,19 @@ class TransactionStream(DataStream):
             )
 
     def process_batch(self, data_batch: list[any]) -> str:
+        """
+        Processed the data batch given as parameter.
+
+        Parameters
+        ----------
+        data_batch
+            The data batch to process.
+
+        Returns
+        -------
+        str
+            The processed data batch.
+        """
         self.reset_stats()
         for data in data_batch:
             try:
@@ -205,6 +388,21 @@ class TransactionStream(DataStream):
         data_batch: list[any],
         criteria: optional[str] = None
     ) -> list[any]:
+        """
+        Filters a data batch based on a specific criteria.
+
+        Parameters
+        ----------
+        data_batch
+            The data batch to filter.
+        criteria
+            The criteria used to filter the batch.
+
+        Returns
+        -------
+        list[any]
+            The filtered data batch.
+        """
         if not criteria:
             return data_batch
         filtered_batch: list[any] = []
@@ -225,6 +423,14 @@ class TransactionStream(DataStream):
         return filtered_batch
 
     def get_stats(self) -> dict[str, union[str, int, float]]:
+        """
+        Gives the analyzed stats of the data batch.
+
+        Returns
+        -------
+        dict[str, union[str, int, float]]
+            The dictionary containing the analyzed stats of the data batch.
+        """
         stats: dict[str, any] = {}
         stats["net_flow"] = 0
         for op, op_val in self._stats.items():
@@ -244,13 +450,34 @@ class TransactionStream(DataStream):
 
 
 class EventStream(DataStream):
+    """
+    A class that represents an event stream.
+    """
     def __init__(self, stream_id: str, silent_mode: bool = True) -> None:
+        """
+        Initialized the event stream's properties.
+
+        Parameters
+        ----------
+        stream_id
+            The stream's ID.
+        silent_mode
+            Whether or not the initialization of the stream is announced.
+        """
         super().__init__(stream_id)
         if not silent_mode:
             print("initializing event stream...")
             print(f"stream ID: {self.stream_id} - type: system events")
 
     def add_to_stats(self, event: str) -> None:
+        """
+        Adds the stats from the processed data to the stream's stats.
+
+        Parameters
+        ----------
+        event
+            The event processed in the data.
+        """
         if event not in self._stats.keys():
             self._stats[event] = 1
         else:
@@ -261,10 +488,31 @@ class EventStream(DataStream):
             self._stats["events"] = 1
 
     def reset_stats(self) -> None:
+        """
+        Resets the stream's stats in between batches.
+        """
         for prev_stat in self._stats.keys():
             self._stats[prev_stat] = 0
 
     def validate_batch(self, data) -> str:
+        """
+        Verifies whether or not the data is of the correct format.
+
+        Parameters
+        ----------
+        data
+            The data to validate.
+
+        Returns
+        -------
+        tuple[str, int | float]
+            The verified data separated as a system event.
+
+        Raises
+        ------
+        TypeError:
+            Raised if the data given isn't formatted correctly.
+        """
         if not isinstance(data, str):
             raise TypeError(
                 "invalid type for system events "
@@ -275,6 +523,19 @@ class EventStream(DataStream):
             return data
 
     def process_batch(self, data_batch: list[any]) -> str:
+        """
+        Processed the data batch given as parameter.
+
+        Parameters
+        ----------
+        data_batch
+            The data batch to process.
+
+        Returns
+        -------
+        str
+            The processed data batch.
+        """
         self.reset_stats()
         for data in data_batch:
             try:
@@ -290,6 +551,21 @@ class EventStream(DataStream):
         data_batch: list[any],
         criteria: optional[str] = None
     ) -> list[any]:
+        """
+        Filters a data batch based on a specific criteria.
+
+        Parameters
+        ----------
+        data_batch
+            The data batch to filter.
+        criteria
+            The criteria used to filter the batch.
+
+        Returns
+        -------
+        list[any]
+            The filtered data batch.
+        """
         if not criteria:
             return data_batch
         filtered_batch: list[any] = []
@@ -308,6 +584,14 @@ class EventStream(DataStream):
         return filtered_batch
 
     def get_stats(self) -> dict[str, union[str, int, float]]:
+        """
+        Gives the analyzed stats of the data batch.
+
+        Returns
+        -------
+        dict[str, union[str, int, float]]
+            The dictionary containing the analyzed stats of the data batch.
+        """
         stats: dict[str, union[str, int, float]] = {
             e: nb for e, nb in self._stats.items()
         }
@@ -315,11 +599,29 @@ class EventStream(DataStream):
 
 
 class StreamProcessor:
+    """
+    A class that represents a stream processor.
+    """
     def process_stream(
         self,
         data_batch: list[any],
         criteria: optional[str] = None
     ) -> dict[str, int]:
+        """
+        Processes a batch of mixed data and redirects it to the appropriate stream.
+
+        Parameters
+        ----------
+        data_batch
+            The mixed data batch to process.
+        criteria
+            The optional criteria to filter the data.
+
+        Returns
+        -------
+        dict[str, int]
+            The dictionary containing the results of each stream processing.
+        """
         results: dict[str, any] = {}
         sensor = SensorStream("R2D2")
         sensor_data_batch: list[any] = []
@@ -363,6 +665,11 @@ class StreamProcessor:
 
 
 def main() -> None:
+    """
+    Makes use of different data streams
+    built on the same base to process data properly,
+    thus testing the polymorphic behavior of the streams.
+    """
     print("=== CODE NEXUS - POLYMORPHIC STREAM SYSTEM ===\n")
     sensor_stream: SensorStream = SensorStream("SENSOR_001", False)
     print(sensor_stream.process_batch(SENSOR_BATCH))
