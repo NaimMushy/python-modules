@@ -28,13 +28,21 @@ class InputStage:
 
     def input_json(self, data: any) -> dict:
         validated_dict: dict = {}
-        if isinstance(data, list):
+        if isinstance(data, (list, Generator)):
             for d in data:
-                if (match := re.match("([a-z]+):([a-z0-9.]+)", d, re.I)):
-                    if match.group(1) in validated_dict.keys():
-                        validated_dict[match.group(1)].append(match.group(2))
+                if isinstance(d, str):
+                    if (match := re.match("([a-z]+):([a-z0-9.]+)", d, re.I)):
+                        if match.group(1) in validated_dict.keys():
+                            validated_dict[
+                                match.group(1)
+                            ].append(match.group(2))
+                        else:
+                            validated_dict[match.group(1)] = [match.group(2)]
                     else:
-                        validated_dict[match.group(2)] = [match.group(2)]
+                        raise TypeError(
+                            "invalid format for "
+                            "json data - [REJECTED]"
+                        )
                 else:
                     raise TypeError(
                         "invalid format for "
@@ -42,7 +50,10 @@ class InputStage:
                     )
         elif isinstance(data, dict):
             for key, val in data.items():
-                if isinstance(key, str) and isinstance(val, (str, int, float)):
+                if (
+                    isinstance(key, str)
+                    and isinstance(val, (str, int, float, list))
+                ):
                     if key in validated_dict.keys():
                         validated_dict[key].append(val)
                     else:
@@ -59,31 +70,32 @@ class InputStage:
 
     def input_csv(self, data: any) -> dict:
         validated_dict: dict = {}
-        if isinstance(data["rawdata"], str):
-            data["rawdata"] = data["rawdata"].split(",")
-            for d in data["rawdata"]:
-                if (match := re.match("[a-z]+", d, re.I)):
-                    if match.group(1) in validated_dict.keys():
-                        validated_dict[match.group(1)] += 1
-                    else:
-                        validated_dict[match.group(2)] = 1
-                else:
+        if isinstance(data, str):
+            data = data.split(",")
+            for d in data:
+                if not (match := re.match("([a-z]+)", d, re.I)):
                     raise TypeError("invalid format for csv data - [REJECTED]")
-        elif isinstance(data["rawdata"], list):
-            for d in data["rawdata"]:
-                if isinstance(d, str):
-                    if (match := re.match("[a-z]+", d, re.I)):
-                        if match.group(1) in validated_dict.keys():
-                            validated_dict[match.group(1)] += 1
-                        else:
-                            validated_dict[match.group(2)] = 1
-                    else:
-                        raise TypeError(
-                            "invalid format for "
-                            "csv data - [REJECTED]"
-                        )
+                if match.group(1) in validated_dict.keys():
+                    validated_dict[match.group(1)] += 1
                 else:
+                    validated_dict[match.group(1)] = 1
+        elif isinstance(data, dict):
+            new_dict: dict = {
+                key: val for key, val in data.items()
+                if key != "adapter"
+            }
+            for key, val in new_dict.items():
+                if not (
+                    isinstance(key, str)
+                    and isinstance(val, (str, int, float))
+                ):
+                    print("error here because not ")
                     raise TypeError("invalid format for csv data - [REJECTED]")
+                if isinstance(val, float):
+                    validated_dict[key] = int(val)
+                elif isinstance(val, str):
+                    validated_dict[key] = 1
+                validated_dict[key] = val
         else:
             raise TypeError("invalid format for csv data - [REJECTED]")
         validated_dict["adapter"] = "csv"
@@ -98,6 +110,11 @@ class InputStage:
                         validated_dict[match.group(1)].append(match.group(2))
                     else:
                         validated_dict[match.group(1)] = [match.group(2)]
+                elif (match := re.match("([a-z]+)", d, re.I)):
+                    if match.group(1) in validated_dict.keys():
+                        validated_dict[match.group(1)] += 1
+                    else:
+                        validated_dict[match.group(1)] = 1
                 else:
                     raise TypeError(
                         "invalid format for "
@@ -123,24 +140,24 @@ class TransformStage:
                 " - [REJECTED]"
             )
 
-    def get_range(self, sensor_type: str, value: int | float) -> str:
+    def get_range(self, sensor_type: str, value: str) -> str:
         if sensor_type == "temp":
-            if value > 40 or value < -10:
+            if float(value) > 40 or float(value) < -10:
                 return "critical"
             else:
                 return "normal"
         elif sensor_type == "pressure":
-            if value > 2000 or value < 0:
+            if float(value) > 2000 or float(value) < 0:
                 return "critical"
             else:
                 return "normal"
         elif sensor_type == "humidity":
-            if value > 80 or value < 10:
+            if float(value) > 80 or float(value) < 10:
                 return "critical"
             else:
                 return "normal"
         else:
-            if value > 100 or value < 0:
+            if float(value) > 100 or float(value) < 0:
                 return "critical"
             else:
                 return "normal"
@@ -149,17 +166,25 @@ class TransformStage:
         trans_dict: dict = {}
         trans_dict["adapter"] = "json"
         for key, val in data.items():
-            if val == "temp":
+            if val[0] == "temp":
                 trans_dict[key] = "temperature"
             elif key == "value":
                 if "sensor" in data.keys():
-                    trans_dict["range"] = self.get_range(data["sensor"], val)
-                trans_dict[key] = val
+                    trans_dict[key] = 0
+                    for value in val:
+                        if self.get_range(
+                            data["sensor"],
+                            value
+                        ) == "critical":
+                            trans_dict["range"] = "critical"
+                        trans_dict[key] += round(float(value), 1)
+                    if "range" not in trans_dict.keys():
+                        trans_dict["range"] = "normal"
             elif key == "unit":
-                if val == "C" or val == "F":
-                    trans_dict[key] = "°" + val
+                if val[0] == "C" or val[0] == "F":
+                    trans_dict[key] = "°" + val[0]
                 else:
-                    trans_dict[key] = val
+                    trans_dict[key] = val[0]
             else:
                 trans_dict[key] = val
         return trans_dict
@@ -175,27 +200,46 @@ class TransformStage:
                     trans_dict["user_activity"] = "logged"
                 else:
                     trans_dict["user_activity"] = "not detected"
-            else:
-                trans_dict[key + "s"] = val
+            elif key != "adapter":
+                trans_dict[key] = val
         return trans_dict
 
     def transform_sensor(self, data: any) -> dict:
+        del data["adapter"]
         trans_dict: dict = {}
         trans_dict["adapter"] = "sensor"
         trans_dict["readings"] = 0
         for key, val in data.items():
-            for mesure in val:
-                if self.get_range(mesure, key) == "critical":
-                    if "critical" in trans_dict.keys():
-                        trans_dict["critical"].append(key+":"+str(mesure))
+            if isinstance(val, list):
+                for mesure in val:
+                    if self.get_range(key, mesure) == "critical":
+                        if "critical" in trans_dict.keys():
+                            trans_dict["critical"].append(
+                                key + ":" + str(round(float(mesure), 1))
+                            )
+                        else:
+                            trans_dict["critical"] = [
+                                key + ":" + str(round(float(mesure), 1))
+                            ]
+                    if "avg_"+key in trans_dict.keys():
+                        trans_dict["avg_"+key] += round(float(mesure), 1)
                     else:
-                        trans_dict["critical"] = [key+":"+str(mesure)]
-                trans_dict["avg_"+key] += mesure
+                        trans_dict["avg_"+key] = round(float(mesure), 1)
+                    trans_dict["readings"] += 1
+                if len(val) > 1:
+                    if "avg_"+key in trans_dict.keys():
+                        trans_dict["avg_"+key] = round(
+                            trans_dict["avg_"+key] / len(val), 1
+                        )
+            else:
+                trans_dict[key] = val
                 trans_dict["readings"] += 1
-            if len(val) > 1:
-                trans_dict["avg_"+key] /= len(val)
-            if key == "temp":
-                trans_dict["avg_"+key] = str(trans_dict["avg_"+key]) + "°C"
+        if "avg_temp" in trans_dict.keys():
+            trans_dict["avg_temp"] = str(trans_dict["avg_temp"]) + "°C"
+        if "avg_pressure" in trans_dict.keys():
+            trans_dict["avg_pressure"] = str(trans_dict["avg_pressure"]) + "Pa"
+        if "avg_humidity" in trans_dict.keys():
+            trans_dict["avg_humidity"] = str(trans_dict["avg_humidity"]) + "%"
         return trans_dict
 
 
@@ -215,6 +259,7 @@ class OutputStage:
 
     def output_json(self, data: any) -> str:
         output_string: str = ""
+        del data["adapter"]
         if "sensor" in data.keys():
             output_string += f"processed {data['sensor']} reading"
         else:
@@ -227,9 +272,10 @@ class OutputStage:
             output_string += data["unit"]
         if "range" in data.keys():
             output_string += f" ({data['range']} range)"
-        for key, val in data.items():
-            if key != ("sensor", "value", "unit", "range"):
-                print(f" - {key}: {val}")
+        if not (("sensor" or "value" or "unit" or "range") in data.keys()):
+            for key, val in data.items():
+                if key != ("sensor", "value", "unit", "range"):
+                    output_string += f" - {key}: {val}"
         return output_string
 
     def output_csv(self, data: any) -> str:
@@ -237,20 +283,20 @@ class OutputStage:
         output_string += f"user activity {data['user_activity']}: "
         new_dict: dict = {
             key: val for key, val in data.items()
-            if key != "user_activity"
+            if key != "user_activity" and key != "adapter"
         }
         if new_dict == {}:
             output_string += "no additional data provided"
             return output_string
         for key, val in new_dict.items():
-            output_string += f"{val} {key} processed - "
+            output_string += f"{val} {key}s processed - "
         return output_string
 
     def output_sensor(self, data: any) -> str:
         output_string: str = f"stream summary: {data['readings']} readings"
         new_dict: dict = {
             key: val for key, val in data.items()
-            if key != "readings"
+            if key != "readings" and key != "adapter"
         }
         for key, val in new_dict.items():
             output_string += f" - {key}: {val}"
@@ -272,14 +318,9 @@ class ProcessingPipeline(ABC):
         data_dict: dict = {}
         data_dict["adapter"] = "any"
         data_dict["rawdata"] = data
-        results: list = []
         for stage in self._stages:
             data_dict = stage.process(data_dict)
-            if isinstance(stage, TransformStage):
-                results.append("parsed and structured data")
-            else:
-                results.append(data_dict)
-        return results
+        return data_dict
 
 
 class JSONAdapter(ProcessingPipeline):
@@ -346,7 +387,6 @@ class NexusManager:
 
     def clear_pipelines(self) -> None:
         self._pipelines = []
-        self._stages = []
 
     def add_stages_to_pipeline(
         self,
@@ -365,7 +405,6 @@ class NexusManager:
         csv_data: any,
         sensor_data: any
     ) -> None:
-        print("=== Multi-Format Data Processing ===\n")
         self.add_pipeline(JSONAdapter("JSON_001"))
         self.add_pipeline(CSVAdapter("CSV_001"))
         self.add_pipeline(StreamAdapter("SENSOR_001"))
@@ -373,8 +412,9 @@ class NexusManager:
         for index in range(len(self._pipelines)):
             self.add_stages_to_pipeline(self._pipelines[index], 3)
             output: str = self._pipelines[index].process(inputs[index])
-            if output[:4] == "error":
+            if output.startswith("error"):
                 self.error_recovery(output, self._pipelines[index])
+                break
             elif self._pipelines[index].__repr__() == "JSONAdapter":
                 print("processing JSON data through pipeline...")
                 print(f"input: {inputs[index]}")
@@ -387,7 +427,7 @@ class NexusManager:
                 print("processing stream data through same pipeline...")
                 print("input: real-time sensor stream")
                 print("transform: aggregated and filtered")
-            print(f"output: {self._pipelines[index].process(inputs[index])}\n")
+            print(f"output: {output}\n")
         self.clear_pipelines()
 
     def pipeline_chaining(self, input_data: any, scd_pipeline: str) -> None:
@@ -402,20 +442,23 @@ class NexusManager:
             self.add_pipeline(JSONAdapter("JSON_001"))
             self.add_pipeline(JSONAdapter("JSON_002"))
         proc_time_start: float = time.time()
-        for pipeline in self._pipelines:
+        for k, pipeline in enumerate(self._pipelines):
             if pipeline != self._pipelines[-1]:
                 self.add_stages_to_pipeline(pipeline, 2)
             else:
                 self.add_stages_to_pipeline(pipeline, 3)
             output = pipeline.process(output)
-            if pipeline == self._pipelines[0]:
-                record_count: int = output["readings"]
-                del output["readings"]
-                print(f"pipeline {pipeline}", end="")
-            elif pipeline == self._pipelines[-1]:
-                print(f"->pipeline {pipeline}")
+            if isinstance(output, str) and output.startswith("error"):
+                self.error_recovery(output, pipeline)
             else:
-                print(f"->pipeline {pipeline}", end="")
+                if k == 0:
+                    record_count: int = output["readings"]
+                    del output["readings"]
+                    print(f"pipeline {pipeline}", end="")
+                elif pipeline == self._pipelines[-1]:
+                    print(f" ->pipeline {pipeline}")
+                else:
+                    print(f" ->pipeline {pipeline}", end="")
         proc_time_end: float = time.time()
         print("data flow: raw ->processed ->analyzed ->stored\n")
         print(
@@ -427,6 +470,7 @@ class NexusManager:
             f"{round(proc_time_end - proc_time_start, 2)} "
             "total processing time\n"
         )
+        self.clear_pipelines()
 
     def error_recovery(
         self,
@@ -459,6 +503,7 @@ def main() -> None:
     sensor_data: Generator[str, None, None] = generate_sensor(4, 1)
     print("=== CODE NEXUS - ENTERPRISE PIPELINE SYSTEM ===\n")
     nexus_mngr = NexusManager()
+    print("=== Multi-Format Data Processing ===\n")
     nexus_mngr.multi_proc(json_data, csv_data, sensor_data)
     sensor_data = generate_sensor(52, 2)
     nexus_mngr.pipeline_chaining(sensor_data, "csv")
