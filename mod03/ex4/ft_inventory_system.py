@@ -63,10 +63,24 @@ def inventory_stats(inventory: dict) -> None:
         A dictionary which represents an item inventory.
     """
     print("\n=== Inventory Statistics ===")
-    max_item: str = max(inventory, key=inventory.get)
-    print(f"most abundant: {max_item} ({inventory[max_item]} units)")
-    min_item: str = min(inventory, key=inventory.get)
-    print(f"least abundant: {min_item} ({inventory[min_item]} units)\n")
+    inventory["max_item"] = {}
+    max_item: int = 0
+    for key, val in inventory.items():
+        if val > max_item:
+            inventory["max_item"][key] = val
+            max_item = val
+    for key in inventory["max_item"].keys():
+        print(f"most abundant: {key} ({inventory['max_item'][key]} units)")
+    inventory["min_item"] = {}
+    min_item: int = max_item
+    for key, val in inventory.items():
+        if val < min_item:
+            inventory["min_item"][key] = val
+            min_item = val
+    for key in inventory["min_item"].keys():
+        print(f"least abundant: {key} ({inventory['min_item'][key]} units)")
+    del inventory["max_item"]
+    del inventory["min_item"]
 
 
 def item_categories(inventory: dict) -> None:

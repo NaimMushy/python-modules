@@ -1,6 +1,8 @@
 from abc import ABC
 from typing import Protocol
 from typing import Any as any
+from typing import Generator
+import re
 import random
 
 
@@ -33,16 +35,22 @@ class InputStage:
                     else:
                         validated_dict[match.group(2)] = [match.group(2)]
                 else:
-                    raise TypeError("invalid format for json data - [REJECTED]")
+                    raise TypeError(
+                        "invalid format for "
+                        "json data - [REJECTED]"
+                    )
         elif isinstance(data, dict):
             for key, val in data.items():
-                if isinstance(key, str) and isinstance(val, [str, int, float]):
+                if isinstance(key, str) and isinstance(val, (str, int, float)):
                     if key in validated_dict.keys():
                         validated_dict[key].append(val)
                     else:
                         validated_dict[key] = [val]
                 else:
-                    raise TypeError("invalid format for json data - [REJECTED]")
+                    raise TypeError(
+                        "invalid format for "
+                        "json data - [REJECTED]"
+                    )
         else:
             raise TypeError("invalid format for json data - [REJECTED]")
         validated_dict["adapter"] = "json"
@@ -50,14 +58,29 @@ class InputStage:
 
     def input_csv(self, data: any) -> dict:
         validated_dict: dict = {}
-        if isinstance(data, str):
+        if isinstance(data["rawdata"], str):
             data["rawdata"] = data["rawdata"].split(",")
-            for d in data:
+            for d in data["rawdata"]:
                 if (match := re.match("[a-z]+", d, re.I)):
                     if match.group(1) in validated_dict.keys():
                         validated_dict[match.group(1)] += 1
                     else:
                         validated_dict[match.group(2)] = 1
+                else:
+                    raise TypeError("invalid format for csv data - [REJECTED]")
+        elif isinstance(data["rawdata"], list):
+            for d in data["rawdata"]:
+                if isinstance(d, str):
+                    if (match := re.match("[a-z]+", d, re.I)):
+                        if match.group(1) in validated_dict.keys():
+                            validated_dict[match.group(1)] += 1
+                        else:
+                            validated_dict[match.group(2)] = 1
+                    else:
+                        raise TypeError(
+                            "invalid format for "
+                            "csv data - [REJECTED]"
+                        )
                 else:
                     raise TypeError("invalid format for csv data - [REJECTED]")
         else:
@@ -75,7 +98,10 @@ class InputStage:
                     else:
                         validated_dict[match.group(1)] = [match.group(2)]
                 else:
-                    raise TypeError("invalid format for sensor data - [REJECTED]")
+                    raise TypeError(
+                        "invalid format for "
+                        "sensor data - [REJECTED]"
+                    )
         else:
             raise TypeError("invalid format for sensor data - [REJECTED]")
         validated_dict["adapter"] = "sensor"
@@ -200,12 +226,18 @@ class OutputStage:
             output_string += data["unit"]
         if "range" in data.keys():
             output_string += f" ({data['range']} range)"
+        for key, val in data.items():
+            if key != ("sensor", "value", "unit", "range"):
+                print(f" - {key}: {val}")
         return output_string
 
     def output_csv(self, data: any) -> str:
         output_string: str = ""
         output_string += f"user activity {data['user_activity']}: "
-        new_dict: dict = {key: val for key, val in data.items() if key != "user_activity"}
+        new_dict: dict = {
+            key: val for key, val in data.items()
+            if key != "user_activity"
+        }
         if new_dict == {}:
             output_string += "no additional data provided"
             return output_string
@@ -215,7 +247,10 @@ class OutputStage:
 
     def output_sensor(self, data: any) -> str:
         output_string: str = f"stream summary: {data['readings']} readings"
-        new_dict: dict = {key: val for key, val in data.items() if key != "readings"}
+        new_dict: dict = {
+            key: val for key, val in data.items()
+            if key != "readings"
+        }
         for key, val in new_dict.items():
             output_string += f" - {key}: {val}"
         return output_string
@@ -225,6 +260,9 @@ class ProcessingPipeline(ABC):
     def __init__(self, pipeline_id: str) -> None:
         self.pipeline_id: str = pipeline_id
         self._stages: list[ProcessingStage] = []
+
+    def __repr__(self) -> str:
+        return self.__class__.__name__
 
     def add_stage(self, new_stage: ProcessingStage) -> None:
         self._stages.append(new_stage)
@@ -245,7 +283,7 @@ class ProcessingPipeline(ABC):
 
 class JSONAdapter(ProcessingPipeline):
     def process(self, data: any) -> any:
-        data_dict: dict | str = {}
+        data_dict: dict = {}
         data_dict["adapter"] = "json"
         data_dict["rawdata"] = data
         stage_count: int = 0
@@ -261,7 +299,7 @@ class JSONAdapter(ProcessingPipeline):
 
 class CSVAdapter(ProcessingPipeline):
     def process(self, data: any) -> any:
-        data_dict: dict | str = {}
+        data_dict: dict = {}
         data_dict["adapter"] = "csv"
         data_dict["rawdata"] = data
         stage_count: int = 0
@@ -277,7 +315,7 @@ class CSVAdapter(ProcessingPipeline):
 
 class StreamAdapter(ProcessingPipeline):
     def process(self, data: any) -> any:
-        data_dict: dict | str = {}
+        data_dict: dict = {}
         data_dict["adapter"] = "sensor"
         data_dict["rawdata"] = data
         stage_count: int = 0
@@ -291,121 +329,133 @@ class StreamAdapter(ProcessingPipeline):
         return data_dict
 
 
-    def input_sensor(self, data: any) -> dict:
-        validated_dict: dict = {}
-        if isinstance(data, Generator):
-            for d in data:
-                if (match := re.match("([a-z]+):([a-z0-9.]+)", d, re.I)):
-                    if match.group(1) in validated_dict.keys():
-                        validated_dict[match.group(1)].append(match.group(2))
-                    else:
-                        validated_dict[match.group(1)] = [match.group(2)]
-                else:
-                    raise TypeError("invalid format for sensor data - [REJECTED]")
-        else:
-            raise TypeError("invalid format for sensor data - [REJECTED]")
-        validated_dict["adapter"] = "sensor"
-        return validated_dict
-
-
 class NexusManager:
     def __init__(self) -> None:
         print("initializing Nexus Manager...")
         print("pipeline capacity: 1000 streams/second\n")
-        self._pipelines: list = []
-        self.create_data_pipeline()
-
-    def create_data_pipeline(self) -> None:
+        self._pipelines: list[ProcessingPipeline] = []
+        self._stages: list[ProcessingStage] = []
         print("creating data processing pipeline...")
-        self._json_pipeline = JSONAdapter("JSON_001")
-        self._pipelines.append(self._json_pipeline)
-        self._csv_pipeline = CSVAdapter("CSV_001")
-        self._pipelines.append(self._csv_pipeline)
-        self._sensor_pipeline = StreamAdapter("SENSOR_001")
-        self._pipelines.append(self._sensor_pipeline)
-        for pipeline in self._pipelines:
-            pipeline.add_stage(InputStage)
-            pipeline.add_stage(TransformStage)
-            pipeline.add_stage(OutputStage)
+        self._stages.append(InputStage())
         print("stage 1: input validation and parsing")
+        self._stages.append(TransformStage())
         print("stage 2: data transformation and enrichment")
+        self._stages.append(OutputStage())
         print("stage 3: output formatting and delivery\n")
 
-    def multi_proc(self, json_data: any, csv_data: any, sensor_data: any) -> None:
-        print("=== Multi-Format Data Processing ===\n")
-        json_output: str = self._json_pipeline.process(json_data)
-        if json_output[:4] == "error":
-            self.error_recovery(json_output)
-        else:
-            print("processing JSON data through pipeline...")
-            print(f"input: {json_data}")
-            print("transform: enriched with metadata and validation")
-            print(f"output: {self._json_pipeline.process(json_data)}\n")
-        csv_output: str = self._csv_pipeline.process(csv_data)
-        if csv_output[:4] == "error":
-            self.error_recovery(csv_output)
-        else:
-            print("processing CSV data through same pipeline...")
-            print(f"input: {csv_data}")
-            print("transform: parsed and structured data")
-            print(f"output: {self._csv_pipeline.process(csv_data)}\n")
-        sensor_output: str = self._sensor_pipeline.process(sensor_data)
-        if sensor_output[:4] == "error":
-            self.error_recovery(sensor_output)
-        else:
-            print("processing stream data through same pipeline...")
-            print("input: real-time sensor stream")
-            print("transform: aggregated and filtered")
-            print(f"output: {self._sensor_pipeline.process(sensor_data)}\n")
+    def clear_pipelines(self) -> None:
+        self._pipelines = []
+        self._stages = []
 
-    def pipeline_chaining(self, )
-
-    def error_recovery(self, error_str: str) -> None:
-        print(error_str)
-        print("recovery initiated: switching to bqckup processor")
-        print("recovery successful: pipeline restored, processing resumed\n")
-        
-
-    def process(
+    def add_stages_to_pipeline(
         self,
-        data: any,
-        adapter: str,
-        silent_mode: bool = True
+        pipeline: ProcessingPipeline,
+        nb_stages: int
     ) -> None:
-        if adapter == "json":
-            processed_data: any = self._json_pipeline.process(data)
-        elif adapter == "csv":
-            processed_data = self._csv_pipeline.process(data)
-        elif adapter == "sensor":
-            processed_data = self._sensor_pipeline.process(data)
-        if processed_data == "error recovery needed":
-            print("recovery initiated: switching to backup processor")
-            print("recovery successful: pipeline restored, processing resumed")
-        elif not silent_mode:
-            print(f"input: {processed_data[0]}")
-            print(f"transform: {processed_data[1]}")
-            print(f"output: {processed_data[2]}\n")
+        for index in range(nb_stages):
+            pipeline.add_stage(self._stages[index])
+
+    def add_pipeline(self, new_pipeline: ProcessingPipeline) -> None:
+        self._pipelines.append(new_pipeline)
+
+    def multi_proc(
+        self,
+        json_data: any,
+        csv_data: any,
+        sensor_data: any
+    ) -> None:
+        print("=== Multi-Format Data Processing ===\n")
+        self.add_pipeline(JSONAdapter("JSON_001"))
+        self.add_pipeline(CSVAdapter("CSV_001"))
+        self.add_pipeline(StreamAdapter("SENSOR_001"))
+        inputs: list = [json_data, csv_data, sensor_data]
+        for index in range(len(self._pipelines)):
+            self.add_stages_to_pipeline(self._pipelines[index], 3)
+            output: str = self._pipelines[index].process(inputs[index])
+            if output[:4] == "error":
+                self.error_recovery(output, self._pipelines[index])
+            elif self._pipelines[index].__repr__() == "JSONAdapter":
+                print("processing JSON data through pipeline...")
+                print(f"input: {inputs[index]}")
+                print("transform: enriched with metadata and validation")
+            elif self._pipelines[index].__repr__() == "CSVAdapter":
+                print("processing CSV data through same pipeline...")
+                print(f"input: {csv_data}")
+                print("transform: parsed and structured data")
+            elif self._pipelines[index].__repr__() == "StreamAdapter":
+                print("processing stream data through same pipeline...")
+                print("input: real-time sensor stream")
+                print("transform: aggregated and filtered")
+            print(f"output: {self._pipelines[index].process(inputs[index])}\n")
+        self.clear_pipelines()
+
+    def pipeline_chaining(self, input_data: any, scd_pipeline: str) -> None:
+        print("=== Pipeline Chaining Demo ===")
+        output: any = input_data
+        if scd_pipeline == "csv":
+            self.add_pipeline(StreamAdapter("SENSOR_001"))
+            self.add_pipeline(CSVAdapter("CSV_001"))
+            self.add_pipeline(CSVAdapter("CSV_002"))
+        else:
+            self.add_pipeline(StreamAdapter("SENSOR_001"))
+            self.add_pipeline(JSONAdapter("JSON_001"))
+            self.add_pipeline(JSONAdapter("JSON_002"))
+        proc_time: 
+        for pipeline in self._pipelines:
+            if pipeline != self._pipelines[-1]:
+                self.add_stages_to_pipeline(pipeline, 2)
+            else:
+                self.add_stages_to_pipeline(pipeline, 3)
+            output = pipeline.process(output)
+            if pipeline == self._pipelines[0]:
+                record_count: int = output["readings"]
+                del output["readings"]
+                print(f"pipeline {pipeline}", end="")
+            elif pipeline == self._pipelines[-1]:
+                print(f"->pipeline {pipeline}")
+            else:
+                print(f"->pipeline {pipeline}", end="")
+        print("data flow: raw ->processed ->analyzed ->stored\n")
+        print(f"chain result: {record_count} records processed through 3-stage pipeline")
+        print(f"performance: 95% efficiency, {proc_time} total processing time\n")
 
 
-def generate_sensor(nb_readings: int) -> Generator[str, None, None]:
+    def error_recovery(
+        self,
+        error_str: str,
+        pipeline: ProcessingPipeline
+    ) -> None:
+        print(f"{error_str} - PIPELINE {pipeline}")
+        print("recovery initiated: switching to backup processor")
+        print("recovery successful: pipeline restored, processing resumed\n")
+
+
+def generate_sensor(
+    nb_readings: int,
+    input_type: int
+) -> Generator[str, None, None]:
     sensor_list: list[str] = ["temp", "pressure", "humidity"]
+    csv_list: list[str] = ["user", "action", "timestamp", "login", "logout"]
     while nb_readings > 0:
-        yield random.choice(sensor_list) + ":"
-        + str(round(random.uniform(0, 200), 1))
+        if input_type == 1:
+            yield random.choice(sensor_list) + ":" +\
+                str(round(random.uniform(0, 200), 1))
+        else:
+            yield random.choice(csv_list)
         nb_readings -= 1
 
 
 def main() -> None:
     json_data: list[str] = ["sensor:temp", "value:23.5", "unit:C"]
     csv_data: str = "user,action,timestamp"
-    sensor_data: Generator[str, None, None] = generate_sensor(4)
+    sensor_data: Generator[str, None, None] = generate_sensor(4, 1)
     print("=== CODE NEXUS - ENTERPRISE PIPELINE SYSTEM ===\n")
     nexus_mngr = NexusManager()
-    nexus_mngs.multi_proc(json_data, csv_data, sensor_data)
+    nexus_mngr.multi_proc(json_data, csv_data, sensor_data)
     print("=== Error Recovery Test ===\n")
     print("simulating pipeline failure...")
-    sensor_data = generate_sensor(7)
-    nexus_mngs.multi_proc(404, csv_data, sensor_data)
+    sensor_data = generate_sensor(7, 1)
+    nexus_mngr.multi_proc(404, csv_data, sensor_data)
     print("nexus integration complete - all systems operational")
 
 
