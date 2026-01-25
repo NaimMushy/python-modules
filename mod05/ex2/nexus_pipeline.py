@@ -4,6 +4,7 @@ from typing import Any as any
 from typing import Generator
 import re
 import random
+import time
 
 
 class ProcessingStage(Protocol):
@@ -400,7 +401,7 @@ class NexusManager:
             self.add_pipeline(StreamAdapter("SENSOR_001"))
             self.add_pipeline(JSONAdapter("JSON_001"))
             self.add_pipeline(JSONAdapter("JSON_002"))
-        proc_time: 
+        proc_time_start: float = time.time()
         for pipeline in self._pipelines:
             if pipeline != self._pipelines[-1]:
                 self.add_stages_to_pipeline(pipeline, 2)
@@ -415,10 +416,17 @@ class NexusManager:
                 print(f"->pipeline {pipeline}")
             else:
                 print(f"->pipeline {pipeline}", end="")
+        proc_time_end: float = time.time()
         print("data flow: raw ->processed ->analyzed ->stored\n")
-        print(f"chain result: {record_count} records processed through 3-stage pipeline")
-        print(f"performance: 95% efficiency, {proc_time} total processing time\n")
-
+        print(
+            f"chain result: {record_count} records "
+            "processed through 3-stage pipeline"
+        )
+        print(
+            f"performance: 95% efficiency, "
+            f"{round(proc_time_end - proc_time_start, 2)} "
+            "total processing time\n"
+        )
 
     def error_recovery(
         self,
@@ -452,6 +460,10 @@ def main() -> None:
     print("=== CODE NEXUS - ENTERPRISE PIPELINE SYSTEM ===\n")
     nexus_mngr = NexusManager()
     nexus_mngr.multi_proc(json_data, csv_data, sensor_data)
+    sensor_data = generate_sensor(52, 2)
+    nexus_mngr.pipeline_chaining(sensor_data, "csv")
+    sensor_data = generate_sensor(65, 1)
+    nexus_mngr.pipeline_chaining(sensor_data, "json")
     print("=== Error Recovery Test ===\n")
     print("simulating pipeline failure...")
     sensor_data = generate_sensor(7, 1)
