@@ -1,10 +1,17 @@
 def main() -> None:
-    plant_name = "anneau de cinabre"
-    plant_height = "very veryyy veryyyyyy big"
-    plant_age = "as old as ur mom"
-    print("=== Welcome to My Butthole ===")
-    print(f"plant: {plant_name}\nheight: {plant_height}\nage: {plant_age}")
-    print("\n=== You've reached the Bottom of my Ass === ")
+    """
+    Displays a garden introduction.
+    """
+    plant_name = "lilac"
+    plant_height = "42"
+    plant_age = "666"
+    print("=== Welcome to My Garden ===")
+    print(
+        f"plant: {plant_name}\n"
+        f"height: {plant_height}cm\n"
+        f"age: {plant_age}days"
+    )
+    print("\n=== THE END === ")
 
 
 if __name__ == "__main__":

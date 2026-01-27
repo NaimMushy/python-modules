@@ -27,6 +27,7 @@ class Plant:
         self.set_height(height)
         self.set_age(age)
         self.spec = spec
+        self._growth = 0
 
     def set_height(self, new_height: int) -> None:
         """
@@ -78,9 +79,18 @@ class Plant:
         Returns
         -------
         int
-            The plant's age
+            The plant's age.
         """
         return self._age
+
+    def get_growth(self) -> int:
+        """
+        Returns
+        -------
+        int
+            The plant's growth.
+        """
+        return self._growth
 
     def grow(self, growth: int) -> None:
         """
@@ -93,6 +103,7 @@ class Plant:
         """
         print(f"{self.name} grew {growth}cm")
         self._height += growth
+        self._growth += growth
 
     def display_info(self) -> None:
         """
@@ -208,10 +219,9 @@ class Garden:
         owner
             The garden's owner.
         """
-        self.owner = owner
+        self.owner = owner.capitalize()
         self.plants: list[Plant] = []
         self.size: int = 0
-        self.total_growth: int = 0
         self.regular_plants: int = 0
         self.flowering_plants: int = 0
         self.prize_plants: int = 0
@@ -235,10 +245,35 @@ class Garden:
         """
         Simulates growth for all plants in the garden.
         """
-        print(f"{self.owner} is helping all plants grow...")
+        print(f"\n{self.owner} is helping all plants grow...")
         for plant in self.plants:
             plant.grow(1)
-            self.total_growth += 1
+
+    def get_total_growth(self) -> int:
+        """
+        Calculates the total growth of the garden's plants.
+
+        Returns
+        -------
+        int
+            The garden's plants' total growth.
+        """
+        total_growth: int = 0
+        for plant in self.plants:
+            total_growth += plant.get_growth()
+        return total_growth
+
+    def get_grd_score(self) -> int:
+        """
+        Calculates the garden's total score
+        based on collections and plant growth.
+
+        Returns
+        -------
+        int
+            The garden's score.
+        """
+        return self.score + self.get_total_growth()
 
     def change_collections(self, spec: str) -> None:
         """
@@ -279,7 +314,7 @@ class GardenManager:
         A class that displays the stats of a garden or a garden network.
         """
         @staticmethod
-        def display_stats(garden: Garden) -> None:
+        def display_grd_stats(garden: Garden) -> None:
             """
             Display the garden's stats.
 
@@ -288,13 +323,13 @@ class GardenManager:
             garden
                 A Garden.
             """
-            print(f"=== {garden.owner}'s Garden Report ===\n")
+            print(f"\n=== {garden.owner}'s Garden Report ===\n")
             print("Plants in garden:")
             for plant in garden.plants:
                 plant.display_info()
             print(
-                f"Plants added: {garden.size}, "
-                f"Total growth: {garden.total_growth}cm"
+                f"\nPlants added: {garden.size}, "
+                f"Total growth: {garden.get_total_growth()}cm"
             )
             print(
                 f"Plant types: {garden.regular_plants} regular, "
@@ -312,20 +347,27 @@ class GardenManager:
             gardens
                 The garden network.
             """
+            total_height: int = 0
             for grd in gardens:
-                GardenManager.GardenStats.display_stats(grd)
+                GardenManager.GardenStats.display_grd_stats(grd)
+                for plant in grd.plants:
+                    total_height += plant.get_height()
+            if total_height >= 100:
+                print("\nHeight validation test: True")
+            else:
+                print("\nHeight validation test: False")
             print("Garden scores - ", end='')
             for i in range(len(gardens)):
                 if i < len(gardens) - 1:
                     print(
                         f"{gardens[i].owner}: "
-                        f"{gardens[i].score}, ", end=''
+                        f"{gardens[i].get_grd_score()}, ", end=''
                     )
                 else:
-                    print(f"{gardens[i].owner}: {gardens[i].score}")
+                    print(f"{gardens[i].owner}: {gardens[i].get_grd_score()}")
             print(f"Total gardens managed: {len(gardens)}")
 
-    garden_helper: GardenStats = GardenStats()
+    garden_helper = GardenStats()
 
     @classmethod
     def create_garden_network(cls) -> None:
@@ -352,3 +394,36 @@ class GardenManager:
             The new garden to add.
         """
         cls.gardens.append(new_garden)
+
+
+def main() -> None:
+    print("=== Garden Management System Demo ===\n")
+    grd_mngr = GardenManager()
+    grd_mngr.create_garden_network()
+    alice_grd = Garden("alice")
+    oak_tree = Plant("oak tree", 100, 666)
+    lilac = FloweringPlant("lilac", 16, 44, "mauve")
+    hellebore = PrizeFlower("hellebore", 24, 58, "white", 16)
+    alice_grd.add_plant(oak_tree)
+    alice_grd.add_plant(lilac)
+    alice_grd.add_plant(hellebore)
+    alice_grd.grow_all()
+    grd_mngr.add_garden(alice_grd)
+    bob_grd = Garden("bob")
+    mushroom = Plant("mushroom", 12, 57)
+    petunia = FloweringPlant("petunia", 56, 202, "red")
+    lily = PrizeFlower("lily", 25, 88, "vanilla", 12)
+    bob_grd.add_plant(mushroom)
+    bob_grd.add_plant(petunia)
+    bob_grd.add_plant(lily)
+    grd_mngr.add_garden(bob_grd)
+    grd_mngr.garden_helper.all_gardens_info(GardenManager.gardens)
+    lilac.bloom()
+    lily.bloom()
+    bob_grd.grow_all()
+    hellebore.grow(2)
+    grd_mngr.garden_helper.all_gardens_info(GardenManager.gardens)
+
+
+if __name__ == "__main__":
+    main()

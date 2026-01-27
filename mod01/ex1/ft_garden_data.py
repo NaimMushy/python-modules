@@ -31,9 +31,9 @@ def ft_garden_data() -> None:
     Displays plant data for each plant in the garden.
     """
     plants: list[Plant] = []
-    plant1 = Plant("anneau de cinabre", 40075017000, 666)
-    plant2 = Plant("baltrou", -10000000, 53)
-    plant3 = Plant("trou qui pète", 1, 0)
+    plant1 = Plant("lilac", 24, 666)
+    plant2 = Plant("eggplant", 285, 44)
+    plant3 = Plant("paradise bird", 16, 4)
     plants.append(plant1)
     plants.append(plant2)
     plants.append(plant3)

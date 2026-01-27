@@ -127,7 +127,7 @@ class Flower(Plant):
         """
         self.set_height(self._height + 1)
         self.set_age(self._age + 1)
-        print(f"{self.name} is blooming beautifully!")
+        print(f"{self.name} is blooming beautifully!\n")
 
     def display_info(self) -> None:
         """
@@ -205,7 +205,7 @@ class Tree(Plant):
         shade
             The shade produced by the tree.
         """
-        print(f"{self.name} provides {shade} square meters of shade")
+        print(f"{self.name} provides {shade} square meters of shade\n")
 
 
 class Vegetable(Plant):
@@ -258,12 +258,12 @@ class Vegetable(Plant):
             The vegetable's nutritional value.
         """
         self.nutri_val = nutri_val
-        print(f"{self.name} is rich in {self.nutri_val}")
+        print(f"{self.name} is rich in {self.nutri_val}\n")
 
 
 def main() -> None:
     print("=== Garden Plant Types ===\n")
-    flower1 = Flower("rose", 25, 30, "white")
+    flower1 = Flower("hellebore", 25, 30, "white")
     flower1.bloom()
     flower2 = Flower("lilac", 16, 4, "mauve")
     flower2.bloom()

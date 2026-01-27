@@ -42,7 +42,7 @@ class Plant:
             print(
                 f"invalid operation attempted: height "
                 f"{new_height}cm [REJECTED]\n"
-                f"security: negative height rejected"
+                f"security: negative height rejected\n"
             )
 
     def set_age(self, new_age: int) -> None:
@@ -62,7 +62,7 @@ class Plant:
             print(
                 f"invalid operation attempted: age "
                 f"{new_age} days [REJECTED]\n"
-                f"security: negative age rejected"
+                f"security: negative age rejected\n"
             )
 
     def get_height(self) -> int:
@@ -82,3 +82,23 @@ class Plant:
             The plant's age.
         """
         return self._age
+
+    def get_plant_info(self) -> None:
+        """
+        Displays the plant's data.
+        """
+        print(
+            f"current plant: {self.name} "
+            f"({self.get_height}cm, {self.get_age} days)"
+        )
+
+
+def main() -> None:
+    print("=== Garden Security System ===")
+    p1 = Plant("lilac", 16, 44)
+    p1.set_height(-666)
+    p1.get_plant_info()
+
+
+if __name__ == "__main__":
+    main()
