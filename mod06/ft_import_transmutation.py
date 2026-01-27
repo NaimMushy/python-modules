@@ -1,4 +1,7 @@
 def main() -> None:
+    """
+    Demonstrates how to use imports in multiple ways.
+    """
     print("\n=== Import Transmutation Mastery ===")
     print("\nmethod 1: full module import:")
     import alchemy.elements

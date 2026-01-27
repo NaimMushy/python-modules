@@ -1,4 +1,7 @@
 def main() -> None:
+    """
+    Demonstrates how to access modules securely in different ways.
+    """
     print("\n=== Sacred Scroll Mastery ===\n")
     print("testing direct module access:")
     import alchemy

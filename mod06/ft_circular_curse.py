@@ -1,4 +1,8 @@
-def testing_validation() -> None:
+def main() -> None:
+    """
+    Demonstrates how circular curses can be broken with late imports.
+    """
+    print("\n=== Circular Curse Breaking ===")
     print("\ntesting ingredient validation:")
     from alchemy.grimoire.validator import validate_ingredients
     print(
@@ -9,9 +13,6 @@ def testing_validation() -> None:
         "validate_ingredients('dragon scales'): "
         f"{validate_ingredients('dragon scles')}"
     )
-
-
-def testing_record_spell_with_validation() -> None:
     print("\ntesting spell recording with validation:")
     from alchemy.grimoire.spellbook import record_spell
     print(
@@ -22,23 +23,12 @@ def testing_record_spell_with_validation() -> None:
         "record_spell('dark magic', 'shadow'): "
         f"{record_spell('dark magic', 'shadow')}"
     )
-
-
-def testing_late_import() -> None:
     print("\ntesting late import techniques:")
-    from alchemy.grimoire.spellbook import record_spell
     print(
         "record_spell('lightning', 'air'): "
         f"{record_spell('lightning', 'air')}"
     )
     print("\ncircular dependency curse avoided using late imports!")
-
-
-def main() -> None:
-    print("\n=== Circular Curse Breaking ===")
-    testing_validation()
-    testing_record_spell_with_validation()
-    testing_late_import()
     print("all spells processed safely!")
 
 
