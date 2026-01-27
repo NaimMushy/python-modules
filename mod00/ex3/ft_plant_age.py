@@ -4,8 +4,8 @@ def ft_plant_age() -> None:
     whether or not the plant is ready for harvesting
     based on its age.
     """
-    age: int = int(input("enter plant age in days: "))
+    age: int = int(input("Enter plant age in days: "))
     if age > 60:
-        print("plant is ready to harvest!")
+        print("Plant is ready to harvest!")
     else:
-        print("plant needs more time to grow.")
+        print("Plant needs more time to grow.")

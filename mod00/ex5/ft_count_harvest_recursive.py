@@ -13,9 +13,9 @@ def ft_count_harvest_recursive(
         Current day for the countdown.
     """
     if day == 0:
-        day = int(input("days until harvest: "))
+        day = int(input("Days until harvest: "))
     if count <= day:
-        print(f"day {count}")
+        print(f"Day {count}")
         ft_count_harvest_recursive(day, count + 1)
     else:
-        print("harvest time!")
+        print("Harvest time!")
