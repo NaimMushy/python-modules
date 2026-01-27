@@ -47,7 +47,6 @@ class CreatureCard(Card):
             self._attack = new_attack
         else:
             self._attack = 0
-            print(f"Error: invalid attack {new_attack} - [REJECTED]")
 
     def set_health(self, new_health: int) -> None:
         """
@@ -63,7 +62,6 @@ class CreatureCard(Card):
             self._health: int = new_health
         else:
             self._health = 1
-            print(f"Error: invalid health {new_health} - [REJECTED]")
 
     def get_attack(self) -> int:
         """
@@ -117,6 +115,7 @@ class CreatureCard(Card):
                 "effect": "Creature summoned to battlefield"
             }
             print(f"Play result: {play_result}\n")
+            self.attack_target(game_state["targets"][0])
             game_state["available_mana"] -= self.cost
         else:
             play_result = {}
