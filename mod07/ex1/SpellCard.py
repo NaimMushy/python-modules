@@ -20,8 +20,20 @@ class SpellCard(Card):
                 "mana_used": self.cost,
                 "effect": self.effect_type
             }
-            print(f"Play result: {play_result}")
-            self.resolve_effect(game_state["targets"])
+            print(f"Play result: {play_result}\n")
+            if (
+                "damage" in self.effect_type or
+                "Removes" in self.effect_type
+            ):
+                game_state["last_played"] = self.resolve_effect([
+                    card for card in game_state["enemy_deck"].active_cards
+                    if card.__repr__() == "CreatureCard"
+                ])
+            else:
+                game_state["last_played"] = self.resolve_effect([
+                    card for card in game_state["player_deck"].active_cards
+                    if card.__repr__() == "CreatureCard"
+                ])
         else:
             play_result = {}
             print(
@@ -33,35 +45,28 @@ class SpellCard(Card):
 
     def resolve_effect(self, targets: list) -> dict:
         if (match := re.match(
-            "([a-z]+) ([0-9]+) ([a-z ]+) to target",
+            "([a-z]+) ([0-9]+) ([a-z]+) to target",
             self.effect_type,
             re.I
         )):
+            effect_type: str = match.group(3)
+            if effect_type == "damage" or (
+                effect_type == "attack" and match.group(1) == "removes"
+            ):
+                effect_value: int = -(int(match.group(2)))
+            else:
+                effect_value = int(match.group(2))
             for target in targets:
-                if match.group(3) == "damage":
+                if effect_type == "damage" or effect_type == "health":
                     target.set_health(
-                        target.get_health() - match.group(2)
+                        target.get_health() + effect_value
                     )
-                elif match.group(3) == "health points":
-                    target.set_health(
-                        target.get_health() + match.group(2)
-                    )
-                elif (
-                    match.group(1) == "adds" and
-                    match.group(3) == "mana cost"
-                ):
+                elif effect_type == "attack":
                     target.set_attack(
-                        target.get_attack() + match.group(2)
-                    )
-                elif (
-                    match.group(1) == "removes" and
-                    match.group(3) == "mana cost"
-                ):
-                    target.set_attack(
-                        target.get_attack() - match.group(2)
+                        target.get_attack() + effect_value
                     )
                 else:
-                    print("Error: unknown effect type\n")
-            return {"effect": self.effect_type}
+                    return {"effect": "unknown"}
+            return {"effect": [effect_type, effect_value]}
         else:
-            print("Error: unknown effect type\n")
+            return {"effect": "unknown"}

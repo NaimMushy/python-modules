@@ -75,3 +75,12 @@ class Card(ABC):
         else:
             print("Playable: True")
             return True
+
+    def __repr__(self) -> str:
+        """
+        Returns
+        -------
+        str
+            The object's class.
+        """
+        return self.__class__.__name__

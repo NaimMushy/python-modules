@@ -1,4 +1,5 @@
 from ex0.Card import Card
+import re
 
 
 class ArtifactCard(Card):
@@ -19,10 +20,10 @@ class ArtifactCard(Card):
             play_result: dict = {
                 "card_played": self.name,
                 "mana_used": self.cost,
-                "effect": self.effect_type
+                "effect": self.effect
             }
-            print(f"Play result: {play_result}")
-            self.activate_ability()
+            print(f"Play result: {play_result}\n")
+            game_state["last_played"] = self.activate_ability()
         else:
             play_result = {}
             print(
@@ -32,4 +33,20 @@ class ArtifactCard(Card):
             )
         return play_result
 
-    def activate_ability(self, game_state: dict) -> dict:
+    def activate_ability(self) -> dict:
+        if (match := re.match(
+            "([a-z]+): ([-+]?[0-9]+) ([a-z]+) ([a-z ]+?)",
+            self.effect,
+            re.I
+        )):
+            permanent: bool = match.group(1) == "Permanent"
+            effect_value: int = int(match.group(2))
+            effect_type: str = match.group(3)
+            repeat_per_turn: bool = match.group(4) == "per turn"
+            return {
+                "permanent": permanent,
+                "effect": [effect_value, effect_type],
+                "repeat": repeat_per_turn
+            }
+        else:
+            return {"effect": "unknown"}

@@ -13,7 +13,7 @@ class ProcessingStage(Protocol):
     """
     def process(self, data: any) -> any:
         """
-        Processed the data given as parameter.
+        Processes the data given as parameter.
 
         Parameters
         ----------
