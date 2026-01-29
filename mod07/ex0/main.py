@@ -21,6 +21,7 @@ def main() -> None:
         f"Playing Fire Dragon with "
         f"{game_state['available_mana']} mana available:"
     )
+    print(fire_dragon.is_playable(game_state["available_mana"]))
     fire_dragon.play(game_state)
     fire_dragon.attack_target(goblin_warrior)
     print(

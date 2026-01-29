@@ -20,20 +20,8 @@ class SpellCard(Card):
                 "mana_used": self.cost,
                 "effect": self.effect_type
             }
+            game_state["available_mana"] -= self.cost
             print(f"Play result: {play_result}\n")
-            if (
-                "damage" in self.effect_type or
-                "Removes" in self.effect_type
-            ):
-                game_state["last_played"] = self.resolve_effect([
-                    card for card in game_state["enemy_deck"].active_cards
-                    if card.__repr__() == "CreatureCard"
-                ])
-            else:
-                game_state["last_played"] = self.resolve_effect([
-                    card for card in game_state["player_deck"].active_cards
-                    if card.__repr__() == "CreatureCard"
-                ])
         else:
             play_result = {}
             print(
@@ -67,6 +55,20 @@ class SpellCard(Card):
                     )
                 else:
                     return {"effect": "unknown"}
-            return {"effect": [effect_type, effect_value]}
+                print(
+                    f"Spell effect <{self.effect_type}> "
+                    f"applied to {target.name}"
+                )
+            all_targets: list[str] = [target.name for target in targets]
+            return {
+                "effect": [effect_type, effect_value],
+                "targets": all_targets
+            }
         else:
             return {"effect": "unknown"}
+
+    def get_card_info(self) -> dict:
+        return super().get_card_info() | {
+            "type": "Spell",
+            "effect": self.effect_type
+        }

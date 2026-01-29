@@ -139,20 +139,12 @@ class CreatureCard(Card):
             The attack result.
         """
         print(f"{self.name} attacks {target.name}:")
-        if target.__repr__() == "CreatureCard":
-            target.set_health(target.get_health() - self.get_attack())
-            attack_result: dict = {
-                "attacker": self.name,
-                "target": target.name,
-                "damage_dealt": self.get_attack(),
-                "combat_resolved": target.get_health() == 0
-            }
-        else:
-            attack_result = {
-                "attacker": self.name,
-                "target": target.name,
-                "damage_dealt": 0,
-                "combat_resolved": False
-            }
+        target.set_health(target.get_health() - self.get_attack())
+        attack_result: dict = {
+            "attacker": self.name,
+            "target": target.name,
+            "damage_dealt": self.get_attack(),
+            "combat_resolved": target.get_health() == 0
+        }
         print(f"Attack result: {attack_result}\n")
         return attack_result
