@@ -267,17 +267,9 @@ def main() -> None:
     print("Drawing and playing cards:\n")
     for i in range(1, 6):
         print(f"=== Turn {i}: Deck One ===\n")
-        print("Deck One Cards:")
-        deck1.display_cards()
         play_card(game_state, deck1)
-        print("Deck One Cards:")
-        deck1.display_cards()
         print(f"=== Turn {i}: Deck Two ===\n")
-        print("Deck Two Cards:")
-        deck2.display_cards()
         play_card(game_state, deck2)
-        print("Deck Two Cards:")
-        deck2.display_cards()
     print("Polymorphism in action: Same interface, different card behaviors!")
 
 
