@@ -1,11 +1,13 @@
 from ex0.Card import Card
+from typing import Optional as optional
 import random
 
 
 class Deck:
-    def __init__(self) -> None:
+    def __init__(self, enemy_deck: optional[any] = None) -> None:
         self.cards: list[Card] = []
         self.active_cards: list[Card] = []
+        self.enemy_deck: optional[Deck] = enemy_deck
 
     def add_card(self, card: Card) -> None:
         self.cards.append(card)
