@@ -70,17 +70,6 @@ class Card(ABC):
             True if the card is playable, False otherwise.
         """
         if self.cost > available_mana:
-            print("Playable: False")
             return False
         else:
-            print("Playable: True")
             return True
-
-    def __repr__(self) -> str:
-        """
-        Returns
-        -------
-        str
-            The object's class.
-        """
-        return self.__class__.__name__

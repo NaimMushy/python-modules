@@ -20,8 +20,8 @@ class Plant:
         age
             The plant's age.
         """
-        self.name = name
-        print(f"plant created: {self.name}")
+        self.name: str = name.capitalize()
+        print(f"Plant created: {self.name}")
         self.set_height(height)
         self.set_age(age)
 
@@ -34,15 +34,14 @@ class Plant:
         new_height
             The plant's new height.
         """
-        if type(new_height) is int and new_height >= 0:
-            self._height = new_height
-            print(f"height updated: {new_height}cm [OK]")
+        if isinstance(new_height, int) and new_height >= 0:
+            self._height: int = new_height
+            print(f"Height updated: {new_height}cm [OK]")
         else:
-            self._height = 0
             print(
-                f"invalid operation attempted: height "
+                f"\nInvalid operation attempted: height "
                 f"{new_height}cm [REJECTED]\n"
-                f"security: negative height rejected\n"
+                f"Security: Negative height rejected\n"
             )
 
     def set_age(self, new_age: int) -> None:
@@ -54,15 +53,14 @@ class Plant:
         new_age
             The plant's new age.
         """
-        if type(new_age) is int and new_age >= 0:
-            self._age = new_age
-            print(f"age updated: {new_age} days [OK]")
+        if isinstance(new_age, int) and new_age >= 0:
+            self._age: int = new_age
+            print(f"Age updated: {new_age} days [OK]")
         else:
-            self._age = 0
             print(
-                f"invalid operation attempted: age "
+                f"\nInvalid operation attempted: age "
                 f"{new_age} days [REJECTED]\n"
-                f"security: negative age rejected\n"
+                f"Security: Negative age rejected\n"
             )
 
     def get_height(self) -> int:
@@ -88,14 +86,14 @@ class Plant:
         Displays the plant's data.
         """
         print(
-            f"current plant: {self.name} "
-            f"({self.get_height}cm, {self.get_age} days)"
+            f"Current plant: {self.name} "
+            f"({self.get_height()}cm, {self.get_age()} days)"
         )
 
 
 def main() -> None:
     print("=== Garden Security System ===")
-    p1 = Plant("lilac", 16, 44)
+    p1: Plant = Plant("lilac", 16, 44)
     p1.set_height(-666)
     p1.get_plant_info()
 
