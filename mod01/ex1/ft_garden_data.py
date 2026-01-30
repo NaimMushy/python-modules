@@ -15,9 +15,9 @@ class Plant:
         age
             The plant's age.
         """
-        self.name = name
-        self.height = height
-        self.age = age
+        self.name: str = name.capitalize()
+        self.height: int = height
+        self.age: int = age
 
     def display_info(self) -> None:
         """
@@ -31,12 +31,9 @@ def ft_garden_data() -> None:
     Displays plant data for each plant in the garden.
     """
     plants: list[Plant] = []
-    plant1 = Plant("lilac", 24, 666)
-    plant2 = Plant("eggplant", 285, 44)
-    plant3 = Plant("paradise bird", 16, 4)
-    plants.append(plant1)
-    plants.append(plant2)
-    plants.append(plant3)
+    plants.append(Plant("Lilac", 24, 666))
+    plants.append(Plant("Eggplant", 285, 44))
+    plants.append(Plant("Bird of Paradise", 16, 4))
     print("=== Garden Plant Registry ===")
     for plant in plants:
         plant.display_info()

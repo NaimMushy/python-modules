@@ -15,32 +15,36 @@ class Plant:
         age
             The plant's age.
         """
-        self.name = name
-        self.height = height
-        self.age = age
+        self.name: str = name.capitalize()
+        self.height: int = height
+        self.age: int = age
         print(
-            f"created: {self.name.capitalize()} "
+            f"Created: {self.name} "
             f"({self.height}cm, {self.age} days)"
         )
 
 
-def ft_plant_factory() -> None:
+def ft_plant_factory(plants: dict[str, [int, int]]) -> list[Plant]:
     """
     Creates a list of plants based on user input.
     """
-    plants: list[Plant] = []
+    plant_list: list[Plant] = []
     print("=== Plant Factory Output ===")
-    for i in range(0, 5):
-        name: str = input("name of plant: ")
-        height: int = int(input("height of plant: "))
-        age: int = int(input("age of plant: "))
-        plant = Plant(name, height, age)
-        plants.append(plant)
-    print(f"total plants created: {len(plants)}")
+    for plant, values in plants.items():
+        plant_list.append(Plant(plant, values[0], values[1]))
+    print(f"\nTotal plants created: {len(plant_list)}")
+    return plant_list
 
 
 def main() -> None:
-    ft_plant_factory()
+    plants: dict[str, [int, int]] = {
+        "Rose": (25, 30),
+        "Oak": (200, 365),
+        "Cactus": (5, 90),
+        "Sunflower": (80, 45),
+        "Fern": (15, 120)
+    }
+    ft_plant_factory(plants)
 
 
 if __name__ == "__main__":
