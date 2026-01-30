@@ -61,7 +61,7 @@ class CreatureCard(Card):
         if new_health >= 0:
             self._health: int = new_health
         else:
-            self._health = 1
+            self._health = 0
 
     def get_attack(self) -> int:
         """
