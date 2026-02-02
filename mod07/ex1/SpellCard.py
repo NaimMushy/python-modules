@@ -20,7 +20,6 @@ class SpellCard(Card):
                 "mana_used": self.cost,
                 "effect": self.effect_type
             }
-            game_state["available_mana"] -= self.cost
             print(f"Play result: {play_result}\n")
         else:
             play_result = {}

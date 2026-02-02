@@ -22,7 +22,6 @@ class ArtifactCard(Card):
                 "mana_used": self.cost,
                 "effect": self.effect
             }
-            game_state["available_mana"] -= self.cost
             print(f"Play result: {play_result}\n")
         else:
             play_result = {}
@@ -35,19 +34,24 @@ class ArtifactCard(Card):
 
     def activate_ability(self) -> dict:
         if (match := re.match(
-            "([a-z]+): ([-+][0-9]+) ([a-z]+) ([a-z ]+?)",
+            "([a-z]+): ([-+][0-9]+) ([a-z ]+)",
             self.effect,
             re.I
         )):
             permanent: bool = match.group(1) == "Permanent"
             effect_value: int = int(match.group(2))
             effect_type: str = match.group(3)
-            repeat_per_turn: bool = match.group(4) == "per turn"
+            repeat_per_turn: bool = "per turn" in match.group(3)
             if (
-                (effect_type == "mana" and effect_value < 0) or
-                (effect_type != "mana" and effect_value > 0)
+                ("mana cost" in effect_type and effect_value < 0) or
+                ("mana cost" not in effect_type and effect_value > 0)
             ):
                 target: str = "ally"
+            elif "mana" in effect_type and "cost" not in effect_type:
+                if effect_value < 0:
+                    target = "enemy_deck_mana"
+                else:
+                    target = "ally_deck_mana"
             else:
                 target = "enemy"
             return {

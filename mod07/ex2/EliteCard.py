@@ -27,30 +27,12 @@ class EliteCard(Card, Combatable, Magical):
         self.known_spells: list[SpellCard] = known_spells
 
     def set_attack(self, new_attack: int) -> None:
-        """
-        Verifies and updates the creature card's attack damage
-        if it's a positive value (superior or equal to zero).
-
-        Parameters
-        ----------
-        new_attack
-            The creature card's new attack damage.
-        """
         if new_attack >= 0:
             self._attack = new_attack
         else:
             self._attack = 0
 
     def set_health(self, new_health: int) -> None:
-        """
-        Verifies and updates the creature card's health points
-        if it's a positive value (superior or equal to zero).
-
-        Parameters
-        ----------
-        new_health
-            The creature card's new health points.
-        """
         if new_health < self.get_health():
             self.defend(self.get_health() - new_health)
         else:
@@ -60,36 +42,29 @@ class EliteCard(Card, Combatable, Magical):
                 self._health = 0
 
     def get_attack(self) -> int:
-        """
-        Returns
-        -------
-        int
-            The creature card's attack damage.
-        """
         return self._attack
 
     def get_health(self) -> int:
-        """
-        Returns
-        -------
-        int
-            The creature card's health points.
-        """
         return self._health
 
     def learn_spell(self, new_spell: SpellCard) -> None:
         if new_spell in self.known_spells:
             print(f"Spell {new_spell.name} already learned")
         else:
+            print(f"{self.name} is learning a new spell...")
+            print(f"{new_spell.name} learned!\n")
             self.known_spells.append(new_spell)
 
     def attack(self, target) -> dict:
-        return {
+        attack_result: dict = {
             "attacker": self.name,
             "target": target.name,
-            "damage": self.attack,
+            "damage": self.get_attack(),
             "combat_type": self.combat_type
         }
+        print("Combat phase:")
+        print(f"Attack result: {attack_result}")
+        return attack_result
 
     def defend(self, incoming_damage: int) -> dict:
         if incoming_damage > self.defense:
@@ -99,12 +74,14 @@ class EliteCard(Card, Combatable, Magical):
                 self._health = 0
         else:
             damage_taken = 0
-        return {
+        defense_result: dict = {
             "defender": self.name,
             "damage_taken": damage_taken,
             "damage_blocked": self.defense,
             "still_alive": self.get_health() > 0
         }
+        print(f"Defense result: {defense_result}")
+        return defense_result
 
     def get_combat_stats(self) -> dict:
         return {
@@ -116,18 +93,22 @@ class EliteCard(Card, Combatable, Magical):
         for spell in self.known_spells:
             if spell.name == spell_name:
                 mana_used = spell.cost
+        mana_channel_result: dict = self.channel_mana(mana_used)
         if not mana_used:
-            print("Spell {spell_name} not learned by {self.name}")
-        elif not self.channel_mana(mana_used)["success"]:
+            print(f"Spell {spell_name} not learned by {self.name}")
+        elif not mana_channel_result["success"]:
             mana_used = 0
-            self.attack(random.choice(targets))
-        return {
-            "success": mana_used > 0,
+        print("Magic phase:")
+        cast_result: dict = {
             "caster": self.name,
             "spell": spell_name,
-            "targets": targets,
-            "mana_used": mana_used
+            "targets": [target.name for target in targets],
+            "mana_used": mana_used,
+            "success": mana_used > 0
         }
+        print(f"Spell cast: {cast_result}")
+        print(f"Mana channel: {mana_channel_result}\n")
+        return cast_result
 
     def channel_mana(self, amount: int) -> dict:
         if amount > self.mana_pool:
@@ -170,7 +151,6 @@ class EliteCard(Card, Combatable, Magical):
                     self.get_magic_stats()
                 ]
             }
-            game_state["available_mana"] -= self.cost
             print(f"Play result: {play_result}\n")
         else:
             play_result = {}

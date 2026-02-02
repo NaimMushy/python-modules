@@ -10,6 +10,7 @@ class Deck:
     def __init__(self) -> None:
         self.stack_cards: list[Card] = []
         self.active_cards: list[Card] = []
+        self.available_mana: int = 30
 
     def add_enemy_deck(self, enemy_deck: any) -> None:
         self.enemy_deck: Deck = enemy_deck

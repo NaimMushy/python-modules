@@ -75,6 +75,20 @@ mana_artifact: ArtifactCard = ArtifactCard(
     3,
     "Permanent: +1 mana per turn"
 )
+mana_debuff: ArtifactCard = ArtifactCard(
+    "Mana Penalizer",
+    2,
+    "Rare",
+    1,
+    "Permanent: +1 mana cost"
+)
+mana_buff: ArtifactCard = ArtifactCard(
+    "Mana Lightener",
+    2,
+    "Rare",
+    1,
+    "Permanent: -1 mana cost"
+)
 healing_artifact: ArtifactCard = ArtifactCard(
     "Heal Potion",
     4,
@@ -105,6 +119,85 @@ attack_diminisher_artifact: ArtifactCard = ArtifactCard(
 )
 
 
+def play_spell(deck: Deck, spell: SpellCard) -> None:
+    if (
+        "damage" in spell.effect_type or
+        "Removes" in spell.effect_type
+    ):
+        if len(deck.enemy_deck.active_cards):
+            spell.resolve_effect([
+                card for card in deck.enemy_deck.active_cards
+                if isinstance(card, CreatureCard)
+            ])
+            deck.active_cards.remove(spell)
+    else:
+        spell.resolve_effect([
+            card for card in deck.active_cards
+            if isinstance(card, CreatureCard)
+        ])
+        deck.active_cards.remove(spell)
+
+
+def play_creature(deck: Deck, creature: CreatureCard) -> None:
+    if creature.get_health() == 0:
+        print(f"Creature {creature.name} has been defeated\n")
+        deck.active_cards.remove(creature)
+    else:
+        possible_targets: list[Card] = [
+            target for target in deck.enemy_deck.active_cards
+            if isinstance(target, CreatureCard)
+        ]
+        if len(possible_targets):
+            creature.attack_target(random.choice(possible_targets))
+
+
+def play_artifact(
+    game_state: dict,
+    deck: Deck,
+    artifact: ArtifactCard
+) -> None:
+    game_state["last_played"] = artifact.activate_ability()
+    if (
+        game_state["last_played"]["target"] == "ally" and
+        (len(deck.stack_cards) or len(deck.active_cards))
+    ):
+        apply_effect(
+            game_state["last_played"]["effect"],
+            deck.stack_cards + deck.active_cards
+        )
+        artifact.durability -= 1
+    elif (
+        game_state["last_played"]["target"] == "enemy" and
+        (
+            len(deck.enemy_deck.stack_cards) or
+            len(deck.enemy_deck.active_cards)
+        )
+    ):
+        apply_effect(
+            game_state["last_played"]["effect"],
+            (
+                deck.enemy_deck.stack_cards +
+                deck.enemy_deck.active_cards
+            )
+        )
+        artifact.durability -= 1
+    elif game_state["last_played"]["target"] == "enemy_deck_mana":
+        deck.enemy_deck.available_mana -= 1
+        artifact.durability -= 1
+    elif game_state["last_played"]["target"] == "ally_deck_mana":
+        deck.available_mana += 1
+        artifact.durability -= 1
+    if artifact.durability <= 0:
+        print(
+            f"Artifact {artifact.name} "
+            "destroyed - durability depleted\n"
+        )
+        deck.active_cards.remove(artifact)
+    elif not game_state["last_played"]["repeat"]:
+        deck.active_cards.remove(artifact)
+        deck.add_card(artifact)
+
+
 def play_card(
     game_state: dict,
     deck: Deck,
@@ -116,71 +209,17 @@ def play_card(
     )
     if card_drawn not in deck.active_cards:
         deck.active_cards.append(card_drawn)
+        game_state["available_mana"] = deck.available_mana
+        if card_drawn.is_playable(deck.available_mana):
+            deck.available_mana -= card_drawn.cost
         card_drawn.play(game_state)
     for card in deck.active_cards:
         if isinstance(card, SpellCard):
-            if (
-                "damage" in card.effect_type or
-                "Removes" in card.effect_type
-            ):
-                if len(deck.enemy_deck.active_cards):
-                    card.resolve_effect([
-                        card for card in deck.enemy_deck.active_cards
-                        if isinstance(card, CreatureCard)
-                    ])
-                    deck.active_cards.remove(card)
-            else:
-                card.resolve_effect([
-                    card for card in deck.active_cards
-                    if isinstance(card, CreatureCard)
-                ])
-                deck.active_cards.remove(card)
+            play_spell(deck, card)
         elif isinstance(card, CreatureCard):
-            if card.get_health() == 0:
-                print(f"Creature {card.name} has been defeated\n")
-                deck.active_cards.remove(card)
-            else:
-                possible_targets: list[Card] = [
-                    target for target in deck.enemy_deck.active_cards
-                    if target.__repr__() == "CreatureCard"
-                ]
-                if len(possible_targets):
-                    card.attack_target(random.choice(possible_targets))
+            play_creature(deck, card)
         elif isinstance(card, ArtifactCard):
-            game_state["last_played"] = card.activate_ability()
-            if (
-                game_state["last_played"]["target"] == "ally" and
-                (len(deck.stack_cards) or len(deck.active_cards))
-            ):
-                apply_effect(
-                    game_state["last_played"]["effect"],
-                    deck.stack_cards + deck.active_cards
-                )
-                card.durability -= 1
-            elif (
-                game_state["last_played"]["target"] == "enemy" and
-                (
-                    len(deck.enemy_deck.stack_cards) or
-                    len(deck.enemy_deck.active_cards)
-                )
-            ):
-                apply_effect(
-                    game_state["last_played"]["effect"],
-                    (
-                        deck.enemy_deck.stack_cards +
-                        deck.enemy_deck.active_cards
-                    )
-                )
-                card.durability -= 1
-            if card.durability <= 0:
-                print(
-                    f"Artifact {card.name} "
-                    "destroyed - durability depleted\n"
-                )
-                deck.active_cards.remove(card)
-            elif not game_state["last_played"]["repeat"]:
-                deck.active_cards.remove(card)
-                deck.add_card(card)
+            play_artifact(game_state, deck, card)
 
 
 def apply_effect(effect: list | str, targets: list[Card]) -> None:
@@ -188,34 +227,34 @@ def apply_effect(effect: list | str, targets: list[Card]) -> None:
         if effect == "unknown":
             print("No card effect for this turn\n")
     else:
-        if effect[0] == "health":
+        if "health" in effect[0]:
             for target in targets:
                 if isinstance(target, CreatureCard):
                     target.set_health(target.get_health() + effect[1])
                     if effect[1] > 0:
                         print(
-                            f"Effect <+{effect[1]} health points> "
+                            f"Effect < +{effect[1]} health points > "
                             f"applied to {target.name}"
                         )
                     else:
                         print(
-                            f"Effect <{effect[1]} health points> "
+                            f"Effect < {effect[1]} health points > "
                             f"applied to {target.name}"
                         )
-        elif effect[0] == "mana":
+        elif "mana cost" in effect[0]:
             for target in targets:
                 target.cost += effect[1]
                 if effect[1] > 0:
                     print(
-                        f"Effect <+{effect[1]} mana cost> "
+                        f"Effect < +{effect[1]} mana cost > "
                         f"applied to {target.name}"
                     )
                 else:
                     print(
-                        f"Effect <{effect[1]} mana cost> "
+                        f"Effect < {effect[1]} mana cost > "
                         f"applied to {target.name}"
                     )
-        elif effect[0] == "attack":
+        elif "attack" in effect[0]:
             for target in targets:
                 if isinstance(target, CreatureCard):
                     target.set_attack(
@@ -223,12 +262,12 @@ def apply_effect(effect: list | str, targets: list[Card]) -> None:
                     )
                     if effect[1] > 0:
                         print(
-                            f"Effect <+{effect[1]} attack> "
+                            f"Effect < +{effect[1]} attack > "
                             f"applied to {target.name}"
                         )
                     else:
                         print(
-                            f"Effect <{effect[1]} attack> "
+                            f"Effect < {effect[1]} attack > "
                             f"applied to {target.name}"
                         )
 
@@ -244,12 +283,14 @@ def build_decks(deck1: Deck, deck2: Deck) -> None:
     deck1.add_card(mana_artifact)
     deck1.add_card(healing_artifact)
     deck1.add_card(damage_artifact)
+    deck1.add_card(mana_buff)
     deck1.add_card(attack_booster_artifact)
     deck2.add_card(goblin_warrior)
     deck2.add_card(acromentula)
     deck2.add_card(fire_spell)
     deck2.add_card(attack_debuff_spell)
     deck2.add_card(attack_diminisher_artifact)
+    deck2.add_card(mana_debuff)
     print(f"Deck One stats: {deck1.get_deck_stats()}")
     print(f"Deck Two stats: {deck2.get_deck_stats()}\n")
 
