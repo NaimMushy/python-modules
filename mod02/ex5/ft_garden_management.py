@@ -5,15 +5,18 @@ MAX_SUN_H = 12
 
 
 class GardenError(Exception):
-    pass
+    def __init__(self, msg: str, error_type: str = "GardenError") -> None:
+        self.msg: str = f"{error_type}: " + msg
 
 
 class WaterError(GardenError):
-    pass
+    def __init__(self, msg: str) -> None:
+        super().__init__(msg, "WaterError")
 
 
 class HealthError(GardenError):
-    pass
+    def __init__(self, msg: str) -> None:
+        super().__init__(msg, "HealthError")
 
 
 class Plant:

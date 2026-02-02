@@ -23,7 +23,7 @@ def test_temperature_input() -> None:
         print(f"Testing temperature: {temp_str}\n")
         check_temperature(temp_str)
         temp_str = input("Enter a test temperature: ")
-    print("All tests completed: Program didn't crash!\n")
+    print("All tests completed - Program didn't crash!\n")
 
 
 def main() -> None:
