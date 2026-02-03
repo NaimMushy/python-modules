@@ -3,44 +3,30 @@ class NameError(Exception):
 
 
 def water_plants(plant_list: list[str]) -> None:
-    """
-    Simulates watering for a list of plants.
-
-    Parameters
-    ----------
-    plant_list
-        A list of plants.
-
-    Raises
-    ------
-    NameError:
-        Raised if the name of a plant is invalid.
-    """
-    print("opening watering system\n")
+    print("Opening watering system")
+    err: bool = False
     try:
         for plant in plant_list:
-            if type(plant) is str:
-                print(f"watering {plant}")
+            if isinstance(plant, str):
+                print(f"Watering {plant}")
             else:
+                err = True
                 raise NameError(
-                    f"NameError: cannot water {plant} - invalid plant!\n"
+                    f"NameError: Cannot water {plant} - Invalid plant!"
                 )
     except NameError as ne:
         print(ne)
     finally:
-        print("closing watering system (cleanup)\n")
-        if type(plant) is str:
-            print("watering completed without issues!\n")
+        print("Closing watering system (cleanup)\n")
+        if not err:
+            print("Watering completed without issues!")
 
 
 def test_watering_system() -> None:
-    """
-    Tests the watering function.
-    """
-    print("=== Garden Watering System ===\n")
-    print("Testing normal watering...")
+    print("=== Garden Watering System ===")
+    print("\nTesting normal watering...")
     water_plants(["tomato", "lettuce", "carrots"])
-    print("Testing watering with invalid plants...")
+    print("\nTesting watering with invalid plants...")
     water_plants(["eggplant", 123, "cucumber"])
     water_plants(["lilac", "gardenia", None])
 

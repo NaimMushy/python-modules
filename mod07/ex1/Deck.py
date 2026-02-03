@@ -10,7 +10,6 @@ class Deck:
     def __init__(self) -> None:
         self.stack_cards: list[Card] = []
         self.active_cards: list[Card] = []
-        self.enemy_deck: optional[Deck] = enemy_deck
 
     def add_enemy_deck(self, enemy_deck: any) -> None:
         self.enemy_deck: Deck = enemy_deck
@@ -39,13 +38,22 @@ class Deck:
             "creatures": sum(
                 1 for card in self.stack_cards
                 if isinstance(card, CreatureCard)
+            ) + sum(
+                1 for card in self.active_cards
+                if isinstance(card, CreatureCard)
             ),
             "spells": sum(
                 1 for card in self.stack_cards
                 if isinstance(card, SpellCard)
+            ) + sum(
+                1 for card in self.active_cards
+                if isinstance(self, SpellCard)
             ),
             "artifacts": sum(
                 1 for card in self.stack_cards
+                if isinstance(card, ArtifactCard)
+            ) + sum(
+                1 for card in self.active_cards
                 if isinstance(card, ArtifactCard)
             ),
             "avg_cost": round(sum(

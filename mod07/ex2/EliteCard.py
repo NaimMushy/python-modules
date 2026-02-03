@@ -2,6 +2,7 @@ from .Combatable import Combatable
 from .Magical import Magical
 from ex0.Card import Card
 from ex1.SpellCard import SpellCard
+import random
 
 
 class EliteCard(Card, Combatable, Magical):
@@ -119,6 +120,7 @@ class EliteCard(Card, Combatable, Magical):
             print("Spell {spell_name} not learned by {self.name}")
         elif not self.channel_mana(mana_used)["success"]:
             mana_used = 0
+            self.attack(random.choice(targets))
         return {
             "success": mana_used > 0,
             "caster": self.name,
@@ -148,11 +150,12 @@ class EliteCard(Card, Combatable, Magical):
         }
 
     def get_card_info(self) -> dict:
-        return super().get_card_info | {
-            "attack": self.attack,
+        return super().get_card_info() | {
+            "type": "Elite",
+            "attack": self.get_attack(),
             "defense": self.defense,
             "mana_pool": self.mana_pool,
-            "health": self.health,
+            "health": self.get_health(),
             "combat_type": self.combat_type,
             "known_spells": self.known_spells
         }

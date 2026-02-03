@@ -17,300 +17,171 @@ class HealthError(GardenError):
 
 
 class Plant:
-    """
-    A class that represents a plant.
-    """
     def __init__(
         self,
         name: str,
         water_level: int,
         sunlight_hours: int
     ) -> None:
-        """
-        Initializes the plant's data.
-
-        Parameters
-        ----------
-        name
-            The plant's name.
-        water_level
-            The plant's water level.
-        sunlight_hours
-            The plant's sunlight hours.
-        """
         self.name = name
-        self.set_water_lvl(water_level)
-        self.set_sun_h(sunlight_hours)
+        try:
+            self.set_water_lvl(water_level)
+        except ValueError as ve:
+            print(f"Caught ValueError: {ve}")
+            print("Setting to default: 6")
+            self.set_water_lvl(5)
+        try:
+            self.set_sun_h(sunlight_hours)
+        except ValueError as ve:
+            print(f"Caught ValueError: {ve}")
+            print("Setting to default: 6")
+            self.set_sun_h(6)
 
     def set_water_lvl(self, water_level: int) -> None:
-        """
-        Verifies and updates the plant's water level.
-
-        Parameters
-        ----------
-        water_level
-            The plant's water level.
-        """
-        if water_level >= 0:
-            self._water_lvl = water_level
+        if isinstance(water_level, int) and water_level >= 0:
+            self.__water_lvl = water_level
         else:
-            self._water_lvl = 0
-            print(
-                f"error: water level {water_level} "
-                f"for {self.name} - invalid [REJECTED]"
+            raise ValueError(
+                f"Water level {water_level} "
+                f"for {self.name} - Invalid [REJECTED]"
             )
 
     def set_sun_h(self, sunlight_hours: int) -> None:
-        """
-        Verifies and updates the plant's sunlight hours.
-
-        Parameters
-        ----------
-        sunlight_hours
-            The plant's sunlight hours.
-        """
-        if sunlight_hours >= 0:
-            self._sun_h = sunlight_hours
+        if isinstance(sunlight_hours, int) and sunlight_hours >= 0:
+            self.__sun_h = sunlight_hours
         else:
-            self._sun_h = 0
-            print(
-                f"error: sunlight hours {sunlight_hours} "
-                f"for {self.name} - invalid [REJECTED]"
+            raise ValueError(
+                f"Sunlight hours {sunlight_hours} "
+                f"for {self.name} - Invalid [REJECTED]"
             )
 
     def get_water_lvl(self) -> int:
-        """
-        Returns
-        -------
-        int
-            The plant's water level.
-        """
-        return self._water_lvl
+        return self.__water_lvl
 
     def get_sun_h(self) -> int:
-        """
-        Returns
-        -------
-        int
-            The plant's sunlight hours.
-        """
-        return self._sun_h
+        return self.__sun_h
 
     def water(self) -> None:
-        """
-        Simulates the watering of the plant.
-        """
-        self._water_lvl += 1
-        print(f"watering {self.name} - success")
-
-    def check_health(self, error_type: str = "HealthError") -> None:
-        """
-        Checks a plant's health.
-
-        Parameters
-        ----------
-        error_type
-            The type of the error
-            (GardenError or HealthError).
-
-        Raises
-        ------
-        HealthError:
-            Raised if water level is inadequate (too low or too high).
-        HealthError:
-            Raised if sunlight hours are inadequate (too low or too high).
-        """
-        try:
-            if self._water_lvl < MIN_WATER_LVL:
-                raise HealthError(
-                    f"{error_type}: water level {self._water_lvl} "
-                    f"is too low (min {MIN_WATER_LVL})"
-                )
-            if self._water_lvl > MAX_WATER_LVL:
-                raise HealthError(
-                    f"{error_type}: water level {self._water_lvl} "
-                    f"is too high (max {MAX_WATER_LVL})"
-                )
-            if self._sun_h < MIN_SUN_H:
-                raise HealthError(
-                    f"{error_type}: sunlight hours {self._sun_h}"
-                    f"is too low (min {MIN_SUN_H})"
-                )
-            if self._sun_h > MAX_SUN_H:
-                raise HealthError(
-                    f"{error_type}: sunlight hours {self._sun_h}"
-                    f"is too high (min {MAX_SUN_H})"
-                )
-        except HealthError as he:
-            print(he)
-            if error_type == "GardenError":
-                print("system recovered and continuing...")
-        else:
-            if error_type != "GardenError":
-                print(
-                    f"{self.name}: healthy (water: "
-                    f"{self._water_lvl}, sun: {self._sun_h})"
-                )
+        self.__water_lvl += 1
+        print(f"Watering {self.name} - Success")
 
 
 class GardenManager:
-    """
-    A class that represents a garden manager.
-    """
     def __init__(self, owner: str) -> None:
-        """
-        Initializes the garden's data.
-
-        Parameters
-        ----------
-        owner
-            The garden's owner.
-        """
-        self.owner = owner
+        self.owner: str = owner
         self.plants: list[Plant] = []
         self.water_tank: int = 100
 
     def add_plant(self, new_plant: Plant) -> None:
-        """
-        Adds a plant to the garden.
-
-        Parameters
-        ----------
-        new_plant
-            The new plant to add.
-
-        Raises
-        ------
-        ValueError:
-            Raised if the plant's name is empty.
-        """
         try:
-            if new_plant.name == "":
+            if not new_plant.name or new_plant.name == "":
                 raise ValueError(
-                    "error adding plant: plant name cannot be empty!"
+                    "Error adding plant: Plant name cannot be empty!"
                 )
         except ValueError as ve:
             print(ve)
         else:
             self.plants.append(new_plant)
-            print(f"added {new_plant.name} successfully")
+            print(f"Added {new_plant.name} successfully")
 
-    def water_plants(self, error_type: str = "WaterError") -> None:
-        """
-        Simulates the watering of the garden's plants.
-
-        Parameters
-        ----------
-        error_type
-            The type of the error
-            (GardenError or WaterError).
-
-        Raises
-        ------
-        WaterError:
-            Raised if not enough water in the tank to water plant.
-        ValueError:
-            Raised if the plant's name is invalid.
-        """
+    def water_plants(self) -> None:
         try:
-            print("opening watering system")
+            print("Opening watering system")
             for plant in self.plants:
                 if self.water_tank < 1:
                     raise WaterError(
-                        f"{error_type}: not enough water in the tank!"
+                        "Caught WaterError: Not enough water in the tank!"
                     )
-                elif type(plant.name) is str:
+                elif isinstance(plant.name, str):
                     plant.water()
                     self.water_tank -= 1
                 else:
                     raise ValueError(
-                        f"ValueError: cannot water "
-                        f"{plant.name} - invalid plant!"
+                        f"Caught ValueError: Cannot water "
+                        f"{plant.name} - Invalid plant!"
                     )
-        except (WaterError, ValueError) as err:
+        except Exception as err:
             print(err)
         finally:
-            print("closing watering system (cleanup)\n")
+            print("Closing watering system (cleanup)\n")
 
-    def check_plant_health(self, error_type: str = "HealthError") -> None:
-        """
-        Checks the health of the garden's plants.
-
-        Parameters
-        ----------
-        error_type
-            The type of error
-            (GardenError or PlantError).
-        """
+    def check_plant_health(self) -> None:
         for plant in self.plants:
-            plant.check_health(error_type)
+            if plant.get_water_lvl() < MIN_WATER_LVL:
+                raise HealthError(
+                    f"Water level {plant.get_water_lvl()} "
+                    f"is too low (min {MIN_WATER_LVL})"
+                )
+            elif plant.get_water_lvl() > MAX_WATER_LVL:
+                raise HealthError(
+                    f"Water level {plant.get_water_lvl()} "
+                    f"is too high (max {MAX_WATER_LVL})"
+                )
+            elif plant.get_sun_h() < MIN_SUN_H:
+                raise HealthError(
+                    f"Sunlight hours {plant.get_sun_h()}"
+                    f"is too low (min {MIN_SUN_H})"
+                )
+            elif plant.get_sun_h() > MAX_SUN_H:
+                raise HealthError(
+                    f"Sunlight hours {plant.get_sun_h()}"
+                    f"is too high (min {MAX_SUN_H})"
+                )
+            else:
+                print(
+                    f"{self.name}: Healthy (water: "
+                    f"{self._water_lvl}, sun: {self._sun_h})"
+                )
 
-    def check_water_tank(self, error_type: str = "WaterError") -> None:
-        """
-        Checks the water tank amount.
-
-        Parameters
-        ----------
-        error_type
-            The type of error
-            (GardenError or WaterError).
-
-        Raises
-        ------
-        WaterError:
-            Raised if the amount in the water tank is too low.
-        """
-        try:
-            if self.water_tank < 30:
-                raise WaterError(f"{error_type}: not enough water in tank!")
-        except WaterError as we:
-            print(we)
-            if error_type == "GardenError":
-                print("system recovered and continuing...")
+    def check_water_tank(self) -> None:
+        if self.water_tank < 30:
+            raise WaterError("Not enough water in tank!")
 
     def check_garden_errors(self) -> None:
-        """
-        Checks for garden errors.
-        """
-        self.check_water_tank("GardenError")
-        self.check_plant_health("GardenError")
+        try:
+            self.check_water_tank()
+        except GardenError as ge:
+            print(f"Caught GardenError: {ge}")
+            print("System recovered and continuing...")
+        try:
+            self.check_plant_health()
+        except GardenError as ge:
+            print(f"Caught GardenError: {ge}")
+            print("System recovered and continuing...")
 
 
-def test_all() -> None:
-    """
-    Tests the correct behavior of the garden manager.
-    """
-    print("=== Garden Management System ===\n")
+def test_garden_management() -> None:
+    print("=== Garden Management System ===")
     garden = GardenManager("Naïm")
-    p1 = Plant("lilac", 12, 9)
-    p2 = Plant("", 5, 6)
-    p3 = Plant("eggplant", 4, 3)
-    p4 = Plant("hibiscus", 8, 1)
-    p5 = Plant("zucchini", 0, 11)
-    p6 = Plant("pumpkin", 9, 5)
-    print("adding plants to garden...")
-    garden.add_plant(p1)
-    garden.add_plant(p2)
-    garden.add_plant(p3)
-    garden.add_plant(p4)
-    garden.add_plant(p5)
-    garden.add_plant(p6)
-    print("watering plants...")
+    print("\nAdding plants to garden...")
+    garden.add_plant(Plant("lilac", 12, 9))
+    garden.add_plant(Plant(None, 5, 6))
+    garden.add_plant(Plant("eggplant", 4, 3))
+    garden.add_plant(Plant("hibiscus", 8, 1))
+    garden.add_plant(Plant("zucchini", 0, 11))
+    garden.add_plant(Plant("pumpkin", 9, 5))
+    print("\nWatering plants...")
     garden.water_plants()
-    p4.name = 123
+    garden.plants[3].name = 123
     garden.water_plants()
-    print("checking plant health...")
-    garden.check_plant_health()
-    garden.check_water_tank()
-    garden.water_tank = 25
-    garden.check_water_tank()
-    print("testing garden errors...")
+    print("Checking plant health...")
+    try:
+        garden.check_plant_health()
+    except HealthError as he:
+        print(f"Caught HealthError: {he}")
+    try:
+        garden.check_water_tank()
+        garden.water_tank = 25
+        garden.check_water_tank()
+    except WaterError as we:
+        print(f"Caught WaterError: {we}")
+    print("\nTesting garden errors...")
     garden.check_garden_errors()
-    print("garden management system test complete!\n")
+    print("\nGarden management system test complete!\n")
 
 
 def main() -> None:
-    test_all()
+    test_garden_management()
 
 
 if __name__ == "__main__":

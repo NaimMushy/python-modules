@@ -56,7 +56,7 @@ class SpellCard(Card):
                 else:
                     return {"effect": "unknown"}
                 print(
-                    f"Spell effect <{self.effect_type}> "
+                    f"Spell effect < {self.effect_type} > "
                     f"applied to {target.name}"
                 )
             all_targets: list[str] = [target.name for target in targets]

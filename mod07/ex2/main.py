@@ -263,12 +263,12 @@ def apply_effect(effect: list | str, targets: list[Card]) -> None:
                     target.set_health(target.get_health() + effect[1])
                     if effect[1] > 0:
                         print(
-                            f"Effect <+{effect[1]} health points> "
+                            f"Effect < +{effect[1]} health points > "
                             f"applied to {target.name}"
                         )
                     else:
                         print(
-                            f"Effect <{effect[1]} health points> "
+                            f"Effect < {effect[1]} health points > "
                             f"applied to {target.name}"
                         )
         elif effect[0] == "mana":
@@ -276,12 +276,12 @@ def apply_effect(effect: list | str, targets: list[Card]) -> None:
                 target.cost += effect[1]
                 if effect[1] > 0:
                     print(
-                        f"Effect <+{effect[1]} mana cost> "
+                        f"Effect < +{effect[1]} mana cost > "
                         f"applied to {target.name}"
                     )
                 else:
                     print(
-                        f"Effect <{effect[1]} mana cost> "
+                        f"Effect < {effect[1]} mana cost > "
                         f"applied to {target.name}"
                     )
         elif effect[0] == "attack":
@@ -292,12 +292,12 @@ def apply_effect(effect: list | str, targets: list[Card]) -> None:
                     )
                     if effect[1] > 0:
                         print(
-                            f"Effect <+{effect[1]} attack> "
+                            f"Effect < +{effect[1]} attack > "
                             f"applied to {target.name}"
                         )
                     else:
                         print(
-                            f"Effect <{effect[1]} attack> "
+                            f"Effect < {effect[1]} attack > "
                             f"applied to {target.name}"
                         )
 

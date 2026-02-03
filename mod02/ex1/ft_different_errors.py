@@ -1,13 +1,4 @@
 def garden_operations(error_type: str) -> None:
-    """
-    Provokes an error based on error_type.
-
-    Parameters
-    ----------
-    error_type
-        The type of the error
-        (ValueError, ZeroDivisionError, FileNotFoundError, KeyError).
-    """
     if error_type == "ve":
         int("abc")
     if error_type == "zde":
@@ -25,39 +16,36 @@ def garden_operations(error_type: str) -> None:
 
 
 def test_error_types() -> None:
-    """
-    Tests the different error types.
-    """
     print("=== Garden Error Types Demo ===\n")
-    print("testing ValueError...")
+    print("Testing ValueError...")
     try:
         garden_operations("ve")
     except ValueError:
-        print("caught ValueError: invalid literal for int()\n")
-    print("testing ZeroDivisionError...")
+        print("Caught ValueError: Invalid literal for int()\n")
+    print("Testing ZeroDivisionError...")
     try:
         garden_operations("zde")
     except ZeroDivisionError:
-        print("caught ZeroDivisionError: division by zero\n")
-    print("testing FileNotFoundError...")
+        print("Caught ZeroDivisionError: Division by zero\n")
+    print("Testing FileNotFoundError...")
     try:
         garden_operations("fnfe")
     except FileNotFoundError:
-        print("caught FileNotFoundError: No such file 'inexistant.txt'\n")
+        print("Caught FileNotFoundError: No such file 'inexistant.txt'\n")
     print("testing KeyError...")
     try:
         garden_operations("ke")
     except KeyError:
-        print("caught KeyError: missing favorite song\n")
-    print("testing multiple errors together...")
+        print("Caught KeyError: Missing favorite song\n")
+    print("Testing multiple errors together...")
     try:
         garden_operations("ve")
         garden_operations("zde")
         garden_operations("fnfe")
         garden_operations("ke")
     except (ValueError, ZeroDivisionError, FileNotFoundError, KeyError):
-        print("caught an error, but program continues!\n")
-    print("all error types tested successfully!\n")
+        print("Caught an error, but program continues!\n")
+    print("All error types tested successfully!\n")
 
 
 def main() -> None:
