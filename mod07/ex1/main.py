@@ -94,28 +94,28 @@ healing_artifact: ArtifactCard = ArtifactCard(
     4,
     "Rare",
     3,
-    "Permanent: +2 health per turn"
+    "Permanent: +2 health"
 )
 damage_artifact: ArtifactCard = ArtifactCard(
     "Atomic Laser",
     7,
     "Legendary",
     5,
-    "Permanent: -2 health per turn"
+    "Permanent: -2 health"
 )
 attack_booster_artifact: ArtifactCard = ArtifactCard(
     "Power Ring",
     3,
     "Common",
     2,
-    "Permanent: +1 attack per turn"
+    "Permanent: +1 attack"
 )
 attack_diminisher_artifact: ArtifactCard = ArtifactCard(
     "Weakness Belt",
     3,
     "Common",
     2,
-    "Permanent: -1 attack per turn"
+    "Permanent: -1 attack"
 )
 
 
@@ -123,32 +123,31 @@ def play_spell(deck: Deck, spell: SpellCard) -> None:
     if (
         "damage" in spell.effect_type or
         "Removes" in spell.effect_type
+    ) and (
+        "creatures" in deck.enemy_deck.collection.keys() and
+        len(deck.enemy_deck.collection["creatures"])
     ):
-        if len(deck.enemy_deck.active_cards):
-            spell.resolve_effect([
-                card for card in deck.enemy_deck.active_cards
-                if isinstance(card, CreatureCard)
-            ])
-            deck.active_cards.remove(spell)
-    else:
-        spell.resolve_effect([
-            card for card in deck.active_cards
-            if isinstance(card, CreatureCard)
-        ])
+        spell.resolve_effect(deck.enemy_deck.collection["creatures"])
+        deck.remove_from_all(spell)
+    elif (
+        "creatures" in deck.collection.keys() and
+        len(deck.collection["creatures"])
+    ):
+        spell.resolve_effect(deck.collection["creatures"])
         deck.active_cards.remove(spell)
 
 
 def play_creature(deck: Deck, creature: CreatureCard) -> None:
     if creature.get_health() == 0:
         print(f"Creature {creature.name} has been defeated\n")
-        deck.active_cards.remove(creature)
-    else:
-        possible_targets: list[Card] = [
-            target for target in deck.enemy_deck.active_cards
-            if isinstance(target, CreatureCard)
-        ]
-        if len(possible_targets):
-            creature.attack_target(random.choice(possible_targets))
+        deck.remove_from_all(creature)
+    elif (
+        "creatures" in deck.enemy_deck.collection.keys() and
+        len(deck.enemy_deck.collection["creatures"])
+    ):
+        creature.attack_target(random.choice(
+            deck.enemy_deck.collection["creatures"]
+        ))
 
 
 def play_artifact(
@@ -157,42 +156,27 @@ def play_artifact(
     artifact: ArtifactCard
 ) -> None:
     game_state["last_played"] = artifact.activate_ability()
-    if (
-        game_state["last_played"]["target"] == "ally" and
-        (len(deck.stack_cards) or len(deck.active_cards))
-    ):
-        apply_effect(
-            game_state["last_played"]["effect"],
-            deck.stack_cards + deck.active_cards
-        )
+    effect: str | list = game_state["last_played"]["effect"]
+    target: str = game_state["last_played"]["target"]
+    if "enemy" in target:
+        target_deck: Deck = deck.enemy_deck
+    elif "ally" in target:
+        target_deck = deck
+    if "mana" in target:
+        target_deck.available_mana -= 1
         artifact.durability -= 1
-    elif (
-        game_state["last_played"]["target"] == "enemy" and
-        (
-            len(deck.enemy_deck.stack_cards) or
-            len(deck.enemy_deck.active_cards)
-        )
-    ):
-        apply_effect(
-            game_state["last_played"]["effect"],
-            (
-                deck.enemy_deck.stack_cards +
-                deck.enemy_deck.active_cards
-            )
-        )
-        artifact.durability -= 1
-    elif game_state["last_played"]["target"] == "enemy_deck_mana":
-        deck.enemy_deck.available_mana -= 1
-        artifact.durability -= 1
-    elif game_state["last_played"]["target"] == "ally_deck_mana":
-        deck.available_mana += 1
+    elif len(target_deck.get_deck_stats()["total_cards"]):
+        if "health" in effect or "attack" in effect:
+            apply_effect(effect, target_deck.collection["creatures"])
+        else:
+            apply_effect(effect, target_deck.active_cards + target_deck.stack_cards)
         artifact.durability -= 1
     if artifact.durability <= 0:
         print(
             f"Artifact {artifact.name} "
             "destroyed - durability depleted\n"
         )
-        deck.active_cards.remove(artifact)
+        deck.remove_from_all(artifact)
     elif not game_state["last_played"]["repeat"]:
         deck.active_cards.remove(artifact)
         deck.add_card(artifact)

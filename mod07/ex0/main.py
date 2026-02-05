@@ -2,9 +2,6 @@ from .CreatureCard import CreatureCard
 
 
 def main() -> None:
-    """
-    Demonstrates basic mechanisms of the Card Foundation.
-    """
     print("\n=== DataDeck Card Foundation ===\n")
     print("Testing Abstract Base Class Design:\n")
     game_state: dict = {}

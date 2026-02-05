@@ -71,3 +71,6 @@ class SpellCard(Card):
             "type": "Spell",
             "effect": self.effect_type
         }
+
+    def __repr__(self) -> str:
+        return "spells"

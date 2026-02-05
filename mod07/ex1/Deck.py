@@ -1,7 +1,4 @@
 from ex0.Card import Card
-from ex0.CreatureCard import CreatureCard
-from .SpellCard import SpellCard
-from .ArtifactCard import ArtifactCard
 from typing import Any as any
 import random
 
@@ -10,6 +7,7 @@ class Deck:
     def __init__(self) -> None:
         self.stack_cards: list[Card] = []
         self.active_cards: list[Card] = []
+        self.collection: dict[str, list[Card]] = {}
         self.available_mana: int = 30
 
     def add_enemy_deck(self, enemy_deck: any) -> None:
@@ -17,6 +15,10 @@ class Deck:
 
     def add_card(self, card: Card) -> None:
         self.stack_cards.append(card)
+        if card.__repr__() in self.collection.keys():
+            self.collection[card.__repr__()].append(card)
+        else:
+            self.collection[card.__repr__()] = [card]
 
     def remove_card(self, card_name: str) -> bool:
         for card in self.stack_cards:
@@ -24,6 +26,14 @@ class Deck:
                 self.stack_cards.remove(card)
             return True
         return False
+
+    def remove_from_all(self, card: Card) -> None:
+        if card in self.stack_cards:
+            self.stack_cards.remove(card)
+        if card in self.active_cards:
+            self.active_cards.remove(card)
+        if card in self.collection[card.__repr__()]:
+            self.collection[card.__repr__()].remove(card)
 
     def shuffle(self) -> None:
         random.shuffle(self.stack_cards)
@@ -34,33 +44,15 @@ class Deck:
         return card_drawn
 
     def get_deck_stats(self) -> dict:
-        return {
-            "total_cards": len(self.stack_cards),
-            "creatures": sum(
-                1 for card in self.stack_cards
-                if isinstance(card, CreatureCard)
-            ) + sum(
-                1 for card in self.active_cards
-                if isinstance(card, CreatureCard)
-            ),
-            "spells": sum(
-                1 for card in self.stack_cards
-                if isinstance(card, SpellCard)
-            ) + sum(
-                1 for card in self.active_cards
-                if isinstance(self, SpellCard)
-            ),
-            "artifacts": sum(
-                1 for card in self.stack_cards
-                if isinstance(card, ArtifactCard)
-            ) + sum(
-                1 for card in self.active_cards
-                if isinstance(card, ArtifactCard)
-            ),
-            "avg_cost": round(sum(
-                card.cost for card in self.stack_cards
-            ) / len(self.stack_cards), 1)
-        }
+        stats: dict = {}
+        stats["total_cards"] = len(self.stack_cards) + len(self.active_cards)
+        stats["avg_cost"] = 0
+        for key, val in self.collection.items():
+            stats[key] = len(val)
+            for card in val:
+                stats["avg_cost"] += card.cost
+        stats["avg_cost"] = round(stats["avg_cost"] / stats["total_cards"], 1)
+        return stats
 
     def display_cards(self) -> None:
         if len(self.active_cards):

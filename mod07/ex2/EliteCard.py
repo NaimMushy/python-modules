@@ -27,25 +27,25 @@ class EliteCard(Card, Combatable, Magical):
         self.known_spells: list[SpellCard] = known_spells
 
     def set_attack(self, new_attack: int) -> None:
-        if new_attack >= 0:
-            self._attack = new_attack
+        if isinstance(new_attack, int) and new_attack >= 0:
+            self.__attack = new_attack
         else:
-            self._attack = 0
+            self.__attack = 0
 
     def set_health(self, new_health: int) -> None:
         if new_health < self.get_health():
             self.defend(self.get_health() - new_health)
         else:
-            if new_health > 0:
-                self._health = new_health
+            if isinstance(new_health, int) and new_health > 0:
+                self.__health = new_health
             else:
-                self._health = 0
+                self.__health = 0
 
     def get_attack(self) -> int:
-        return self._attack
+        return self.__attack
 
     def get_health(self) -> int:
-        return self._health
+        return self.__health
 
     def learn_spell(self, new_spell: SpellCard) -> None:
         if new_spell in self.known_spells:
@@ -160,3 +160,6 @@ class EliteCard(Card, Combatable, Magical):
                 f" - {self.cost} needed\n"
             )
         return play_result
+
+    def __repr__(self) -> str:
+        return "elites"

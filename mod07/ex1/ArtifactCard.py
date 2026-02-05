@@ -69,3 +69,53 @@ class ArtifactCard(Card):
             "durability": self.durability,
             "effect": self.effect
         }
+
+    def apply_effect(self, effect: list | str, targets: list) -> None:
+        if isinstance(effect, str):
+            if effect == "unknown":
+                print("No card effect for this turn\n")
+        else:
+            if "health" in effect[0]:
+                for target in targets:
+                    target.set_health(target.get_health() + effect[1])
+                    if effect[1] > 0:
+                        print(
+                            f"Effect < +{effect[1]} health points > "
+                            f"applied to {target.name}"
+                        )
+                    else:
+                        print(
+                            f"Effect < {effect[1]} health points > "
+                            f"applied to {target.name}"
+                        )
+            elif "mana cost" in effect[0]:
+                for target in targets:
+                    target.cost += effect[1]
+                    if effect[1] > 0:
+                        print(
+                            f"Effect < +{effect[1]} mana cost > "
+                            f"applied to {target.name}"
+                        )
+                    else:
+                        print(
+                            f"Effect < {effect[1]} mana cost > "
+                            f"applied to {target.name}"
+                        )
+            elif "attack" in effect[0]:
+                for target in targets:
+                    target.set_attack(
+                        target.get_attack() + effect[1]
+                    )
+                    if effect[1] > 0:
+                        print(
+                            f"Effect < +{effect[1]} attack > "
+                            f"applied to {target.name}"
+                        )
+                    else:
+                        print(
+                            f"Effect < {effect[1]} attack > "
+                            f"applied to {target.name}"
+                        )
+
+    def __repr__(self) -> str:
+        return "artifacts"
