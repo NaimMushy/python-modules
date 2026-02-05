@@ -2,6 +2,7 @@ from .Combatable import Combatable
 from .Magical import Magical
 from ex0.Card import Card
 from ex1.SpellCard import SpellCard
+from ex1.Deck import Deck
 import random
 
 
@@ -93,11 +94,14 @@ class EliteCard(Card, Combatable, Magical):
         for spell in self.known_spells:
             if spell.name == spell_name:
                 mana_used = spell.cost
+                spell_to_cast: SpellCard = spell
         mana_channel_result: dict = self.channel_mana(mana_used)
         if not mana_used:
             print(f"Spell {spell_name} not learned by {self.name}")
         elif not mana_channel_result["success"]:
             mana_used = 0
+        elif len(targets):
+            spell_to_cast.resolve_effect(targets)
         print("Magic phase:")
         cast_result: dict = {
             "caster": self.name,
@@ -160,6 +164,28 @@ class EliteCard(Card, Combatable, Magical):
                 f" - {self.cost} needed\n"
             )
         return play_result
+
+    def play_elite(self, deck: Deck) -> None:
+        if self.get_health() == 0:
+            print(f"Elite Character {self.name} has been defeated\n")
+            deck.remove_from_all(self)
+        else:
+            active_spells: list[SpellCard] = [
+                card for card in deck.active_cards
+                if isinstance(card, SpellCard) and
+                card in self.known_spells
+            ]
+            if len(active_spells):
+                spell_to_cast: SpellCard = random.choice(active_spells)
+                self.cast_spell(
+                    spell_to_cast.name,
+                    spell_to_cast.get_correct_targets(deck)
+                )
+                deck.remove_from_all(spell_to_cast)
+            elif len(deck.enemy_deck.possible_targets):
+                self.attack(
+                    random.choice(deck.enemy_deck.possible_targets)
+                )
 
     def __repr__(self) -> str:
         return "elites"

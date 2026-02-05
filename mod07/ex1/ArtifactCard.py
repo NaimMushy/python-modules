@@ -1,4 +1,5 @@
 from ex0.Card import Card
+from .Deck import Deck
 import re
 
 
@@ -31,6 +32,38 @@ class ArtifactCard(Card):
                 f" - {self.cost} needed\n"
             )
         return play_result
+
+    def play_artifact(
+        self,
+        deck: Deck,
+    ) -> None:
+        effect: str | list = self.activate_ability()["effect"]
+        target: str = self.activate_ability()["target"]
+        if "enemy" in target:
+            target_deck: Deck = deck.enemy_deck
+        elif "ally" in target:
+            target_deck = deck
+        if "mana" in target:
+            target_deck.available_mana -= 1
+            self.durability -= 1
+        elif len(target_deck.get_deck_stats()["total_cards"]):
+            if "health" in effect or "attack" in effect:
+                self.apply_effect(effect, target_deck.possible_targets)
+            else:
+                self.apply_effect(
+                    effect,
+                    target_deck.active_cards + target_deck.stack_cards
+                )
+            self.durability -= 1
+        if self.durability <= 0:
+            print(
+                f"Artifact {self.name} "
+                "destroyed - durability depleted\n"
+            )
+            deck.remove_from_all(self)
+        elif not self.activate_ability()["repeat"]:
+            deck.active_cards.remove(self)
+            deck.add_card(self)
 
     def activate_ability(self) -> dict:
         if (match := re.match(

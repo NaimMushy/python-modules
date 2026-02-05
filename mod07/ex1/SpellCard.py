@@ -1,4 +1,5 @@
 from ex0.Card import Card
+from .Deck import Deck
 import re
 
 
@@ -29,6 +30,28 @@ class SpellCard(Card):
                 f" - {self.cost} needed\n"
             )
         return play_result
+
+    def play_spell(self, deck: Deck) -> None:
+        if len(self.get_correct_targets(
+            deck.possible_targets, deck.enemy_deck.possible_targets
+        )):
+            self.resolve_effect(self.get_correct_targets(
+                deck.possible_targets, deck.enemy_deck.possible_targets
+            ))
+            deck.remove_from_all(self)
+
+    def get_correct_targets(
+        self,
+        ally_cards: list[Card],
+        enemy_cards: list[Card]
+    ) -> list[Card]:
+        if (
+            "damage" in self.effect_type or
+            "Removes" in self.effect_type
+        ):
+            return enemy_cards
+        else:
+            return ally_cards
 
     def resolve_effect(self, targets: list) -> dict:
         if (match := re.match(

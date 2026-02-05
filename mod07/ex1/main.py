@@ -54,6 +54,12 @@ healing_spell: SpellCard = SpellCard(
     "Super Rare",
     "Restores 4 health to target"
 )
+super_healing_spell: SpellCard = SpellCard(
+    "Heal Fountain",
+    7,
+    "Legendary",
+    "Restores 6 health to target"
+)
 attack_buff_spell: SpellCard = SpellCard(
     "Attack Enhancer",
     3,
@@ -119,69 +125,6 @@ attack_diminisher_artifact: ArtifactCard = ArtifactCard(
 )
 
 
-def play_spell(deck: Deck, spell: SpellCard) -> None:
-    if (
-        "damage" in spell.effect_type or
-        "Removes" in spell.effect_type
-    ) and (
-        "creatures" in deck.enemy_deck.collection.keys() and
-        len(deck.enemy_deck.collection["creatures"])
-    ):
-        spell.resolve_effect(deck.enemy_deck.collection["creatures"])
-        deck.remove_from_all(spell)
-    elif (
-        "creatures" in deck.collection.keys() and
-        len(deck.collection["creatures"])
-    ):
-        spell.resolve_effect(deck.collection["creatures"])
-        deck.active_cards.remove(spell)
-
-
-def play_creature(deck: Deck, creature: CreatureCard) -> None:
-    if creature.get_health() == 0:
-        print(f"Creature {creature.name} has been defeated\n")
-        deck.remove_from_all(creature)
-    elif (
-        "creatures" in deck.enemy_deck.collection.keys() and
-        len(deck.enemy_deck.collection["creatures"])
-    ):
-        creature.attack_target(random.choice(
-            deck.enemy_deck.collection["creatures"]
-        ))
-
-
-def play_artifact(
-    game_state: dict,
-    deck: Deck,
-    artifact: ArtifactCard
-) -> None:
-    game_state["last_played"] = artifact.activate_ability()
-    effect: str | list = game_state["last_played"]["effect"]
-    target: str = game_state["last_played"]["target"]
-    if "enemy" in target:
-        target_deck: Deck = deck.enemy_deck
-    elif "ally" in target:
-        target_deck = deck
-    if "mana" in target:
-        target_deck.available_mana -= 1
-        artifact.durability -= 1
-    elif len(target_deck.get_deck_stats()["total_cards"]):
-        if "health" in effect or "attack" in effect:
-            apply_effect(effect, target_deck.collection["creatures"])
-        else:
-            apply_effect(effect, target_deck.active_cards + target_deck.stack_cards)
-        artifact.durability -= 1
-    if artifact.durability <= 0:
-        print(
-            f"Artifact {artifact.name} "
-            "destroyed - durability depleted\n"
-        )
-        deck.remove_from_all(artifact)
-    elif not game_state["last_played"]["repeat"]:
-        deck.active_cards.remove(artifact)
-        deck.add_card(artifact)
-
-
 def play_card(
     game_state: dict,
     deck: Deck,
@@ -193,67 +136,25 @@ def play_card(
     )
     if card_drawn not in deck.active_cards:
         deck.active_cards.append(card_drawn)
-        game_state["available_mana"] = deck.available_mana
+        if isinstance(card_drawn, CreatureCard):
+            deck.possible_targets.append(card_drawn)
         if card_drawn.is_playable(deck.available_mana):
             deck.available_mana -= card_drawn.cost
+        game_state["available_mana"] = deck.available_mana
         card_drawn.play(game_state)
     for card in deck.active_cards:
         if isinstance(card, SpellCard):
-            play_spell(deck, card)
+            card.play_spell(deck)
         elif isinstance(card, CreatureCard):
-            play_creature(deck, card)
+            if card.get_health() == 0:
+                print(f"Creature {card.name} has been defeated\n")
+                deck.remove_from_all(card)
+            elif len(deck.enemy_deck.possible_targets):
+                card.attack_target(random.choice(
+                    deck.enemy_deck.possible_targets
+                ))
         elif isinstance(card, ArtifactCard):
-            play_artifact(game_state, deck, card)
-
-
-def apply_effect(effect: list | str, targets: list[Card]) -> None:
-    if isinstance(effect, str):
-        if effect == "unknown":
-            print("No card effect for this turn\n")
-    else:
-        if "health" in effect[0]:
-            for target in targets:
-                if isinstance(target, CreatureCard):
-                    target.set_health(target.get_health() + effect[1])
-                    if effect[1] > 0:
-                        print(
-                            f"Effect < +{effect[1]} health points > "
-                            f"applied to {target.name}"
-                        )
-                    else:
-                        print(
-                            f"Effect < {effect[1]} health points > "
-                            f"applied to {target.name}"
-                        )
-        elif "mana cost" in effect[0]:
-            for target in targets:
-                target.cost += effect[1]
-                if effect[1] > 0:
-                    print(
-                        f"Effect < +{effect[1]} mana cost > "
-                        f"applied to {target.name}"
-                    )
-                else:
-                    print(
-                        f"Effect < {effect[1]} mana cost > "
-                        f"applied to {target.name}"
-                    )
-        elif "attack" in effect[0]:
-            for target in targets:
-                if isinstance(target, CreatureCard):
-                    target.set_attack(
-                        target.get_attack() + effect[1]
-                    )
-                    if effect[1] > 0:
-                        print(
-                            f"Effect < +{effect[1]} attack > "
-                            f"applied to {target.name}"
-                        )
-                    else:
-                        print(
-                            f"Effect < {effect[1]} attack > "
-                            f"applied to {target.name}"
-                        )
+            card.play_artifact(deck)
 
 
 def build_decks(deck1: Deck, deck2: Deck) -> None:
@@ -263,6 +164,7 @@ def build_decks(deck1: Deck, deck2: Deck) -> None:
     deck1.add_card(sacred_unicorn)
     deck1.add_card(lightning_spell)
     deck1.add_card(healing_spell)
+    deck1.add_card(super_healing_spell)
     deck1.add_card(attack_buff_spell)
     deck1.add_card(mana_artifact)
     deck1.add_card(healing_artifact)
@@ -281,7 +183,6 @@ def build_decks(deck1: Deck, deck2: Deck) -> None:
 
 def main() -> None:
     game_state: dict = {}
-    game_state["available_mana"] = 30
     deck1: Deck = Deck()
     deck2: Deck = Deck()
     build_decks(deck1, deck2)

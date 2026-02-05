@@ -56,6 +56,12 @@ healing_spell: SpellCard = SpellCard(
     "Super Rare",
     "Restores 4 health to target"
 )
+super_healing_spell: SpellCard = SpellCard(
+    "Heal Fountain",
+    7,
+    "Legendary",
+    "Restores 6 health to target"
+)
 attack_buff_spell: SpellCard = SpellCard(
     "Attack Enhancer",
     3,
@@ -141,7 +147,7 @@ divine_healer: EliteCard = EliteCard(
     20,
     15,
     "long-range",
-    [healing_spell]
+    [healing_spell, super_healing_spell]
 )
 acrobatic_monk: EliteCard = EliteCard(
     "Acrobatic Monk",
@@ -167,108 +173,6 @@ forest_elf: EliteCard = EliteCard(
 )
 
 
-def play_spell(deck: Deck, spell: SpellCard) -> None:
-    if (
-        "damage" in spell.effect_type or
-        "Removes" in spell.effect_type
-    ):
-        if len(deck.enemy_deck.active_cards):
-            spell.resolve_effect([
-                card for card in deck.enemy_deck.active_cards
-                if isinstance(card, (EliteCard, CreatureCard))
-            ])
-            deck.active_cards.remove(spell)
-    else:
-        spell.resolve_effect([
-            card for card in deck.active_cards
-            if isinstance(card, (EliteCard, CreatureCard))
-        ])
-        deck.active_cards.remove(spell)
-
-
-def play_creature(deck: Deck, creature: CreatureCard) -> None:
-    if creature.get_health() == 0:
-        print(f"Creature {creature.name} has been defeated\n")
-        deck.active_cards.remove(creature)
-    else:
-        possible_targets: list[Card] = [
-            target for target in deck.enemy_deck.active_cards
-            if isinstance(target, (EliteCard, CreatureCard))
-        ]
-        if len(possible_targets):
-            creature.attack_target(random.choice(possible_targets))
-
-
-def play_artifact(
-    game_state: dict,
-    deck: Deck,
-    artifact: ArtifactCard
-) -> None:
-    game_state["last_played"] = artifact.activate_ability()
-    if (
-        game_state["last_played"]["target"] == "ally" and
-        (len(deck.stack_cards) or len(deck.active_cards))
-    ):
-        apply_effect(
-            game_state["last_played"]["effect"],
-            deck.stack_cards + deck.active_cards
-        )
-        artifact.durability -= 1
-    elif (
-        game_state["last_played"]["target"] == "enemy" and
-        (
-            len(deck.enemy_deck.stack_cards) or
-            len(deck.enemy_deck.active_cards)
-        )
-    ):
-        apply_effect(
-            game_state["last_played"]["effect"],
-            (
-                deck.enemy_deck.stack_cards +
-                deck.enemy_deck.active_cards
-            )
-        )
-        artifact.durability -= 1
-    elif game_state["last_played"]["target"] == "enemy_deck_mana":
-        deck.enemy_deck.available_mana -= 1
-        artifact.durability -= 1
-    elif game_state["last_played"]["target"] == "ally_deck_mana":
-        deck.available_mana += 1
-        artifact.durability -= 1
-    if artifact.durability <= 0:
-        print(
-            f"Artifact {artifact.name} "
-            "destroyed - durability depleted\n"
-        )
-        deck.active_cards.remove(artifact)
-    elif not game_state["last_played"]["repeat"]:
-        deck.active_cards.remove(artifact)
-        deck.add_card(artifact)
-
-
-def play_elite(deck: Deck, elite: EliteCard) -> None:
-    if elite.get_health() == 0:
-        print(f"Elite Character {elite.name} has been defeated\n")
-        deck.active_cards.remove(elite)
-    else:
-        active_spells: list[SpellCard] = [
-            card for card in deck.active_cards
-            if isinstance(card, SpellCard)
-        ]
-        targets: list[Card] = [
-            card for card in deck.enemy_deck.active_cards
-            if isinstance(card, (CreatureCard, EliteCard))
-        ]
-        if len(active_spells):
-            spell_to_cast: SpellCard = random.choice(active_spells)
-            elite.cast_spell(spell_to_cast.name, targets)
-            deck.active_cards.remove(spell_to_cast)
-        elif len(targets):
-            elite.attack(
-                random.choice(targets)
-            )
-
-
 def play_card(
     game_state: dict,
     deck: Deck,
@@ -280,21 +184,27 @@ def play_card(
     )
     if card_drawn not in deck.active_cards:
         deck.active_cards.append(card_drawn)
-        game_state["available_mana"] = deck.available_mana
+        if isinstance(card_drawn, (EliteCard, CreatureCard)):
+            deck.possible_targets.append(card_drawn)
         if card_drawn.is_playable(deck.available_mana):
             deck.available_mana -= card_drawn.cost
+        game_state["available_mana"] = deck.available_mana
         card_drawn.play(game_state)
     for card in deck.active_cards:
         if isinstance(card, EliteCard):
-            play_elite(deck, card)
+            card.play_elite(deck)
         elif isinstance(card, SpellCard):
-            play_spell(deck, card)
+            card.play_spell(deck)
         elif isinstance(card, CreatureCard):
-            play_creature(deck, card)
+            if card.get_health() == 0:
+                print(f"Creature {card.name} has been defeated\n")
+                deck.remove_from_all(card)
+            elif len(deck.enemy_deck.possible_targets):
+                card.attack_target(
+                    random.choice(deck.enemy_deck.possible_targets)
+                )
         elif isinstance(card, ArtifactCard):
-            play_artifact(game_state, deck, card)
-
-
+            card.play_artifact(deck)
 
 
 def build_decks(deck1: Deck, deck2: Deck) -> None:
@@ -304,6 +214,7 @@ def build_decks(deck1: Deck, deck2: Deck) -> None:
     deck1.add_card(sacred_unicorn)
     deck1.add_card(lightning_spell)
     deck1.add_card(healing_spell)
+    deck1.add_card(super_healing_spell)
     deck1.add_card(attack_buff_spell)
     deck1.add_card(mana_artifact)
     deck1.add_card(healing_artifact)
@@ -320,32 +231,8 @@ def build_decks(deck1: Deck, deck2: Deck) -> None:
     deck2.add_card(acrobatic_monk)
     deck2.add_card(forest_elf)
     deck2.add_card(mana_debuff)
-    deck_one_stats: dict = deck1.get_deck_stats()
-    new_stats: dict = {
-        key: val for key, val in deck_one_stats.items()
-        if key != "avg_cost"
-    }
-    new_stats["elites"] = sum(
-        1 for card in deck1.stack_cards
-        if isinstance(card, EliteCard)
-    )
-    new_stats["avg_cost"] = round(sum(
-        card.cost for card in deck1.stack_cards
-    ) / len(deck1.stack_cards), 1)
-    print(f"Deck One stats: {new_stats}")
-    deck_two_stats: dict = deck2.get_deck_stats()
-    new_stats = {
-        key: val for key, val in deck_two_stats.items()
-        if key != "avg_cost"
-    }
-    new_stats["elites"] = sum(
-        1 for card in deck2.stack_cards
-        if isinstance(card, EliteCard)
-    )
-    new_stats["avg_cost"] = round(sum(
-        card.cost for card in deck2.stack_cards
-    ) / len(deck2.stack_cards), 1)
-    print(f"Deck Two stats: {new_stats}\n")
+    print(f"Deck One stats: {deck1.get_deck_stats()}")
+    print(f"Deck Two stats: {deck2.get_deck_stats()}\n")
 
 
 def main() -> None:

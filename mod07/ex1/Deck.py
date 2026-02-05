@@ -7,6 +7,7 @@ class Deck:
     def __init__(self) -> None:
         self.stack_cards: list[Card] = []
         self.active_cards: list[Card] = []
+        self.possible_targets: list[Card] = []
         self.collection: dict[str, list[Card]] = {}
         self.available_mana: int = 30
 

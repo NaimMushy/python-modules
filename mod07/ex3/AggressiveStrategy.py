@@ -3,6 +3,10 @@ from .GameStrategy import GameStrategy
 
 class AggressiveStrategy(GameStrategy):
     def execute_turn(self, hand: list, battlefield: list) -> dict:
+        for item in hand:
+            if not isinstance(item, Card):
+                available_mana: int = item
+                hand.remove(item)
         attackers: list[Card] = self.prioritize_targets(hand)
         enemy_targets: list[Card] = self.prioritize_targets(battlefield)
         cards_played: list[str] = []
@@ -17,15 +21,24 @@ class AggressiveStrategy(GameStrategy):
                     mana_used += card.cost
                     damage_dealt += card.get_attack()
                     cards_played.append(card.name)
-                    if target.name not in target_attacked:
+                    if target.name not in targets_attacked:
                         targets_attacked.append(target.name)
         else:
             for card in hand:
-                if isinstance(card, SpellCard) and len(enemy_targets):
-                    card.resolve_effect(enemy_targets)
-                    hand.remove(card)
-                if isinstance(card, ArtifactCard) and len(enemy_targets):
-
+                if isinstance(card, SpellCard):
+                    if len(card.get_correct_targets(hand, battlefield)):
+                        card.resolve_effect(
+                            card.get_correct_targets(hand, battlefield)
+                        )
+                        hand.remove(card)
+                if isinstance(card, ArtifactCard):
+                    game_state: dict = {
+                        "available_mana": available_mana
+                    }
+                    card.apply_effect(
+                        card.play(game_state)["effect"],
+                        card.play(game_state)["target"]
+                    )
 
     def prioritize_targets(self, available_targets: list) -> list:
         return [
