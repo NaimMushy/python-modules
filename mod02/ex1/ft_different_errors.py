@@ -36,7 +36,7 @@ def test_error_types() -> None:
     try:
         garden_operations("ke")
     except KeyError:
-        print("Caught KeyError: Missing favorite song\n")
+        print("Caught KeyError: Key not found in dict\n")
     print("Testing multiple errors together...")
     try:
         garden_operations("ve")

@@ -5,18 +5,15 @@ MAX_SUN_H = 12
 
 
 class GardenError(Exception):
-    def __init__(self, msg: str, error_type: str = "GardenError") -> None:
-        self.msg: str = f"{error_type}: " + msg
+    pass
 
 
 class WaterError(GardenError):
-    def __init__(self, msg: str) -> None:
-        super().__init__(msg, "WaterError")
+    pass
 
 
 class HealthError(GardenError):
-    def __init__(self, msg: str) -> None:
-        super().__init__(msg, "HealthError")
+    pass
 
 
 class Plant:
@@ -26,7 +23,7 @@ class Plant:
         water_level: int,
         sunlight_hours: int
     ) -> None:
-        self.name = name
+        self.name: str = name
         try:
             self.set_water_lvl(water_level)
         except ValueError as ve:
@@ -88,69 +85,86 @@ class GardenManager:
             print(f"Added {new_plant.name} successfully")
 
     def water_plants(self) -> None:
+        err: bool = False
         try:
             print("Opening watering system")
             for plant in self.plants:
                 if self.water_tank < 1:
-                    raise WaterError(
-                        "Caught WaterError: Not enough water in the tank!"
-                    )
+                    raise WaterError("Not enough water in the tank!")
                 elif isinstance(plant.name, str):
                     plant.water()
                     self.water_tank -= 1
                 else:
                     raise ValueError(
-                        f"Caught ValueError: Cannot water "
+                        "Cannot water "
                         f"{plant.name} - Invalid plant!"
                     )
-        except Exception as err:
-            print(err)
+        except WaterError as we:
+            err = True
+            print(f"Caught WaterError: {we}")
+        except ValueError as ve:
+            err = True
+            print(f"Caught ValueError: {ve}")
         finally:
-            print("Closing watering system (cleanup)\n")
+            print("Closing watering system (cleanup)")
+            if not err:
+                print("Watering completed without any issues!\n")
 
-    def check_plant_health(self) -> None:
+    def check_plant_health(
+        self,
+        error_type: str = "HealthError",
+        err_recovery_mode: bool = False
+    ) -> None:
+        err: bool = False
         for plant in self.plants:
-            if plant.get_water_lvl() < MIN_WATER_LVL:
-                raise HealthError(
-                    f"Water level {plant.get_water_lvl()} "
-                    f"is too low (min {MIN_WATER_LVL})"
-                )
-            elif plant.get_water_lvl() > MAX_WATER_LVL:
-                raise HealthError(
-                    f"Water level {plant.get_water_lvl()} "
-                    f"is too high (max {MAX_WATER_LVL})"
-                )
-            elif plant.get_sun_h() < MIN_SUN_H:
-                raise HealthError(
-                    f"Sunlight hours {plant.get_sun_h()}"
-                    f"is too low (min {MIN_SUN_H})"
-                )
-            elif plant.get_sun_h() > MAX_SUN_H:
-                raise HealthError(
-                    f"Sunlight hours {plant.get_sun_h()}"
-                    f"is too high (min {MAX_SUN_H})"
-                )
+            try:
+                if plant.get_water_lvl() < MIN_WATER_LVL:
+                    raise HealthError(
+                        f"Water level {plant.get_water_lvl()} "
+                        f"is too low (min {MIN_WATER_LVL})"
+                    )
+                if plant.get_water_lvl() > MAX_WATER_LVL:
+                    raise HealthError(
+                        f"Water level {plant.get_water_lvl()} "
+                        f"is too high (max {MAX_WATER_LVL})"
+                    )
+                if plant.get_sun_h() < MIN_SUN_H:
+                    raise HealthError(
+                        f"Sunlight hours {plant.get_sun_h()} "
+                        f"is too low (min {MIN_SUN_H})"
+                    )
+                if plant.get_sun_h() > MAX_SUN_H:
+                    raise HealthError(
+                        f"Sunlight hours {plant.get_sun_h()} "
+                        f"is too high (min {MAX_SUN_H})"
+                    )
+            except GardenError as ge:
+                err = True
+                print(f"Caught {error_type}: {ge}")
+                if err_recovery_mode:
+                    print("System recovered and continuing...")
             else:
-                print(
-                    f"{self.name}: Healthy (water: "
-                    f"{self._water_lvl}, sun: {self._sun_h})"
-                )
+                if not err_recovery_mode:
+                    print(
+                        f"{plant.name}: Healthy "
+                        f"(water: {plant.get_water_lvl()}, "
+                        f"sun: {plant.get_sun_h()})"
+                    )
+        if not err:
+            print("All plants are blooming! :)")
 
-    def check_water_tank(self) -> None:
-        if self.water_tank < 30:
-            raise WaterError("Not enough water in tank!")
-
-    def check_garden_errors(self) -> None:
+    def check_water_tank(
+            self,
+            error_type: str = "WaterError",
+            err_recovery_mode: bool = False
+    ) -> None:
         try:
-            self.check_water_tank()
+            if self.water_tank < 30:
+                raise WaterError("Not enough water in tank!")
         except GardenError as ge:
-            print(f"Caught GardenError: {ge}")
-            print("System recovered and continuing...")
-        try:
-            self.check_plant_health()
-        except GardenError as ge:
-            print(f"Caught GardenError: {ge}")
-            print("System recovered and continuing...")
+            print(f"Caught {error_type}: {ge}")
+            if err_recovery_mode:
+                print("System recovered and continuing...")
 
 
 def test_garden_management() -> None:
@@ -167,20 +181,15 @@ def test_garden_management() -> None:
     garden.water_plants()
     garden.plants[3].name = 123
     garden.water_plants()
-    print("Checking plant health...")
-    try:
-        garden.check_plant_health()
-    except HealthError as he:
-        print(f"Caught HealthError: {he}")
-    try:
-        garden.check_water_tank()
-        garden.water_tank = 25
-        garden.check_water_tank()
-    except WaterError as we:
-        print(f"Caught WaterError: {we}")
-    print("\nTesting garden errors...")
-    garden.check_garden_errors()
-    print("\nGarden management system test complete!\n")
+    print("\nChecking plant health...")
+    garden.check_plant_health()
+    print("\nChecking water tank...")
+    garden.water_tank = 25
+    garden.check_water_tank()
+    print("\nTesting error recovery...")
+    garden.check_plant_health("GardenError", True)
+    garden.check_water_tank("GardenError", True)
+    print("\nGarden management system test complete!")
 
 
 def main() -> None:

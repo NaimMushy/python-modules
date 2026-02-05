@@ -1,7 +1,7 @@
 class Plant:
     def __init__(self, name: str, state: str = "blooming") -> None:
-        self.name = name
-        self.state = state
+        self.name: str = name
+        self.state: str = state
 
 
 class Garden:
@@ -28,6 +28,27 @@ class Garden:
     def get_tank_amount(self) -> int:
         return (self.__tank_amount)
 
+    def check_tank_amount(self, error_type: str = "WaterError") -> None:
+        try:
+            if self.__tank_amount < 30:
+                raise WaterError("Not enough water in the tank!")
+        except GardenError as ge:
+            print(f"Caught {error_type}: {ge}")
+        else:
+            print("There's enough water in the tank!")
+
+    def check_plants(self, error_type: str = "PlantError") -> None:
+        err: bool = False
+        for plant in self.plants:
+            try:
+                if plant.state == "withering":
+                    err = True
+                    raise PlantError(f"The {plant.name} is withering!")
+            except GardenError as ge:
+                print(f"Caught {error_type}: {ge}")
+        if not err:
+            print("All the plants are blooming! :)")
+
 
 class GardenError(Exception):
     pass
@@ -41,61 +62,21 @@ class WaterError(GardenError):
     pass
 
 
-def testing_plant_error(
-    plant: Plant
-) -> None:
-    err_count: int = 0
-    for plant in plants:
-        try:
-            if plant.state == "withering":
-                err_count += 1
-                raise PlantError(
-                    f"Caught {error_type}: the {plant.name} is withering!\n"
-                )
-        except PlantError as pe:
-            print(pe)
-    if err_count == 0:
-        print("All plants are blooming! :)\n")
-
-
-def testing_water_error(
-    tank_amount: int,
-) -> None:
-    try:
-        if tank_amount < 30:
-            raise WaterError(
-                f"Caught {error_type}: not enough water in the tank!\n"
-            )
-        else:
-            print("There's enough water in the tank!\n")
-    except WaterError as we:
-        print(we)
-
-
-def testing_garden_errors(garden: Garden) -> None:
-    testing_plant_error(garden.plants, "GardenError")
-    testing_water_error(garden.get_tank_amount(), "GardenError")
-
-
 def main() -> None:
     garden: Garden = Garden()
-    plant1: Plant = Plant("lilac")
-    plant2: Plant = Plant("begonia", "withering")
-    plant3: Plant = Plant("eggplant", "withering")
-    garden.add_plant(plant1)
-    garden.add_plant(plant2)
-    garden.add_plant(plant3)
-    print("=== Custom Garden Errors Demo ===\n")
-    print("Testing PlantError...")
-    testing_plant_error(garden.plants)
-    print("Testing WaterError...")
-    testing_water_error(garden.get_tank_amount())
+    garden.add_plant(Plant("lilac"))
+    garden.add_plant(Plant("begonia", "withering"))
+    garden.add_plant(Plant("eggplant", "withering"))
+    print("=== Custom Garden Errors Demo ===")
+    print("\nTesting PlantError...")
+    garden.check_plants()
+    print("\nTesting WaterError...")
     garden.set_tank_amount(25)
-    print("Testing WaterError...")
-    testing_water_error(garden.get_tank_amount())
-    print("Testing catching all garden errors...")
-    testing_garden_errors(garden)
-    print("All custom error types work correctly!\n")
+    garden.check_tank_amount()
+    print("\nTesting catching all garden errors...")
+    garden.check_plants("GardenError")
+    garden.check_tank_amount("GardenError")
+    print("\nAll custom error types work correctly!")
 
 
 if __name__ == "__main__":
