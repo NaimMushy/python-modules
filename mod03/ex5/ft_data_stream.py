@@ -1,7 +1,7 @@
 import random
-import sys
 from typing import Generator
 import time
+# import sys
 
 
 DEFAULT_PLAYERS = ["alice", "bob", "charlie"]
@@ -16,6 +16,7 @@ class Player:
         kills: int = 0,
         treasures: int = 0
     ) -> None:
+
         self.name: str = name
         self.level: int = level
         self.kills: int = kills
@@ -40,6 +41,7 @@ class Event:
     def __init__(self, event_type: str, player: Player) -> None:
         self.event_type: str = event_type
         self.player: Player = player
+
         if (
             event_type == "leveled up"
             or event_type == "killed monster"
@@ -59,6 +61,7 @@ def generate_events(
     event_nb: int,
     players: list[Player]
 ) -> Generator[Event, None, None]:
+
     while event_nb > 0:
         yield choose_event(players)
         event_nb -= 1
@@ -68,12 +71,16 @@ def choose_event(players: list[Player]) -> Event:
     random_range: int = random.randint(1, 1000)
     random_nb: int = random.randint(1, 44)
     random_pl: Player = choose_player(players)
+
     if random_range % random_nb == 0:
         return Event("leveled up", random_pl)
+
     elif random_range % random_nb == 1:
         return Event("killed monster", random_pl)
+
     elif random_range % random_nb == 2:
         return Event("found treasure", random_pl)
+
     else:
         return Event("moved", random_pl)
 
@@ -81,6 +88,7 @@ def choose_event(players: list[Player]) -> Event:
 def process_events(
     events: Generator[Event, None, None]
 ) -> Generator[Event, None, None]:
+
     for event in events:
         Event.event_count += 1
         if event.important:
@@ -89,11 +97,14 @@ def process_events(
 
 def stream_analytics(players: list[Player]) -> None:
     print("\n=== Stream Analytics ===")
+
     print(f"Total events processed: {Event.event_count}")
+
     high_lvl_count: int = 0
     for player in players:
         if player.level >= 10:
             high_lvl_count += 1
+
     print(f"High-level players (10+): {high_lvl_count}")
     print(f"Treasure events: {Event.treasure_count}")
     print(f"Level-up events: {Event.lvl_up_count}\n")
@@ -102,24 +113,26 @@ def stream_analytics(players: list[Player]) -> None:
 def fibonacci_seq(loop: int) -> Generator[int, None, None]:
     current: int = 1
     prev: int = 0
+
     while loop > 0:
         yield prev
-        temp: int = current
-        current += prev
-        prev = temp
+        prev, current = current, prev + current
         loop -= 1
 
 
 def prime_nb(count: int) -> Generator[int, None, None]:
     nb: int = 2
+
     while count > 0:
         prime_check: int = 2
         is_prime: bool = True
+
         while prime_check <= nb // 2:
             if nb % prime_check == 0:
                 is_prime = False
                 break
             prime_check += 1
+
         if is_prime:
             count -= 1
             yield nb
@@ -128,9 +141,11 @@ def prime_nb(count: int) -> Generator[int, None, None]:
 
 def gen_demon() -> None:
     print("=== Generator Demonstration ===")
+
     fib_seq: Generator[int, None, None] = fibonacci_seq(10)
     print("Fibonacci sequence (first 10): ", end="")
     print(*fib_seq)
+
     all_primes: Generator[int, None, None] = prime_nb(5)
     print("Prime numbers (first 5): ", end="")
     print(*all_primes)
@@ -139,11 +154,17 @@ def gen_demon() -> None:
 def parse_args(
     args: list[str]
 ) -> tuple[int, list[Player]]:
+
     start: int = 0
     players: list[Player] = []
+
     try:
         event_nb: int = int(args[0])
     except ValueError:
+        print(
+            "No specific number of events provided - "
+            f"Resorting to default {DEFAULT_EVENT_NB}\n"
+        )
         event_nb = DEFAULT_EVENT_NB
     else:
         if event_nb < 1:
@@ -153,6 +174,7 @@ def parse_args(
             )
             event_nb = DEFAULT_EVENT_NB
         start += 1
+
     for pl in range(start, len(args)):
         try:
             int(args[pl])
@@ -164,24 +186,32 @@ def parse_args(
                 f"for character name (string required)"
                 " - character creation [IGNORED]\n"
             )
+
     return event_nb, players
 
 
 def main() -> None:
     print("=== Game Data Stream Processor ===\n")
+
     start: float = time.time()
+    args: list[str] = DEFAULT_PLAYERS
+
+    """
     if len(sys.argv) == 1:
         print(
-            "No custom players nor specific number of events given\n-> Usage:\n"
+            "No custom players nor specific number "
+            "of events given\n-> Usage:\n"
             "[SPECIFIC NUMBER OF EVENTS] ft_data_stream.py <event_number>\n"
             "[CUSTOM PLAYERS] ft_data_stream.py <player1> <player2> ...\n"
-            "[BOTH] ft_data_stream.py <event_number> <player1> <player2> ...\n\n"
+            "[BOTH] ft_data_stream.py "
+            "<event_number> <player1> <player2> ...\n\n"
             f"Resorting to default players {DEFAULT_PLAYERS} "
             f"and default number of events {DEFAULT_EVENT_NB}\n"
         )
-        args: list[str] = DEFAULT_PLAYERS
     else:
-        args = sys.argv[1:] + DEFAULT_PLAYERS
+        args = sys.argv[1:] + args
+    """
+
     event_nb, all_players = parse_args(args)
     print(f"Processing {event_nb} game events...\n")
     events: Generator[Event, None, None] = generate_events(
@@ -189,6 +219,7 @@ def main() -> None:
     )
     processed_events: Generator[Event, None, None] = process_events(events)
     count: int = 0
+
     for cur_event in processed_events:
         count += 1
         cur_event.player.update(cur_event.event_type)
@@ -196,10 +227,13 @@ def main() -> None:
             f"Event {count}: Player {cur_event.player.name} "
             f"(level {cur_event.player.level}) {cur_event.event_type}"
         )
+
     stream_analytics(all_players)
     print("Memory usage: constant (streaming)")
+
     end: float = time.time()
     print(f"Processing time: {round(end - start, 3)} seconds\n")
+
     gen_demon()
 
 

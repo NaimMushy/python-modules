@@ -12,42 +12,58 @@ def calculate_dist(coor1: tuple, coor2: tuple) -> None:
 
 def unpack_demon(coor: tuple) -> None:
     print("Unpacking demonstration:")
-    x: int = coor[0]
-    y: int = coor[1]
-    z: int = coor[2]
+    x: int
+    y: int
+    z: int
+    x, y, z = coor
     print(f"Player at x={x}, y={y}, z={z}")
     print(f"Coordinates: X={x}, Y={y}, Z={z}")
 
 
+def parse_coordinates(coor: tuple | str) -> tuple:
+    if isinstance(coor, tuple):
+        if len(coor) > 3:
+            raise ValueError(
+                "Too many coordinates in tuple [REJECTED] - 3 required"
+            )
+        print(f"Position created: {coor}")
+        coor_tup: tuple = coor
+
+    elif isinstance(coor, str):
+        print(f"Parsing coordinates: '{coor}'")
+        coor_str: list[str] = coor.split(",")
+        nb_coor: list[int] = []
+        for c in coor_str:
+            nb_coor.append(int(c))
+        if len(nb_coor) != 3:
+            raise ValueError(
+                "Inadequate number of coordinates "
+                "given as argument [REJECTED] - 3 required"
+            )
+        coor_tup = tuple(nb_coor)
+        print(f"Parsed position: {coor_tup}")
+
+    calculate_dist((0, 0, 0), coor_tup)
+    return coor_tup
+
+
 def main() -> None:
     print("=== Game Coordinate System ===\n")
+
     pos_tab: list[tuple] = []
-    pos_tab.append((16, 4, 6))
-    print(f"Position created: {pos_tab[0]}")
-    calculate_dist((0, 0, 0), pos_tab[0])
-    if len(sys.argv) > 1:
-        for coor in range(1, len(sys.argv)):
-            print(f"Parsing coordinates: \"{sys.argv[coor]}\"")
-            coor_str: list[str] = sys.argv[coor].split(",")
-            nb_coor: list[int] = []
-            try:
-                for c in coor_str:
-                    nb_coor.append(int(c))
-            except ValueError:
-                print(
-                    "Caught ValueError while parsing coordinates: "
-                    f"Invalid literal for int() with base 10: '{c}'\n"
-                )
-            else:
-                coor_tup = tuple(nb_coor)
-                print(f"Parsed position: {coor_tup}")
-                calculate_dist((0, 0, 0), coor_tup)
-                pos_tab.append(coor_tup)
-    else:
+    args: list[tuple | str] = [(16, 4, 6)] + sys.argv[1:]
+    for coor in args:
+        try:
+            pos_tab.append(parse_coordinates(coor))
+        except ValueError as ve:
+            print(f"Caught ValueError while parsing coordinates: {ve}\n")
+
+    if len(args) == 1:
         print(
             "No coordinates given to parse - Usage: "
             "ft_coordinate_system.py '<x1,y1,z1>' '<x2,y2,z2>' ...\n"
         )
+
     unpack_demon(pos_tab[-1])
 
 
