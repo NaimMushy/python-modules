@@ -2,14 +2,11 @@ import sys
 
 
 def main() -> None:
-    """
-    Displays player scores given from the command line.
-    """
     print("=== Player Score Analytics ===")
     if len(sys.argv) == 1:
         print(
-            "no score provided. "
-            "usage: python3 ft_score_analytics.py <score1> <score2> ..."
+            "No score provided - "
+            "Usage: python3 ft_score_analytics.py <score1> <score2> ..."
         )
     else:
         scores: list[int] = []
@@ -18,21 +15,21 @@ def main() -> None:
                 conv_score: int = int(sys.argv[score])
             except ValueError:
                 print(
-                    f"caught ValueError: invalid type {type(sys.argv[score])} "
-                    f"for the score {sys.argv[score]}"
+                    f"Caught ValueError: Invalid type {type(sys.argv[score])} "
+                    f"for the score {sys.argv[score]} (integer required)"
                 )
             else:
                 scores.append(conv_score)
-        print(f"scores processed: {scores}")
-        print(f"total players: {len(scores)}")
+        print(f"Scores processed: {scores}")
+        print(f"Total players: {len(scores)}")
         total_score: int = 0
         for s in scores:
             total_score += s
-        print(f"total score: {total_score}")
-        print(f"average score: {total_score / len(scores)}")
-        print(f"high score: {max(scores)}")
-        print(f"low score: {min(scores)}")
-        print(f"score range: {max(scores) - min(scores)}")
+        print(f"Total score: {total_score}")
+        print(f"Average score: {total_score / len(scores)}")
+        print(f"High score: {max(scores)}")
+        print(f"Low score: {min(scores)}")
+        print(f"Score range: {max(scores) - min(scores)}")
 
 
 if __name__ == "__main__":

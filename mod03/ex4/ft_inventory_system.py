@@ -2,41 +2,16 @@ import sys
 
 
 def get_total(inventory: dict) -> int:
-    """
-    Returns
-    -------
-    int
-        The inventory's total item count.
-    """
-    total: int = 0
-    for quantity in inventory.values():
-        total += quantity
-    return total
+    return sum(quantity for quantity in inventory.values())
 
 
 def system_analysis(inventory: dict) -> None:
-    """
-    Displays information about the inventory.
-
-    Parameters
-    ----------
-    inventory
-        A dictionary which represents an item inventory.
-    """
     print("=== Inventory System Analysis ===")
-    print(f"total items in inventory: {get_total(inventory)}")
-    print(f"unique items types: {len(inventory)}\n")
+    print(f"Total items in inventory: {get_total(inventory)}")
+    print(f"Unique items types: {len(inventory)}\n")
 
 
 def current_inventory(inventory: dict) -> None:
-    """
-    Displays every item in the inventory.
-
-    Parameters
-    ----------
-    inventory
-        A dictionary which represents an item inventory.
-    """
     print("=== Current Inventory ===")
     sorted_inventory: dict = {}
     max_quantity: int = max(inventory.values())
@@ -54,45 +29,34 @@ def current_inventory(inventory: dict) -> None:
 
 
 def inventory_stats(inventory: dict) -> None:
-    """
-    Displays the inventory's statistics.
-
-    Parameters
-    ----------
-    inventory
-        A dictionary which represents an item inventory.
-    """
     print("\n=== Inventory Statistics ===")
-    inventory["max_item"] = {}
-    max_item: int = 0
-    for key, val in inventory.items():
-        if val > max_item:
-            inventory["max_item"][key] = val
-            max_item = val
-    for key in inventory["max_item"].keys():
-        print(f"most abundant: {key} ({inventory['max_item'][key]} units)")
-    inventory["min_item"] = {}
-    min_item: int = max_item
-    for key, val in inventory.items():
-        if val < min_item:
-            inventory["min_item"][key] = val
-            min_item = val
-    for key in inventory["min_item"].keys():
-        print(f"least abundant: {key} ({inventory['min_item'][key]} units)")
+    inventory["max_item"] = {
+        key: val for key, val in inventory.items()
+        if val == max(inventory.values())
+    }
+    print("Most abundant:", end="")
+    for key, val in inventory["max_item"].items():
+        print(
+            f" {key} ({val} "
+            f"{'units' if val > 1 else 'unit'})", end=""
+        )
     del inventory["max_item"]
+    inventory["min_item"] = {
+        key: val for key, val in inventory.items()
+        if val == min(inventory.values())
+    }
+    print("\nLeast abundant:", end="")
+    for key, val in inventory["min_item"].items():
+        print(
+            f" {key} ({val} "
+            f"{'units' if val > 1 else 'unit'})", end=""
+        )
+    print("")
     del inventory["min_item"]
 
 
 def item_categories(inventory: dict) -> None:
-    """
-    Organizes inventory items in categories and displays them.
-
-    Parameters
-    ----------
-    inventory
-        A dictionary which represents an item inventory.
-    """
-    print("=== Item Categories ===")
+    print("\n=== Item Categories ===")
     item_categories: dict = {}
     for item, quantity in inventory.items():
         if quantity <= 3:
@@ -108,51 +72,35 @@ def item_categories(inventory: dict) -> None:
                 item_categories["plentiful"] = {}
             item_categories["plentiful"][item] = quantity
     for categories, items in item_categories.items():
-        print(f"{categories}: {items}")
+        print(f"{categories.capitalize()}: {items}")
 
 
 def management_sugg(inventory: dict) -> None:
-    """
-    Displays some management suggestions about restocking items.
-
-    Parameters
-    ----------
-    inventory
-        A dictionary which represents an item inventory.
-    """
     print("\n=== Management Suggestions ===")
-    restock: list[str] = []
-    min_quantity: int = max(inventory.values())
-    for item in inventory.keys():
-        if inventory[item] == min_quantity:
-            restock.append(item)
-    print(f"restock needed: {restock}\n")
+    restock: list[str] = [
+        item for item, quantity in inventory.items()
+        if quantity == min(inventory.values())
+    ]
+    print(f"Restock needed: {restock}\n")
 
 
 def dict_prop_demo(inventory: dict, sample_item: str) -> None:
-    """
-    Displays a demonstration of the inventory properties.
-
-    Parameters
-    ----------
-    inventory
-        A dictionary which represents an item inventory.
-    """
     print("=== Dictionary Properties Demo ===")
-    print(f"dictionary keys: {inventory.keys()}")
-    print(f"dictionary values: {inventory.values()}")
+    print(f"Dictionary keys: {[key for key in inventory.keys()]}")
+    print(f"Dictionary values: {[val for val in inventory.values()]}")
     print(
-        f"sample lookup - '{sample_item}' in inventory: "
+        f"Sample lookup - '{sample_item}' in inventory: "
         f"{sample_item in inventory}"
     )
 
 
 def main() -> None:
-    """
-    Manages an inventory and displays its data.
-    """
     if len(sys.argv) == 1:
-        print("inventory empty.")
+        print(
+            "Inventory empty - "
+            "Usage: python3 ft_inventory_system.py "
+            "<item1:quantity1> <item2:quantity2> ..."
+        )
     else:
         inventory: dict = {}
         for item in range(1, len(sys.argv)):

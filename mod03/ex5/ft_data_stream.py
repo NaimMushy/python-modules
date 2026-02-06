@@ -9,9 +9,6 @@ DEFAULT_EVENT_NB = 20
 
 
 class Player:
-    """
-    A class that represents a player.
-    """
     def __init__(
         self,
         name: str = "anonymous",
@@ -19,34 +16,12 @@ class Player:
         kills: int = 0,
         treasures: int = 0
     ) -> None:
-        """
-        Initializes the player's data.
-
-        Parameters
-        ----------
-        name
-            The player's name.
-        level
-            The player's level.
-        kills
-            The player's kills.
-        treasures
-            The player's treasures.
-        """
-        self.name = name
-        self.level = level
-        self.kills = kills
-        self.treasures = treasures
+        self.name: str = name
+        self.level: int = level
+        self.kills: int = kills
+        self.treasures: int = treasures
 
     def update(self, event_type: str) -> None:
-        """
-        Updates the player's data based on the event given.
-
-        Parameters
-        ----------
-        event_type
-            The type of the event.
-        """
         if event_type == "leveled up":
             self.level += 1
             Event.lvl_up_count += 1
@@ -58,33 +33,11 @@ class Player:
 
 
 class Event:
-    """
-    A class that represents an event.
-
-    Attributes
-    ----------
-    event_count
-        The total event count.
-    treasure_count
-        The total number of treasure events.
-    lvl_up_count
-        The total number of level up events.
-    """
     event_count: int = 0
     treasure_count: int = 0
     lvl_up_count: int = 0
 
     def __init__(self, event_type: str, player: Player) -> None:
-        """
-        Initializes the event's data.
-
-        Parameters
-        ----------
-        event_type
-            The type of the event.
-        player
-            The player to which the event is happening.
-        """
         self.event_type: str = event_type
         self.player: Player = player
         if (
@@ -98,19 +51,6 @@ class Event:
 
 
 def choose_player(all_players: list[Player]) -> Player:
-    """
-    Chooses randomly a player amongst the list of players provided.
-
-    Parameters
-    ----------
-    all_players
-        The list of players.
-
-    Returns
-    -------
-    Player
-        The player chosen at random.
-    """
     random_pl: int = random.randint(0, len(all_players) - 1)
     return all_players[random_pl]
 
@@ -119,40 +59,12 @@ def generate_events(
     event_nb: int,
     players: list[Player]
 ) -> Generator[Event, None, None]:
-    """
-    Generates a list of random events.
-
-    Parameters
-    ----------
-    event_nb
-        The number of events to generate.
-    players
-        The list of players.
-
-    Returns
-    -------
-    Generator[Event, None, None]
-        The generator containing all the randomly generated events.
-    """
     while event_nb > 0:
         yield choose_event(players)
         event_nb -= 1
 
 
 def choose_event(players: list[Player]) -> Event:
-    """
-    Chooses randomly an event happening to a random player.
-
-    Parameters
-    ----------
-    players
-        The list of players.
-
-    Returns
-    -------
-    Event
-        The event randomly selected.
-    """
     random_range: int = random.randint(1, 1000)
     random_nb: int = random.randint(1, 44)
     random_pl: Player = choose_player(players)
@@ -169,19 +81,6 @@ def choose_event(players: list[Player]) -> Event:
 def process_events(
     events: Generator[Event, None, None]
 ) -> Generator[Event, None, None]:
-    """
-    Processes the stream of events to keep the important ones.
-
-    Parameters
-    ----------
-    events
-        The generator containing all the randomly generated events.
-
-    Returns
-    -------
-    Generator[Event, None, None]
-        The generator containing all the important events.
-    """
     for event in events:
         Event.event_count += 1
         if event.important:
@@ -189,39 +88,18 @@ def process_events(
 
 
 def stream_analytics(players: list[Player]) -> None:
-    """
-    Displays data about the events stream.
-
-    Parameters
-    ----------
-    players
-        The list of players.
-    """
     print("\n=== Stream Analytics ===")
-    print(f"total events processed: {Event.event_count}")
+    print(f"Total events processed: {Event.event_count}")
     high_lvl_count: int = 0
     for player in players:
         if player.level >= 10:
             high_lvl_count += 1
-    print(f"high-level players (10+): {high_lvl_count}")
-    print(f"treasure events: {Event.treasure_count}")
-    print(f"level-up events: {Event.lvl_up_count}\n")
+    print(f"High-level players (10+): {high_lvl_count}")
+    print(f"Treasure events: {Event.treasure_count}")
+    print(f"Level-up events: {Event.lvl_up_count}\n")
 
 
 def fibonacci_seq(loop: int) -> Generator[int, None, None]:
-    """
-    Calculates the fibonacci sequence based on the length given.
-
-    Parameters
-    ----------
-    loop
-        The length of the sequence.
-
-    Returns
-    -------
-    Generator[int, None, None]
-        The generator containing the elements of the sequence.
-    """
     current: int = 1
     prev: int = 0
     while loop > 0:
@@ -233,19 +111,6 @@ def fibonacci_seq(loop: int) -> Generator[int, None, None]:
 
 
 def prime_nb(count: int) -> Generator[int, None, None]:
-    """
-    Calculates a list of prime numbers based on the length given.
-
-    Parameters
-    ----------
-    count
-        The length of the list.
-
-    Returns
-    -------
-    Generator[int, None, None]
-        The generator containing the prime numbers.
-    """
     nb: int = 2
     while count > 0:
         prime_check: int = 2
@@ -262,92 +127,63 @@ def prime_nb(count: int) -> Generator[int, None, None]:
 
 
 def gen_demon() -> None:
-    """
-    Displays a demonstration of generator capabilities.
-    """
     print("=== Generator Demonstration ===")
     fib_seq: Generator[int, None, None] = fibonacci_seq(10)
-    print("fibonacci sequence (first 10): ", end="")
+    print("Fibonacci sequence (first 10): ", end="")
     print(*fib_seq)
     all_primes: Generator[int, None, None] = prime_nb(5)
-    print("prime numbers (first 5): ", end="")
+    print("Prime numbers (first 5): ", end="")
     print(*all_primes)
-
-
-def is_integer(to_convert: str) -> bool:
-    """
-    Checks if the given string can be converted to an integer.
-
-    Returns
-    -------
-    bool
-        True if the string can be converted, False otherwise.
-    """
-    try:
-        int(to_convert)
-    except ValueError:
-        return False
-    else:
-        return True
 
 
 def parse_args(
     args: list[str]
 ) -> tuple[int, list[Player]]:
-    """
-    Parses a list of arguments and determines
-    both the number of events to generate and the list of players.
-
-    Parameters
-    ----------
-    args
-        The arguments to parse, either from the command line, or the default.
-
-    Returns
-    -------
-    int
-        The number of events to generate.
-    list[Player]
-        The generator containing all the players.
-    """
     start: int = 0
-    event_nb: int = 0
     players: list[Player] = []
-    if is_integer(args[0]):
-        if int(args[0]) >= 1:
-            event_nb = int(args[0])
-        else:
+    try:
+        event_nb: int = int(args[0])
+    except ValueError:
+        event_nb = DEFAULT_EVENT_NB
+    else:
+        if event_nb < 1:
             print(
-                f"error: {int(args[0])} number of events "
-                f"is insuffisant - resorting to default {DEFAULT_EVENT_NB}\n"
+                f"Error: {int(args[0])} number of events "
+                f"is insuffisant - Resorting to default {DEFAULT_EVENT_NB}\n"
             )
             event_nb = DEFAULT_EVENT_NB
         start += 1
-    else:
-        event_nb = DEFAULT_EVENT_NB
     for pl in range(start, len(args)):
-        if not is_integer(args[pl]):
+        try:
+            int(args[pl])
+        except ValueError:
             players.append(Player(args[pl]))
         else:
             print(
-                f"ValueError: invalid type integer '{args[pl]}' "
-                f"for character name - character creation [IGNORED]\n"
+                f"Caught ValueError: Invalid type integer '{args[pl]}' "
+                f"for character name (string required)"
+                " - character creation [IGNORED]\n"
             )
     return event_nb, players
 
 
 def main() -> None:
-    """
-    Manages and displays data about randomized events using generators.
-    """
     print("=== Game Data Stream Processor ===\n")
     start: float = time.time()
     if len(sys.argv) == 1:
+        print(
+            "No custom players nor specific number of events given\n-> Usage:\n"
+            "[SPECIFIC NUMBER OF EVENTS] ft_data_stream.py <event_number>\n"
+            "[CUSTOM PLAYERS] ft_data_stream.py <player1> <player2> ...\n"
+            "[BOTH] ft_data_stream.py <event_number> <player1> <player2> ...\n\n"
+            f"Resorting to default players {DEFAULT_PLAYERS} "
+            f"and default number of events {DEFAULT_EVENT_NB}\n"
+        )
         args: list[str] = DEFAULT_PLAYERS
     else:
         args = sys.argv[1:] + DEFAULT_PLAYERS
     event_nb, all_players = parse_args(args)
-    print(f"processing {event_nb} game events...\n")
+    print(f"Processing {event_nb} game events...\n")
     events: Generator[Event, None, None] = generate_events(
         event_nb, all_players
     )
@@ -357,13 +193,13 @@ def main() -> None:
         count += 1
         cur_event.player.update(cur_event.event_type)
         print(
-            f"event {count}: player {cur_event.player.name} "
+            f"Event {count}: Player {cur_event.player.name} "
             f"(level {cur_event.player.level}) {cur_event.event_type}"
         )
     stream_analytics(all_players)
-    print("memory usage: constant (streaming)")
+    print("Memory usage: constant (streaming)")
     end: float = time.time()
-    print(f"processing time: {round(end - start, 3)} seconds\n")
+    print(f"Processing time: {round(end - start, 3)} seconds\n")
     gen_demon()
 
 
