@@ -23,7 +23,7 @@ class EliteCard(Card, Combatable, Magical):
         self.set_attack(attack)
         self.defense: int = defense
         self.mana_pool: int = mana_pool
-        self._health: int = health
+        self.__health: int = health
         self.combat_type: str = combat_type
         self.known_spells: list[SpellCard] = known_spells
 
@@ -50,7 +50,7 @@ class EliteCard(Card, Combatable, Magical):
 
     def learn_spell(self, new_spell: SpellCard) -> None:
         if new_spell in self.known_spells:
-            print(f"Spell {new_spell.name} already learned")
+            print(f"Spell {new_spell.name} already learned\n")
         else:
             print(f"{self.name} is learning a new spell...")
             print(f"{new_spell.name} learned!\n")
@@ -63,16 +63,18 @@ class EliteCard(Card, Combatable, Magical):
             "damage": self.get_attack(),
             "combat_type": self.combat_type
         }
-        print("Combat phase:")
-        print(f"Attack result: {attack_result}")
+        print(
+            "Combat phase:\n"
+            f"Attack result: {attack_result}\n"
+        )
         return attack_result
 
     def defend(self, incoming_damage: int) -> dict:
         if incoming_damage > self.defense:
             damage_taken: int = incoming_damage - self.defense
-            self._health -= damage_taken
+            self.__health -= damage_taken
             if self.get_health() < 0:
-                self._health = 0
+                self.__health = 0
         else:
             damage_taken = 0
         defense_result: dict = {
@@ -81,7 +83,7 @@ class EliteCard(Card, Combatable, Magical):
             "damage_blocked": self.defense,
             "still_alive": self.get_health() > 0
         }
-        print(f"Defense result: {defense_result}")
+        print(f"Defense result: {defense_result}\n")
         return defense_result
 
     def get_combat_stats(self) -> dict:
@@ -97,10 +99,10 @@ class EliteCard(Card, Combatable, Magical):
                 spell_to_cast: SpellCard = spell
         mana_channel_result: dict = self.channel_mana(mana_used)
         if not mana_used:
-            print(f"Spell {spell_name} not learned by {self.name}")
+            print(f"Spell {spell_name} not learned by {self.name}\n")
         elif not mana_channel_result["success"]:
             mana_used = 0
-        elif len(targets):
+        elif targets:
             spell_to_cast.resolve_effect(targets)
         print("Magic phase:")
         cast_result: dict = {
@@ -110,15 +112,17 @@ class EliteCard(Card, Combatable, Magical):
             "mana_used": mana_used,
             "success": mana_used > 0
         }
-        print(f"Spell cast: {cast_result}")
-        print(f"Mana channel: {mana_channel_result}\n")
+        print(
+            f"Spell cast: {cast_result}"
+            f"Mana channel: {mana_channel_result}\n"
+        )
         return cast_result
 
     def channel_mana(self, amount: int) -> dict:
         if amount > self.mana_pool:
             print(
                 "Impossible to channel sufficient mana - "
-                f"{self.mana_pool} still available"
+                f"{self.mana_pool} still available\n"
             )
             amount = 0
         else:
@@ -132,17 +136,6 @@ class EliteCard(Card, Combatable, Magical):
     def get_magic_stats(self) -> dict:
         return {
             "Magical": ["cast_spell", "channel_mana", "get_magic_stats"]
-        }
-
-    def get_card_info(self) -> dict:
-        return super().get_card_info() | {
-            "type": "Elite",
-            "attack": self.get_attack(),
-            "defense": self.defense,
-            "mana_pool": self.mana_pool,
-            "health": self.get_health(),
-            "combat_type": self.combat_type,
-            "known_spells": self.known_spells
         }
 
     def play(self, game_state: dict) -> dict:
@@ -166,7 +159,7 @@ class EliteCard(Card, Combatable, Magical):
         return play_result
 
     def play_elite(self, deck: Deck) -> None:
-        if self.get_health() == 0:
+        if not self.get_health():
             print(f"Elite Character {self.name} has been defeated\n")
             deck.remove_from_all(self)
         else:
@@ -175,17 +168,32 @@ class EliteCard(Card, Combatable, Magical):
                 if isinstance(card, SpellCard) and
                 card in self.known_spells
             ]
-            if len(active_spells):
+            if active_spells:
                 spell_to_cast: SpellCard = random.choice(active_spells)
-                self.cast_spell(
+                cast_result: dict = self.cast_spell(
                     spell_to_cast.name,
-                    spell_to_cast.get_correct_targets(deck)
+                    spell_to_cast.get_correct_targets(
+                        deck.possible_targets,
+                        deck.enemy_deck.possible_targets
+                    )
                 )
-                deck.remove_from_all(spell_to_cast)
-            elif len(deck.enemy_deck.possible_targets):
+                if cast_result["success"]:
+                    deck.remove_from_all(spell_to_cast)
+            elif deck.enemy_deck.possible_targets:
                 self.attack(
                     random.choice(deck.enemy_deck.possible_targets)
                 )
+
+    def get_card_info(self) -> dict:
+        return super().get_card_info() | {
+            "type": "Elite",
+            "attack": self.get_attack(),
+            "defense": self.defense,
+            "mana_pool": self.mana_pool,
+            "health": self.get_health(),
+            "combat_type": self.combat_type,
+            "known_spells": self.known_spells
+        }
 
     def __repr__(self) -> str:
         return "elites"

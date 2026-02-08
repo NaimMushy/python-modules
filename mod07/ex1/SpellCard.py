@@ -32,28 +32,30 @@ class SpellCard(Card):
         return play_result
 
     def play_spell(self, deck: Deck) -> None:
-        if len(self.get_correct_targets(
+        targets: list[Card] = self.get_correct_targets(
             deck.possible_targets, deck.enemy_deck.possible_targets
-        )):
-            self.resolve_effect(self.get_correct_targets(
-                deck.possible_targets, deck.enemy_deck.possible_targets
-            ))
+        )
+        if targets:
+            self.resolve_effect(targets)
             deck.remove_from_all(self)
 
     def get_correct_targets(
         self,
-        ally_cards: list[Card],
-        enemy_cards: list[Card]
+        ally_targets: list[Card],
+        enemy_targets: list[Card]
     ) -> list[Card]:
         if (
             "damage" in self.effect_type or
             "Removes" in self.effect_type
         ):
-            return enemy_cards
+            return ally_targets
         else:
-            return ally_cards
+            return enemy_targets
 
     def resolve_effect(self, targets: list) -> dict:
+        if not targets:
+            print(f"No targets available for {self.name}\n")
+            return {"effect": "unknown"}
         if (match := re.match(
             "([a-z]+) ([0-9]+) ([a-z]+) to target",
             self.effect_type,
@@ -76,18 +78,18 @@ class SpellCard(Card):
                         target.get_attack() + effect_value
                     )
                 else:
-                    return {"effect": "unknown"}
+                    return {"effect": "unknown", "target": None}
                 print(
                     f"Spell effect < {self.effect_type} > "
                     f"applied to {target.name}"
                 )
-            all_targets: list[str] = [target.name for target in targets]
+            print("")
             return {
                 "effect": [effect_type, effect_value],
-                "targets": all_targets
+                "targets": [target.name for target in targets]
             }
         else:
-            return {"effect": "unknown"}
+            return {"effect": "unknown", "target": None}
 
     def get_card_info(self) -> dict:
         return super().get_card_info() | {

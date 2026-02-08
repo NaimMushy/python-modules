@@ -46,14 +46,13 @@ class ArtifactCard(Card):
         if "mana" in target:
             target_deck.available_mana -= 1
             self.durability -= 1
-        elif len(target_deck.get_deck_stats()["total_cards"]):
-            if "health" in effect or "attack" in effect:
-                self.apply_effect(effect, target_deck.possible_targets)
-            else:
-                self.apply_effect(
-                    effect,
-                    target_deck.active_cards + target_deck.stack_cards
-                )
+        if "beings" in target:
+            self.apply_effect(effect, target_deck.possible_targets)
+        else:
+            self.apply_effect(
+                effect,
+                target_deck.active_cards + target_deck.stack_cards
+            )
             self.durability -= 1
         if self.durability <= 0:
             print(
@@ -87,6 +86,8 @@ class ArtifactCard(Card):
                     target = "ally_deck_mana"
             else:
                 target = "enemy"
+            if "attack" in effect_type or "health" in effect_type:
+                target += " beings"
             return {
                 "permanent": permanent,
                 "effect": [effect_type, effect_value],
@@ -94,7 +95,57 @@ class ArtifactCard(Card):
                 "repeat": repeat_per_turn
             }
         else:
-            return {"effect": "unknown"}
+            return {"effect": "unknown", "target": None}
+
+    def apply_effect(self, effect: list | str, targets: list[Card]) -> None:
+        if isinstance(effect, str) and effect == "unknown":
+            print("No card effect for this turn\n")
+            return None
+        if not targets:
+            print(f"No available targets for {self.name}\n")
+            return None
+        if "health" in effect[0]:
+            for target in targets:
+                target.set_health(target.get_health() + effect[1])
+                if effect[1] > 0:
+                    print(
+                        f"Effect < +{effect[1]} health points > "
+                        f"applied to {target.name}"
+                    )
+                else:
+                    print(
+                        f"Effect < {effect[1]} health points > "
+                        f"applied to {target.name}"
+                    )
+        elif "attack" in effect[0]:
+            for target in targets:
+                target.set_attack(
+                    target.get_attack() + effect[1]
+                )
+                if effect[1] > 0:
+                    print(
+                        f"Effect < +{effect[1]} attack > "
+                        f"applied to {target.name}"
+                    )
+                else:
+                    print(
+                        f"Effect < {effect[1]} attack > "
+                        f"applied to {target.name}"
+                    )
+        elif "mana cost" in effect[0]:
+            for target in targets:
+                target.cost += effect[1]
+                if effect[1] > 0:
+                    print(
+                        f"Effect < +{effect[1]} mana cost > "
+                        f"applied to {target.name}"
+                    )
+                else:
+                    print(
+                        f"Effect < {effect[1]} mana cost > "
+                        f"applied to {target.name}"
+                    )
+        print("")
 
     def get_card_info(self) -> dict:
         return super().get_card_info() | {
@@ -102,53 +153,6 @@ class ArtifactCard(Card):
             "durability": self.durability,
             "effect": self.effect
         }
-
-    def apply_effect(self, effect: list | str, targets: list) -> None:
-        if isinstance(effect, str):
-            if effect == "unknown":
-                print("No card effect for this turn\n")
-        else:
-            if "health" in effect[0]:
-                for target in targets:
-                    target.set_health(target.get_health() + effect[1])
-                    if effect[1] > 0:
-                        print(
-                            f"Effect < +{effect[1]} health points > "
-                            f"applied to {target.name}"
-                        )
-                    else:
-                        print(
-                            f"Effect < {effect[1]} health points > "
-                            f"applied to {target.name}"
-                        )
-            elif "mana cost" in effect[0]:
-                for target in targets:
-                    target.cost += effect[1]
-                    if effect[1] > 0:
-                        print(
-                            f"Effect < +{effect[1]} mana cost > "
-                            f"applied to {target.name}"
-                        )
-                    else:
-                        print(
-                            f"Effect < {effect[1]} mana cost > "
-                            f"applied to {target.name}"
-                        )
-            elif "attack" in effect[0]:
-                for target in targets:
-                    target.set_attack(
-                        target.get_attack() + effect[1]
-                    )
-                    if effect[1] > 0:
-                        print(
-                            f"Effect < +{effect[1]} attack > "
-                            f"applied to {target.name}"
-                        )
-                    else:
-                        print(
-                            f"Effect < {effect[1]} attack > "
-                            f"applied to {target.name}"
-                        )
 
     def __repr__(self) -> str:
         return "artifacts"

@@ -47,12 +47,12 @@ class Deck:
     def get_deck_stats(self) -> dict:
         stats: dict = {}
         stats["total_cards"] = len(self.stack_cards) + len(self.active_cards)
-        stats["avg_cost"] = 0
+        avg_cost: int = 0
         for key, val in self.collection.items():
             stats[key] = len(val)
             for card in val:
-                stats["avg_cost"] += card.cost
-        stats["avg_cost"] = round(stats["avg_cost"] / stats["total_cards"], 1)
+                avg_cost += card.cost
+        stats["avg_cost"] = round(avg_cost / stats["total_cards"], 1)
         return stats
 
     def display_cards(self) -> None:

@@ -18,14 +18,21 @@ def main() -> None:
         f"Playing Fire Dragon with "
         f"{game_state['available_mana']} mana available:"
     )
-    print(fire_dragon.is_playable(game_state["available_mana"]))
+    print(
+        "Playable: "
+        f"{fire_dragon.is_playable(game_state['available_mana'])}"
+    )
     fire_dragon.play(game_state)
+    game_state["available_mana"] -= fire_dragon.cost
     fire_dragon.attack_target(goblin_warrior)
     print(
         "Testing insufficient mana "
         f"({game_state['available_mana']} available):"
     )
-    fire_dragon.is_playable(game_state["available_mana"])
+    print(
+        "Playable: "
+        f"{fire_dragon.is_playable(game_state['available_mana'])}"
+    )
     print("\nAbstract pattern successfully demonstrated!")
 
 
