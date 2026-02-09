@@ -60,20 +60,20 @@ class CreatureCard(Card):
             "effect": "Creature summoned to battlefield"
         }
         print(f"Play result: {play_result}\n")
-        target: Card = random.choice(game_state["targets"])
-        print(f"{self.name} attacks {target.name}:")
-        attack_result: dict = self.attack_target(target)
-        print(f"Attack result: {attack_result}\n")
+        self.attack_target(random.choice(game_state["targets"]))
         return play_result
 
     def attack_target(self, target) -> dict:
+        print(f"{self.name} attacks {target.name}:")
         target.set_health(target.get_health() - self.get_attack())
-        return {
+        attack_result: dict = {
             "attacker": self.name,
             "target": target.name,
             "damage_dealt": self.get_attack(),
             "combat_resolved": target.get_health() == 0
         }
+        print(f"Attack result: {attack_result}\n")
+        return attack_result
 
     def __repr__(self) -> str:
         return "creatures"
