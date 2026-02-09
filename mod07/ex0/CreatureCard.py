@@ -1,4 +1,5 @@
 from .Card import Card
+import random
 
 
 class CreatureCard(Card):
@@ -40,33 +41,39 @@ class CreatureCard(Card):
         }
 
     def play(self, game_state: dict) -> dict:
-        if self.is_playable(game_state["available_mana"]):
-            play_result: dict = {
-                "card_played": self.name,
-                "mana_used": self.cost,
-                "effect": "Creature summoned to battlefield"
-            }
-            print(f"Play result: {play_result}\n")
-        else:
-            play_result = {}
+        if not self.is_playable(game_state["available_mana"]):
             print(
                 f"Play result: Impossible to play {self.name} with "
                 f"{game_state['available_mana']} mana available"
                 f" - {self.cost} needed\n"
             )
+            return {}
+        if (
+            "targets" not in game_state.keys() or
+            not game_state["targets"]
+        ):
+            print(f"No available targets for {self.name} to attack")
+            return {}
+        play_result: dict = {
+            "card_played": self.name,
+            "mana_used": self.cost,
+            "effect": "Creature summoned to battlefield"
+        }
+        print(f"Play result: {play_result}\n")
+        target: Card = random.choice(game_state["targets"])
+        print(f"{self.name} attacks {target.name}:")
+        attack_result: dict = self.attack_target(target)
+        print(f"Attack result: {attack_result}\n")
         return play_result
 
     def attack_target(self, target) -> dict:
-        print(f"{self.name} attacks {target.name}:")
         target.set_health(target.get_health() - self.get_attack())
-        attack_result: dict = {
+        return {
             "attacker": self.name,
             "target": target.name,
             "damage_dealt": self.get_attack(),
             "combat_resolved": target.get_health() == 0
         }
-        print(f"Attack result: {attack_result}\n")
-        return attack_result
 
     def __repr__(self) -> str:
         return "creatures"

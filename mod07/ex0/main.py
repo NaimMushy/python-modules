@@ -6,12 +6,9 @@ def main() -> None:
     print("Testing Abstract Base Class Design:\n")
     game_state: dict = {}
     game_state["available_mana"] = 10
-    game_state["creatures"] = []
     game_state["targets"] = []
     fire_dragon = CreatureCard("Fire Dragon", 7, "Legendary", 7, 5)
     goblin_warrior = CreatureCard("Goblin Warrior", 4, "Common", 3, 6)
-    game_state["creatures"].append(fire_dragon)
-    game_state["creatures"].append(goblin_warrior)
     game_state["targets"].append(goblin_warrior)
     print(f"CreatureCard Info:\n{fire_dragon.get_card_info()}\n")
     print(
@@ -22,9 +19,8 @@ def main() -> None:
         "Playable: "
         f"{fire_dragon.is_playable(game_state['available_mana'])}"
     )
-    fire_dragon.play(game_state)
-    game_state["available_mana"] -= fire_dragon.cost
-    fire_dragon.attack_target(goblin_warrior)
+    play_result: dict = fire_dragon.play(game_state)
+    game_state["available_mana"] -= play_result["mana_used"]
     print(
         "Testing insufficient mana "
         f"({game_state['available_mana']} available):"
