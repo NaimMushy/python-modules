@@ -107,7 +107,9 @@ class EliteCard(Card, Combatable, Magical):
         print("Magic phase:")
         cast_result: dict = {
             "caster": self.name,
-            "spell": spell_name,
+            "spell": (
+                None if not mana_used else spell_name
+            ),
             "targets": [target.name for target in targets],
             "mana_used": mana_used,
             "success": mana_used > 0

@@ -17,26 +17,25 @@ class ArtifactCard(Card):
         self.effect: str = effect
 
     def play(self, game_state: dict) -> dict:
-        if self.is_playable(game_state["available_mana"]):
-            play_result: dict = {
-                "card_played": self.name,
-                "mana_used": self.cost,
-                "effect": self.effect
-            }
-            print(f"Play result: {play_result}\n")
-        else:
-            play_result = {}
-            print(
-                f"Play result: Impossible to play {self.name} with "
-                f"{game_state['available_mana']} mana available"
-                f" - {self.cost} needed\n"
-            )
+        play_result: dict = {
+            "card_played": self.name,
+            "mana_used": self.cost,
+            "effect": self.effect
+        }
+        print(f"Play result: {play_result}\n")
         return play_result
 
     def play_artifact(
         self,
         deck: Deck,
     ) -> None:
+        if not self.is_playable(deck.available_mana):
+            print(
+                f"Impossible to play {self.name} "
+                f"with {deck.available_mana} available: "
+                f"{self.cost} needed\n"
+            )
+            return None
         effect: str | list = self.activate_ability()["effect"]
         target: str = self.activate_ability()["target"]
         if "enemy" in target:

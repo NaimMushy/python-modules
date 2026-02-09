@@ -15,23 +15,22 @@ class SpellCard(Card):
         self.effect_type: str = effect_type
 
     def play(self, game_state: dict) -> dict:
-        if self.is_playable(game_state["available_mana"]):
-            play_result: dict = {
-                "card_played": self.name,
-                "mana_used": self.cost,
-                "effect": self.effect_type
-            }
-            print(f"Play result: {play_result}\n")
-        else:
-            play_result = {}
-            print(
-                f"Play result: Impossible to play {self.name} with "
-                f"{game_state['available_mana']} mana available"
-                f" - {self.cost} needed\n"
-            )
+        play_result: dict = {
+            "card_played": self.name,
+            "mana_used": self.cost,
+            "effect": self.effect_type
+        }
+        print(f"Play result: {play_result}\n")
         return play_result
 
     def play_spell(self, deck: Deck) -> None:
+        if not self.is_playable(deck.available_mana):
+            print(
+                f"Impossible to play {self.name} "
+                f"with {deck.available_mana} available: "
+                f"{self.cost} needed\n"
+            )
+            return None
         targets: list[Card] = self.get_correct_targets(
             deck.possible_targets, deck.enemy_deck.possible_targets
         )
