@@ -1,5 +1,4 @@
 from ex0.Card import Card
-from .Deck import Deck
 import re
 
 
@@ -15,28 +14,30 @@ class SpellCard(Card):
         self.effect_type: str = effect_type
 
     def play(self, game_state: dict) -> dict:
+        if not self.is_playable(game_state["available_mana"]):
+            print(
+                f"Impossible to play {self.name} "
+                f"with {game_state['available_mana']} available: "
+                f"{self.cost} needed\n"
+            )
+            return {}
+        targets: list[Card] = self.get_correct_targets(
+            game_state["deck"].possible_targets,
+            game_state["enemy_deck"].possible_targets
+        )
+        if not targets:
+            print(f"No targets available for {self.name}\n")
+            return {}
+        game_state["deck"].remove_from_all(self)
         play_result: dict = {
             "card_played": self.name,
             "mana_used": self.cost,
             "effect": self.effect_type
         }
+        print(f"Playing spell {self.name}...")
         print(f"Play result: {play_result}\n")
+        self.resolve_effect(targets)
         return play_result
-
-    def play_spell(self, deck: Deck) -> None:
-        if not self.is_playable(deck.available_mana):
-            print(
-                f"Impossible to play {self.name} "
-                f"with {deck.available_mana} available: "
-                f"{self.cost} needed\n"
-            )
-            return None
-        targets: list[Card] = self.get_correct_targets(
-            deck.possible_targets, deck.enemy_deck.possible_targets
-        )
-        if targets:
-            self.resolve_effect(targets)
-            deck.remove_from_all(self)
 
     def get_correct_targets(
         self,
@@ -54,7 +55,7 @@ class SpellCard(Card):
     def resolve_effect(self, targets: list) -> dict:
         if not targets:
             print(f"No targets available for {self.name}\n")
-            return {"effect": "unknown"}
+            return {"effect": "unknown", "target": None}
         if (match := re.match(
             "([a-z]+) ([0-9]+) ([a-z]+) to target",
             self.effect_type,
@@ -80,7 +81,7 @@ class SpellCard(Card):
                     return {"effect": "unknown", "target": None}
                 print(
                     f"Spell effect < {self.effect_type} > "
-                    f"applied to {target.name}"
+                    f"applied to {target}\n"
                 )
             print("")
             return {

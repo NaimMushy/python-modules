@@ -141,50 +141,46 @@ class EliteCard(Card, Combatable, Magical):
         }
 
     def play(self, game_state: dict) -> dict:
-        if self.is_playable(game_state["available_mana"]):
-            play_result: dict = {
-                "card_played": self.name,
-                "mana_cost": self.cost,
-                "effects": [
-                    self.get_combat_stats(),
-                    self.get_magic_stats()
-                ]
-            }
-            print(f"Play result: {play_result}\n")
-        else:
-            play_result = {}
+        if not self.is_playable(game_state["available_mana"]):
             print(
                 f"Play result: Impossible to play {self.name} with "
                 f"{game_state['available_mana']} mana available"
                 f" - {self.cost} needed\n"
             )
-        return play_result
-
-    def play_elite(self, deck: Deck) -> None:
-        if not self.get_health():
-            print(f"Elite Character {self.name} has been defeated\n")
-            deck.remove_from_all(self)
+            return {}
+        play_result: dict = {"card_played": self.name}
+        active_spells: list[SpellCard] = [
+            card for card in game_state["deck"].active_cards
+            if isinstance(card, SpellCard) and
+            card in self.known_spells
+        ]
+        if active_spells:
+            spell_to_cast: SpellCard = random.choice(active_spells)
+            cast_result: dict = self.cast_spell(
+                spell_to_cast.name,
+                spell_to_cast.get_correct_targets(
+                    game_state["deck"].possible_targets,
+                    game_state["enemy_deck"].possible_targets
+                )
+            )
+            if cast_result["success"]:
+                game_state["deck"].remove_from_all(spell_to_cast)
+                play_result["effects"] = (
+                    f"Cast spell {spell_to_cast.name} "
+                    f"on {cast_result['targets']}"
+                )
+            play_result["mana_used"] = cast_result["mana_used"]
+        elif game_state["enemy_deck"].possible_targets:
+            attack_result: dict = self.attack(
+                random.choice(game_state["targets"])
+            )
+            play_result["mana_used"] = self.cost
+            play_result["effects"] = f"Attacked {attack_result['target']}"
         else:
-            active_spells: list[SpellCard] = [
-                card for card in deck.active_cards
-                if isinstance(card, SpellCard) and
-                card in self.known_spells
-            ]
-            if active_spells:
-                spell_to_cast: SpellCard = random.choice(active_spells)
-                cast_result: dict = self.cast_spell(
-                    spell_to_cast.name,
-                    spell_to_cast.get_correct_targets(
-                        deck.possible_targets,
-                        deck.enemy_deck.possible_targets
-                    )
-                )
-                if cast_result["success"]:
-                    deck.remove_from_all(spell_to_cast)
-            elif deck.enemy_deck.possible_targets:
-                self.attack(
-                    random.choice(deck.enemy_deck.possible_targets)
-                )
+            print(f"No available targets for {self.name}\n")
+            return {}
+        print(f"Play result: {play_result}\n")
+        return play_result
 
     def get_card_info(self) -> dict:
         return super().get_card_info() | {

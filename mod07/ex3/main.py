@@ -225,22 +225,17 @@ def build_decks(deck1: Deck, deck2: Deck) -> None:
 
 
 def main() -> None:
-    game_state: dict = {
-        "strategy": AggressiveStrategy()
-    }
     deck1: Deck = Deck()
     deck2: Deck = Deck()
     build_decks(deck1, deck2)
-    deck1.add_enemy_deck(deck2)
-    deck2.add_enemy_deck(deck1)
     deck1.shuffle()
     deck2.shuffle()
     print("Drawing and playing cards:\n")
     for i in range(1, 6):
         print(f"=== Turn {i}: Deck One ===\n")
-        play_card(game_state, deck1)
+        play_card(deck1, deck2)
         print(f"=== Turn {i}: Deck Two ===\n")
-        play_card(game_state, deck2)
+        play_card(deck2, deck1)
     print("Polymorphism in action: Same interface, different card behaviors!")
 
 

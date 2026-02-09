@@ -1,18 +1,14 @@
 from ex0.Card import Card
-from typing import Any as any
 import random
 
 
 class Deck:
-    def __init__(self) -> None:
+    def __init__(self, active_cards: list[Card] = []) -> None:
         self.stack_cards: list[Card] = []
-        self.active_cards: list[Card] = []
+        self.active_cards: list[Card] = active_cards
         self.possible_targets: list[Card] = []
         self.collection: dict[str, list[Card]] = {}
-        self.available_mana: int = 30
-
-    def add_enemy_deck(self, enemy_deck: any) -> None:
-        self.enemy_deck: Deck = enemy_deck
+        self.available_mana: int = 50
 
     def add_card(self, card: Card) -> None:
         self.stack_cards.append(card)
@@ -41,6 +37,10 @@ class Deck:
 
     def draw_card(self) -> Card:
         card_drawn: Card = self.stack_cards[0]
+        print(
+            f"Drew: {card_drawn.name} "
+            f"({card_drawn.get_card_info()['type']})\n"
+        )
         self.remove_card(card_drawn.name)
         return card_drawn
 

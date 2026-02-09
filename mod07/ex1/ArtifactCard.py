@@ -30,6 +30,7 @@ class ArtifactCard(Card):
             "mana_used": self.cost,
             "effect": self.effect
         }
+        print(f"Playing artifact {self.name}...")
         print(f"Play result: {play_result}\n")
         effect: str | list = self.activate_ability()["effect"]
         target: str = self.activate_ability()["target"]
@@ -102,7 +103,7 @@ class ArtifactCard(Card):
         if "health" in effect[0]:
             for target in targets:
                 target.set_health(target.get_health() + effect[1])
-                if effect[1] > 0:
+                if isinstance(effect[1], int) and effect[1] > 0:
                     print(
                         f"Effect < +{effect[1]} health points > "
                         f"applied to {target.name}"
@@ -117,7 +118,7 @@ class ArtifactCard(Card):
                 target.set_attack(
                     target.get_attack() + effect[1]
                 )
-                if effect[1] > 0:
+                if isinstance(effect[1], int) and effect[1] > 0:
                     print(
                         f"Effect < +{effect[1]} attack > "
                         f"applied to {target.name}"
@@ -130,7 +131,7 @@ class ArtifactCard(Card):
         elif "mana cost" in effect[0]:
             for target in targets:
                 target.cost += effect[1]
-                if effect[1] > 0:
+                if isinstance(effect[1], int) and effect[1] > 0:
                     print(
                         f"Effect < +{effect[1]} mana cost > "
                         f"applied to {target.name}"

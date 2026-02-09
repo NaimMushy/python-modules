@@ -3,7 +3,6 @@ from ex0.CreatureCard import CreatureCard
 from .ArtifactCard import ArtifactCard
 from .SpellCard import SpellCard
 from .Deck import Deck
-import random
 
 # creature cards
 fire_dragon: CreatureCard = CreatureCard(
@@ -125,36 +124,32 @@ attack_diminisher_artifact: ArtifactCard = ArtifactCard(
 )
 
 
-def play_card(
-    game_state: dict,
+def execute_turn(
     deck: Deck,
+    enemy_deck: Deck
 ) -> None:
+    game_state: dict = {}
     card_drawn: Card = deck.draw_card()
-    print(
-        f"Drew: {card_drawn.name} "
-        f"({card_drawn.get_card_info()['type']})"
-    )
     if card_drawn not in deck.active_cards:
         deck.active_cards.append(card_drawn)
         if isinstance(card_drawn, CreatureCard):
             deck.possible_targets.append(card_drawn)
-        if card_drawn.is_playable(deck.available_mana):
-            deck.available_mana -= card_drawn.cost
-        game_state["available_mana"] = deck.available_mana
-        card_drawn.play(game_state)
+    game_state["available_mana"] = deck.available_mana
     for card in deck.active_cards:
-        if isinstance(card, SpellCard):
-            card.play_spell(deck)
-        elif isinstance(card, CreatureCard):
-            if card.get_health() == 0:
-                print(f"Creature {card.name} has been defeated\n")
-                deck.remove_from_all(card)
-            elif len(deck.enemy_deck.possible_targets):
-                card.attack_target(random.choice(
-                    deck.enemy_deck.possible_targets
-                ))
-        elif isinstance(card, ArtifactCard):
-            card.play_artifact(deck)
+        game_state["deck"] = deck
+        game_state["enemy_deck"] = enemy_deck
+        game_state["targets"] = enemy_deck.possible_targets
+        play_result: dict = card.play(game_state)
+        if play_result:
+            game_state["available_mana"] -= play_result["mana_used"]
+    for card in deck.possible_targets:
+        if isinstance(card, CreatureCard) and not card.get_health():
+            print(
+                f"{card.__class__.__name__.replace('Card', '')} {card.name} "
+                "has been defeated - Destroying the card\n"
+            )
+            deck.remove_from_all(card)
+    deck.available_mana = game_state["available_mana"]
 
 
 def build_decks(deck1: Deck, deck2: Deck) -> None:
@@ -182,20 +177,17 @@ def build_decks(deck1: Deck, deck2: Deck) -> None:
 
 
 def main() -> None:
-    game_state: dict = {}
     deck1: Deck = Deck()
     deck2: Deck = Deck()
     build_decks(deck1, deck2)
-    deck1.add_enemy_deck(deck2)
-    deck2.add_enemy_deck(deck1)
     deck1.shuffle()
     deck2.shuffle()
     print("Drawing and playing cards:\n")
     for i in range(1, 6):
         print(f"=== Turn {i}: Deck One ===\n")
-        play_card(game_state, deck1)
+        execute_turn(deck1, deck2)
         print(f"=== Turn {i}: Deck Two ===\n")
-        play_card(game_state, deck2)
+        execute_turn(deck2, deck1)
     print("Polymorphism in action: Same interface, different card behaviors!")
 
 

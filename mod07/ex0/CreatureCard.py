@@ -52,13 +52,14 @@ class CreatureCard(Card):
             "targets" not in game_state.keys() or
             not game_state["targets"]
         ):
-            print(f"No available targets for {self.name} to attack")
+            print(f"No targets available for {self.name} to attack")
             return {}
         play_result: dict = {
             "card_played": self.name,
             "mana_used": self.cost,
-            "effect": "Creature summoned to battlefield"
+            "effect": "Creature summoned to battlefield",
         }
+        print(f"Playing creature {self.name}...")
         print(f"Play result: {play_result}\n")
         self.attack_target(random.choice(game_state["targets"]))
         return play_result
