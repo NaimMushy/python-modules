@@ -19,10 +19,17 @@ def main() -> None:
         except ValueError:
             print(
                 f"Caught ValueError: Invalid type {type(args[score])} "
-                f"for the score {args[score]} (integer required)"
+                f"for the score {args[score]} (integer required)\n"
             )
         else:
             scores.append(conv_score)
+
+    if not scores:
+        print(
+            "No score provided - "
+            "Usage: python3 ft_score_analytics.py <score1> <score2> ..."
+        )
+        return None
 
     print(f"Scores processed: {scores}")
     print(f"Total players: {len(scores)}")

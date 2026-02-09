@@ -1,11 +1,11 @@
 import random
 from typing import Generator
 import time
-# import sys
+import sys
 
 
-DEFAULT_PLAYERS = ["alice", "bob", "charlie"]
-DEFAULT_EVENT_NB = 20
+DEFAULT_PLAYERS = ["vax'ildan", "pike", "keyleth"]
+DEFAULT_EVENT_NB = 1000
 
 
 class Player:
@@ -120,7 +120,7 @@ def fibonacci_seq(loop: int) -> Generator[int, None, None]:
         loop -= 1
 
 
-def prime_nb(count: int) -> Generator[int, None, None]:
+def prime_numbers(count: int) -> Generator[int, None, None]:
     nb: int = 2
 
     while count > 0:
@@ -139,16 +139,24 @@ def prime_nb(count: int) -> Generator[int, None, None]:
         nb += 1
 
 
-def gen_demon() -> None:
+def gen_demon(fib_nb: int, prime_nb: int) -> None:
     print("=== Generator Demonstration ===")
 
-    fib_seq: Generator[int, None, None] = fibonacci_seq(10)
-    print("Fibonacci sequence (first 10): ", end="")
-    print(*fib_seq)
+    fst: bool = True
+    print(f"Fibonacci sequence (first {fib_nb}): ", end="")
+    for fib in fibonacci_seq(fib_nb):
+        if not fst:
+            print(", ", end="")
+        print(f"{fib}", end="")
+        fst = False
 
-    all_primes: Generator[int, None, None] = prime_nb(5)
-    print("Prime numbers (first 5): ", end="")
-    print(*all_primes)
+    fst = True
+    print(f"\nPrime numbers (first {prime_nb}): ", end="")
+    for prime in prime_numbers(prime_nb):
+        if not fst:
+            print(", ", end="")
+        print(f"{prime}", end="")
+        fst = False
 
 
 def parse_args(
@@ -161,10 +169,11 @@ def parse_args(
     try:
         event_nb: int = int(args[0])
     except ValueError:
-        print(
-            "No specific number of events provided - "
-            f"Resorting to default {DEFAULT_EVENT_NB}\n"
-        )
+        if len(args) > len(DEFAULT_PLAYERS):
+            print(
+                "No specific number of events provided - "
+                f"Resorting to default {DEFAULT_EVENT_NB}\n"
+            )
         event_nb = DEFAULT_EVENT_NB
     else:
         if event_nb < 1:
@@ -196,7 +205,6 @@ def main() -> None:
     start: float = time.time()
     args: list[str] = DEFAULT_PLAYERS
 
-    """
     if len(sys.argv) == 1:
         print(
             "No custom players nor specific number "
@@ -210,21 +218,16 @@ def main() -> None:
         )
     else:
         args = sys.argv[1:] + args
-    """
 
     event_nb, all_players = parse_args(args)
     print(f"Processing {event_nb} game events...\n")
-    events: Generator[Event, None, None] = generate_events(
-        event_nb, all_players
-    )
-    processed_events: Generator[Event, None, None] = process_events(events)
     count: int = 0
 
-    for cur_event in processed_events:
+    for cur_event in process_events(generate_events(event_nb, all_players)):
         count += 1
         cur_event.player.update(cur_event.event_type)
         print(
-            f"Event {count}: Player {cur_event.player.name} "
+            f"Event {count}: Player {cur_event.player.name.capitalize()} "
             f"(level {cur_event.player.level}) {cur_event.event_type}"
         )
 
@@ -234,7 +237,7 @@ def main() -> None:
     end: float = time.time()
     print(f"Processing time: {round(end - start, 3)} seconds\n")
 
-    gen_demon()
+    gen_demon(10, 5)
 
 
 if __name__ == "__main__":

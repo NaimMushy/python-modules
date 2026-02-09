@@ -41,7 +41,7 @@ def tracker_system(players: dict[str, set]) -> None:
     print("=== Achievement Tracker System ===\n")
 
     for name, ach in players.items():
-        print(f"Player {name} achievements: {ach}")
+        print(f"Player {name.capitalize()} achievements: {ach}")
 
 
 def achievement_analytics(players: dict[str, set]) -> None:
@@ -58,20 +58,36 @@ def achievement_analytics(players: dict[str, set]) -> None:
 
 def main() -> None:
     players: dict[str, set] = {
-        "alice": {'first_kill', 'level_10', 'treasure_hunter', 'speed_demon'},
-        "bob": {'first_kill', 'level_10', 'boss_slayer', 'collector'},
-        "charlie": {
-            'level_10',
-            'treasure_hunter',
-            'boss_slayer',
-            'speed_demon',
-            'perfectionist'
+        "vex'ahlia": {
+            'reliable support',
+            'dagger expert',
+            'cold beauty',
+            'alcoholic',
+            'dead mom',
+            'diversion maker'
+        },
+        "percy": {
+            'edgyyyyy',
+            'smoke man',
+            'pew pew',
+            'snobbish aristocrat',
+            'alcoholic',
+            'diversion maker',
+            'dead mom'
+        },
+        "scanlan": {
+            'bard extraordinaire',
+            'mage hand',
+            'reliable support',
+            'diversion maker',
+            'alcoholic',
+            'goofy a** playboy'
         }
     }
 
     tracker_system(players)
     achievement_analytics(players)
-    compare_players(players, "alice", "bob")
+    compare_players(players, "vex'ahlia", "percy")
 
 
 if __name__ == "__main__":

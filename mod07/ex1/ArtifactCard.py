@@ -17,31 +17,26 @@ class ArtifactCard(Card):
         self.effect: str = effect
 
     def play(self, game_state: dict) -> dict:
+        if not self.is_playable(game_state["available_mana"]):
+            print(
+                f"Impossible to play {self.name} "
+                f"with {game_state['available_mana']} available: "
+                f"{self.cost} needed\n"
+            )
+            return {}
+        game_state["deck"].available_mana -= self.cost
         play_result: dict = {
             "card_played": self.name,
             "mana_used": self.cost,
             "effect": self.effect
         }
         print(f"Play result: {play_result}\n")
-        return play_result
-
-    def play_artifact(
-        self,
-        deck: Deck,
-    ) -> None:
-        if not self.is_playable(deck.available_mana):
-            print(
-                f"Impossible to play {self.name} "
-                f"with {deck.available_mana} available: "
-                f"{self.cost} needed\n"
-            )
-            return None
         effect: str | list = self.activate_ability()["effect"]
         target: str = self.activate_ability()["target"]
         if "enemy" in target:
-            target_deck: Deck = deck.enemy_deck
+            target_deck: Deck = game_state["enemy_deck"]
         elif "ally" in target:
-            target_deck = deck
+            target_deck = game_state["deck"]
         if "mana" in target:
             target_deck.available_mana -= 1
             self.durability -= 1
@@ -50,7 +45,7 @@ class ArtifactCard(Card):
         else:
             self.apply_effect(
                 effect,
-                target_deck.active_cards + target_deck.stack_cards
+                target_deck.active_cards
             )
             self.durability -= 1
         if self.durability <= 0:
@@ -58,10 +53,11 @@ class ArtifactCard(Card):
                 f"Artifact {self.name} "
                 "destroyed - durability depleted\n"
             )
-            deck.remove_from_all(self)
+            game_state["deck"].remove_from_all(self)
         elif not self.activate_ability()["repeat"]:
-            deck.active_cards.remove(self)
-            deck.add_card(self)
+            game_state["deck"].active_cards.remove(self)
+            game_state["deck"].add_card(self)
+        return play_result
 
     def activate_ability(self) -> dict:
         if (match := re.match(

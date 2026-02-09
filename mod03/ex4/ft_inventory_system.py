@@ -126,26 +126,34 @@ def main() -> None:
 
         try:
             if len(dict_item) != 2:
-                raise ValueError()
+                raise ValueError(
+                    "Insuffisant number of arguments (2 required)"
+                )
             item: str = dict_item[0]
             quantity: int = int(dict_item[1])
-        except ValueError:
-            print(
-                "Caught ValueError: Invalid argument "
-                "for item quantity given (integer required) - [REJECTED]\n"
-            )
+        except ValueError as ve:
+            print(f"Caught ValueError while parsing arguments: {ve}\n")
         else:
             if item in inventory and quantity > 0:
                 inventory[item] += quantity
             elif quantity > 0:
                 inventory[item] = quantity
 
+    if not inventory:
+        print(
+            "Inventory empty - "
+            "Usage: python3 ft_inventory_system.py "
+            "<item1:quantity1> <item2:quantity2> ..."
+        )
+        return None
+
     system_analysis(inventory)
     current_inventory(inventory)
     inventory_stats(inventory)
     item_categories(inventory)
     management_sugg(inventory)
-    dict_prop_demo(inventory, "sword")
+    items: list[str] = [key for key in inventory.keys()]
+    dict_prop_demo(inventory, items[0])
 
 
 if __name__ == "__main__":

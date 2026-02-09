@@ -14,48 +14,64 @@ class Player:
 
 
 def create_default_players() -> list[Player]:
-    alice: Player = Player(
-        "alice",
+    beau: Player = Player(
+        "beau",
         2300,
-        {'first_kill', 'speed_demon', 'level_10'},
+        {'ABS', 'acrobatic monk', 'sour candy', 'zero people skills'},
         {'north', 'east'}
         )
 
-    bob: Player = Player(
-        "bob",
-        1800,
-        {'first_kill', 'speed_demon', 'boss_slayer', 'perfectionist'},
+    yasha: Player = Player(
+        "yasha",
+        4444,
+        {'muscle mommy', 'blessed by the gods', 'orphan maker'},
         {'north', 'west'}
         )
 
-    charlie: Player = Player(
-        "charlie",
-        4444,
-        {'first_kill', 'speed_demon', 'collector',
-         'level_10', 'boss_slayer', 'trash_digger'},
+    fjord: Player = Player(
+        "fjord",
+        1800,
+        {
+            'pirate captain',
+            'low self-esteem',
+            'random powers',
+            'green'
+        },
         {'west'}
         )
 
-    diana: Player = Player(
-        "diana",
+    caleb: Player = Player(
+        "caleb",
         3670,
-        {'speed_demon', 'level_10', 'perfectionist'}
+        {
+            'german hobo',
+            'mud sorcerer',
+            'family murderer',
+            'adult child',
+            'NEIN'
+        }
         )
 
-    return [alice, bob, charlie, diana]
+    return [beau, yasha, fjord, caleb]
 
 
 def lst_comp(players: list[Player]) -> None:
     print("=== List Comprehension Examples ===")
 
-    high_scorers: list[str] = [pl.name for pl in players if pl.score > 2000]
-    print(f"High_scorers (>2000): {high_scorers}")
+    print(
+        f"High_scorers (>2000): "
+        f"{[pl.name for pl in players if pl.score > 2000]}"
+    )
 
-    doubled_scores: list[int] = [pl.score * 2 for pl in players]
-    print(f"Scores doubled: {doubled_scores}")
+    print(
+        f"Scores doubled: "
+        f"{[pl.score * 2 for pl in players]}"
+    )
 
-    active_pl: list[str] = [pl.name for pl in players if pl.regions]
-    print(f"Active players: {active_pl}\n")
+    print(
+        f"Active players: "
+        f"{[pl.name for pl in players if pl.regions]}\n"
+    )
 
 
 def dict_comp(players: list[Player]) -> None:
@@ -64,12 +80,15 @@ def dict_comp(players: list[Player]) -> None:
     pl_scores: dict[str, int] = {pl.name: pl.score for pl in players}
     print(f"Player scores: {pl_scores}")
 
-    score_cat: dict[str, int] = {}
-    score_cat["high"] = sum(1 for pl in players if pl.score >= 4000)
-    score_cat["medium"] = sum(
-        1 for pl in players if pl.score >= 2000 and pl.score < 4000
-    )
-    score_cat["low"] = sum(1 for pl in players if pl.score < 2000)
+    score_cat: dict[str, int] = {
+        "high": sum(1 for pl in players if pl.score >= 4000),
+        "medium": sum(
+            1 for pl in players
+            if pl.score >= 2000
+            and pl.score < 4000
+        ),
+        "low": sum(1 for pl in players if pl.score < 2000)
+    }
     print(f"Score categories: {score_cat}")
 
     ach_count: dict[str, int] = {
