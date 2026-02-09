@@ -1,39 +1,37 @@
+from ex0.Card import Card
+from ex0.CreatureCard import CreatureCard
+from ex1.SpellCard import SpellCard
+from ex1.ArtifactCard import ArtifactCard
 from .CardFactory import CardFactory
 import random
 
 
 # creature cards
-CREATURES: list[list[str | int]] = [
-    [
-        "Dragon",
-        5,
-        "Legendary",
-        7,
-        6
+CREATURES: dict[str, list[str]] = {
+    "leg_cards": ["Dragon", "Phoenix", "Elemental Spirit", "Kraken"],
+    "srare_cards": ["Unicorn", "Fairy", "Selkie", "Animal Sovereign"],
+    "rare_cards": ["Ogre", "Acromentula", "Shapeshifter", "Malicious Spirit"],
+    "common_cards": ["Goblin", "Wolf", "Spider", "Zombie"],
+    "leg_attr": [
+        "Fire ",
+        "Ice ",
+        "Wind ",
+        "Lightning ",
+        "Poison ",
+        "Acid ",
+        "Shadow "
     ],
-    [
-        "Goblin",
-        3,
-        "Rare",
-        5,
-        3
-    ],
-    [
-        "Acromentula",
-        4,
-        "Common",
-        4,
-        2
-    ],
-    [
-        "Unicorn",
-        7,
-        "Legendary",
-        8,
-        10
-    ]
-]
+    "srare_attr": ["Sacred ", "Mighty ", "Superb ", "Arcane "],
+    "rare_attr": ["Imposing ", "Stealthy ", "Agile ", "Genius "],
+    "common_attr": ["Warrior ", "Resilient ", "Bloodthirsty ", "Scary "]
+}
 
+# spells
+SPELLS: dict[str, list[str]] = {
+    "offensive_cards": ["Bolt", "Ray", "Ball", "Tornado", "Gun"],
+    "healing_cards": ["Balm", "Fountain", "SoothingHug", "Charm"],
+    "support_cards": ["Enhancer", "Diminisher"]
+}
 
 # artifact cards
 ARTIFACTS: list[list[str | int]] = [
@@ -140,73 +138,108 @@ ELITES: list[list[str | int | list]] = [
 
 class FantasyCardFactory(CardFactory):
     def __init__(self) -> None:
-        self.creatures: list[list[str | int]] = CREATURES
-        self.spells: list[list[str | int]] = SPELLS
+        self.creatures: dict[str, list[str]] = CREATURES
+        self.spells: dict[str, list[str]] = SPELLS
         self.artifacts: list[list[str | int]] = ARTIFACTS
-        self.elites: list[list[str | int | list[str]]] = ELITES
+        self.elites: list[list[str | int]] = ELITES
 
-    def generate_rarity(self) -> str:
+        self.leg_attr: dict[str, int] = {
+            "effect": 13,
+            "cost": 11,
+            "health": 26,
+            "attack": 16,
+            "durability": 8
+        }
+        self.srare_attr: dict[str, int] = {
+            "effect": 11,
+            "cost": 9,
+            "health": 21,
+            "attack": 11,
+            "durability": 6
+        }
+        self.rare_attr: dict[str, int] = {
+            "effect": 9,
+            "cost": 7,
+            "health": 16,
+            "attack": 9,
+            "durability": 4
+        }
+        self.common_attr: dict[str, int] = {
+            "effect": 7,
+            "cost": 5,
+            "health": 11,
+            "attack": 7,
+            "durability": 2
+        }
+
+    def get_element(self) -> str:
+        return random.choice([
+            "Fire ",
+            "Ice ",
+            "Wind ",
+            "Lightning ",
+            "Poison ",
+            "Acid ",
+            "Shadow "
+        ])
+
+    def generate_rarity(self) -> tuple[str, tuple[str, str]]:
         probability: float = random.random()
         if probability < 0.05:
-            return "Legendary"
+            return "Legendary", ["leg_attr", "leg_cards"]
         if 0.1 <= probability < 0.2:
-            return "Super Rare"
+            return "Super Rare", ["srare_attr", "srare_cards"]
         if 0.2 <= probability < 0.5:
-            return "Rare"
+            return "Rare", ["rare_attr", "rare_cards"]
         if 0.5 <= probability <= 1:
-            return "Common"
+            return "Common", ["common_attr", "common_cards"]
         return "Unknown"
 
-    def generate_spell(self) -> tuple[str, str]:
-        rarity: str = self.generate_rarity()
-        match rarity:
-            case "Legendary":
-                effect_val: int = random.randint(7, 11)
-                cost: int = random.randint(6, 10)
-            case "Super Rare":
-                effect_val = random.randint(5, 8)
-                cost = random.randint(5, 8)
-            case "Rare":
-                effect_val = random.randint(3, 6)
-                cost = random.randint(3, 6)
-            case "Common":
-                effect_val = random.randint(1, 4)
-                cost = random.randint(1, 4)
-        effect_type: str = random.choice("offensive", "healing", "support")
-        match effect_type:
-            case "offensive":
-                name: str = random.choice(
-                    ["Fire ", "Ice ", "Lightning ", "Poison ", "Acid "]
-                ) + random.choice(
-                    ["Bolt", "Ray", "Ball", "Tornado", "Gun"]
-                )
-                effect: str = f"Deals {effect_val} to target"
-            case "healing":
-                name = "Healing " + random.choice(
-                    ["Balm", "Fountain", "SoothingHug", "Charm"]
-                )
-                effect = f"Restores {effect_val}"
-            case "support":
-                name = "Attack " + random.choice(["Enhancer", "Diminisher"])
-                effect = (
-                    f"{'Adds' if 'Enhancer' in name else 'Removes'} "
-                    f"{effect_val} to target"
-                )
+    def generate_creature_data(self) -> list[str | int]:
+        rarity, rarity_keys = self.generate_rarity()
+        name: str = random.choice(
+            self.creatures[rarity_keys[0]]
+        ) + random.choice(
+            self.creatures[rarity_keys[1]]
+        )
+        cost, attack, health = (
+            self.rarity_keys[0]["cost"],
+            self.rarity_keys[0]["attack"],
+            self.rarity_keys[0]["health"]
+        )
+        return [name, cost, rarity, attack, health]
+
+    def generate_spell(self) -> list[str | int]:
+        rarity, rarity_keys = self.generate_rarity()
+        effect_val: int = random.randint(
+            self.rarity_keys[0]["effect"] - 4,
+            self.rarity_keys[0]["effect"]
+        )
+        cost: int = random.randint(
+            self.rarity_keys[0]["cost"] - 4,
+            self.rarity_keys[0]["cost"]
+        )
+        effect_type: list[str] = random.choice(
+            ["offensive", self.get_element(), f"Deals {effect_val} to target"],
+            ["healing", "Healing ", f"Restores {effect_val}"],
+            ["support", "Attack ", f" {effect_val} to target"]
+        )
+        name: str = effect_type[1] + random.choice(
+            self.spells[effect_type[0] + "_cards"]
+        )
+        if effect_type == "support":
+            effect: str = (
+                'Adds' if "Enhancer" in name else 'Removes'
+            ) + effect_type[2]
+        else:
+            effect = effect_type[2]
         return [name, cost, rarity, effect]
 
     def create_creature(self, name_or_power: str | int | None = None) -> Card:
+        name, cost, rarity, attack, health = self.generate_creature_data()
         if not name_or_power:
-            name, cost, rarity, attack, health = random.choice(self.creatures)
             return CreatureCard(name, cost, rarity, attack, health)
         if isinstance(name_or_power, str):
-            return CreatureCard(
-                name_or_power,
-                random.randint(1, 11),
-                self.get_rarity(),
-                random.randint(1, 16),
-                random.randint(1, 21),
-            )
+            return CreatureCard(name_or_power, cost, rarity, attack, health)
         if isinstance(name_or_power, int):
-            return CreatureCard(
-
-                    )
+            return CreatureCard(name, cost, rarity, name_or_power, health)
