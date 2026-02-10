@@ -1,9 +1,10 @@
 from ex0.Card import Card
 from ex0.CreatureCard import CreatureCard
 from ex1.SpellCard import SpellCard
-# from ex1.ArtifactCard import ArtifactCard
+from ex1.ArtifactCard import ArtifactCard
 from .CardFactory import CardFactory
 import random
+import sys
 
 
 # creature cards
@@ -27,16 +28,41 @@ CREATURES: dict[str, list[str]] = {
 }
 
 # spells
-SPELLS: dict[str, list[str]] = {
-    "offensive_cards": ["Bolt", "Ray", "Ball", "Tornado", "Gun"],
-    "healing_cards": ["Balm", "Fountain", "SoothingHug", "Charm"],
-    "support_cards": ["Enhancer", "Diminisher"]
+SPELLS: dict[str, dict[str, list[str] | str]] = {
+    "offensive_cards": {
+        "card_names": ["Bolt", "Ray", "Ball", "Tornado", "Gun"],
+        "effect_prefix": "Deals ",
+        "effect_suffix": " damage"
+    },
+    "healing_cards": {
+        "card_names": ["Balm", "Fountain", "Hug", "Charm"],
+        "name_prefix": "Healing ",
+        "effect_prefix": "Restores ",
+        "effect_suffix": " health"
+    },
+    "support_cards": {
+        "card_names": ["Enhancer", "Diminisher"],
+        "name_prefix": "Mana ",
+        "effect_suffix": " mana"
+    }
 }
 
-"""
 # artifact cards
-ARTIFACTS: list[list[str | int]] = [
-    [
+ARTIFACTS: dict[str, list[str] | dict[str, list[str]]] = {
+    "objects": ["Staff", "Ring", "Belt", "Crystal", "Potion", "Watch", "Earring", "Dagger"],
+    "adjs_plus": {
+        "mana": ["Mana Lightener", "Mana Burden"],
+        "attack": ["Power", "Atomic", "Strength", "Enchanted"],
+        "health": ["Heal", "Soothing", "Blessed"]
+    },
+    "adjs_minus": {
+        "mana": ["Mana Diminisher", "Mana Booster"],
+        "attack": ["Weakness", "Diminisher", "Debuff"],
+        "health": ["Cursed", "Poisoning", "Bloodthirsty"]
+    }
+}
+"""
+    "mana_artifacts": 
         "Mana Crystal",
         2,
         "Rare",
@@ -142,45 +168,46 @@ class FantasyCardFactory(CardFactory):
     def __init__(self) -> None:
         self.creatures: dict[str, list[str]] = CREATURES
         self.spells: dict[str, list[str]] = SPELLS
-        # self.artifacts: list[list[str | int]] = ARTIFACTS
+        self.artifacts: dict[str, list[str] | dict[str, list[str]]] = ARTIFACTS
         # self.elites: list[list[str | int]] = ELITES
 
-        self.cost_range: int = 2
-        self.effect_range: int = 2
+        self.cost_range: int = 3
+        self.effect_range: int = 3
         self.attack_range: int = 5
         self.health_range: int = 5
+        self.durab_range: int = 2
 
-        self.leg_attr: dict[str, int | str] = {
-            "type": "leg",
-            "effect": 11,
-            "cost": 11,
-            "health": 26,
-            "attack": 21,
-            "durability": 8
-        }
-        self.srare_attr: dict[str, int | str] = {
-            "type": "srare",
-            "effect": 9,
-            "cost": 9,
-            "health": 21,
-            "attack": 16,
-            "durability": 6
-        }
-        self.orare_attr: dict[str, int | str] = {
-            "type": "rare",
-            "effect": 6,
-            "cost": 7,
-            "health": 16,
-            "attack": 11,
-            "durability": 4
-        }
-        self.common_attr: dict[str, int | str] = {
+        self.common_attr: dict[str, tuple[int, int] | str] = {
             "type": "common",
-            "effect": 4,
-            "cost": 5,
-            "health": 11,
-            "attack": 6,
-            "durability": 2
+            "effect": (1, self.effect_range + 1),
+            "cost": (1, self.cost_range + 1),
+            "attack": (1, self.attack_range + 1),
+            "health": (1, self.health_range * 2 + 1),
+            "durability": (1, self.durab_range + 1)
+        }
+        self.orare_attr: dict[str, tuple[int, int] | str] = {
+            "type": "rare",
+            "effect": (self.effect_range, self.effect_range * 2 + 1),
+            "cost": (self.cost_range, self.cost_range * 2 + 1),
+            "attack": (self.attack_range, self.attack_range * 2 + 1),
+            "health": (self.health_range * 2, self.health_range * 3 + 1),
+            "durability": (self.durab_range, self.durab_range * 2 + 1)
+        }
+        self.srare_attr: dict[str, tuple[int, int] | str] = {
+            "type": "srare",
+            "effect": (self.effect_range * 2, self.effect_range * 3 + 1),
+            "cost": (self.cost_range * 2, self.cost_range * 3 + 1),
+            "attack": (self.attack_range * 2, self.attack_range * 3 + 1),
+            "health": (self.health_range * 3, self.health_range * 4 + 1),
+            "durability": (self.durab_range * 2, self.durab_range * 3 + 1)
+        }
+        self.leg_attr: dict[str, tuple[int, int] | str] = {
+            "type": "leg",
+            "effect": (self.effect_range * 3, self.effect_range * 4 + 1),
+            "cost": (self.cost_range * 3, self.cost_range * 4 + 1),
+            "attack": (self.attack_range * 3, self.attack_range * 4 + 1),
+            "health": (self.health_range * 4, self.health_range * 5 + 1),
+            "durability": (self.durab_range * 3, self.durab_range * 4 + 1)
         }
 
     def get_element(self) -> str:
@@ -196,24 +223,24 @@ class FantasyCardFactory(CardFactory):
 
     def generate_rarity(
         self,
-        card_rarity: str
-    ) -> dict[str, str | dict[str, int | str]]:
+        card_category: str
+    ) -> dict[str, str | dict[str, tuple[int, int] | str]]:
         probability: float = random.random()
-        if probability < 0.05 or "leg" in card_rarity:
+        if probability < 0.05 or "leg" in card_category:
             return {
                 "rarity": "Legendary",
                 "cards": "leg_cards",
                 "adjs": "leg_adjs",
                 "attr": self.leg_attr
             }
-        if 0.1 <= probability < 0.2 or "srare" in card_rarity:
+        if 0.1 <= probability < 0.2 or "srare" in card_category:
             return {
                 "rarity": "Super Rare",
                 "cards": "srare_cards",
                 "adjs": "srare_adjs",
                 "attr": self.srare_attr
             }
-        if 0.2 <= probability < 0.5 or "orare" in card_rarity:
+        if 0.2 <= probability < 0.5 or "orare" in card_category:
             return {
                 "rarity": "Rare",
                 "cards": "orare_cards",
@@ -229,64 +256,112 @@ class FantasyCardFactory(CardFactory):
 
     def generate_creature_data(
         self,
-        rarity: str = ""
+        name: str = "",
+        power: int = 0,
+        card_category: str = ""
     ) -> list[str | int]:
-        card_data = self.generate_rarity(rarity)
-        name: str = random.choice(
+        card_data = self.generate_rarity(card_category)
+        if not name:
+            name = random.choice(self.creatures[card_data["cards"]])
+        name = random.choice(
             self.creatures[card_data["adjs"]]
-        ) + random.choice(
-            self.creatures[card_data["cards"]]
-        )
+        ) + name
         cost: int = random.randint(
-            card_data["attr"]["cost"] - self.cost_range,
-            card_data["attr"]["cost"]
+            card_data["attr"]["cost"][0],
+            card_data["attr"]["cost"][1]
         )
-        attack: int = random.randint(
-            card_data["attr"]["attack"] - self.attack_range,
-            card_data["attr"]["attack"]
-        )
-        health: int = random.randint(
-            card_data["attr"]["health"] - self.health_range,
-            card_data["attr"]["health"]
-        )
-        return [name, cost, card_data["rarity"], attack, health]
-
-    def generate_spell_data(self, card_rarity: str = "") -> list[str | int]:
-        card_data = self.generate_rarity(card_rarity)
-        effect_val: int = random.randint(
-            card_data["attr"]["effect"] - self.effect_range,
-            card_data["attr"]["effect"]
-        )
-        cost: int = random.randint(
-            card_data["attr"]["cost"] - self.cost_range,
-            card_data["attr"]["cost"]
-        )
-        effect_type: list[str] = random.choice([
-            ["offensive", self.get_element(), f"Deals {effect_val} damage to target"],
-            ["healing", "Healing ", f"Restores {effect_val} health to target"],
-            ["support", "Attack ", f" {effect_val} attack to target"]
-        ])
-        name: str = effect_type[1] + random.choice(
-            self.spells[effect_type[0] + "_cards"]
-        )
-        if effect_type[0] == "support":
-            effect: str = (
-                ("Adds" if "Enhancer" in name else "Removes")
-                + effect_type[2]
+        if not power:
+            power = random.randint(
+                card_data["attr"]["attack"][0],
+                card_data["attr"]["attack"][1]
             )
+        health: int = random.randint(
+            card_data["attr"]["health"][0],
+            card_data["attr"]["health"][1]
+        )
+        return [name, cost, card_data["rarity"], power, health]
+
+    def generate_spell_data(
+        self,
+        name: str = "",
+        power: int = 0,
+        card_category: str = ""
+    ) -> list[str | int]:
+        card_data = self.generate_rarity(card_category)
+        if not power:
+            power = random.randint(
+                card_data["attr"]["effect"][0],
+                card_data["attr"]["effect"][1]
+            )
+        cost: int = random.randint(
+            card_data["attr"]["cost"][0],
+            card_data["attr"]["cost"][1]
+        )
+        effect_type: str = card_category
+        if not effect_type:
+            effect_type = random.choice([cat for cat in self.spells.keys()])
+        if not name:
+            name = random.choice(self.spells[effect_type]["card_names"])
+        if effect_type != "offensive_cards":
+            name = self.spells[effect_type]["name_prefix"] + name
         else:
-            effect = effect_type[2]
-        return [name, cost, card_data["rarity"], effect]
+            name = self.get_element() + " " + name
+        if effect_type == "support_cards":
+            self.spells[effect_type]["effect_prefix"] = (
+                "Adds " if "Enhancer" in name else "Removes "
+            )
+        effect_type = (
+            self.spells[effect_type]["effect_prefix"]
+            + str(power)
+            + self.spells[effect_type]["effect_suffix"]
+            + " to target"
+        )
+        return [name, cost, card_data["rarity"], effect_type]
+
+    def generate_artifact_data(
+        self,
+        name: str = "",
+        power: int = 0,
+        card_category: str = ""
+    ) -> list[str | int]:
+        card_data = self.generate_rarity(card_category)
+        if not power:
+            power = random.randint(
+                card_data["attr"]["effect"][0],
+                card_data["attr"]["effect"][1]
+            )
+        cost: int = random.randint(
+            card_data["attr"]["cost"][0],
+            card_data["attr"]["cost"][1]
+        )
+        durability: int = random.randint(
+            card_data["attr"]["durability"][0],
+            card_data["attr"]["durability"][1]
+        )
+        if not name:
+            name = random.choice(self.artifacts["objects"])
+        if not card_category:
+            artifact_categories: list[str] = [
+                cat for cat in self.artifacts["adjs_plus"].keys()
+            ]
+            effect: str = random.choice(artifact_categories)
+        artifact_property: str = "adjs_" + random.choice("plus", "minus")
+        name = random.choice(
+            self.artifacts[artifact_property][effect]
+        ) + " " + name
+        sign: str = ("+" if "plus" in artifact_property else "-")
+        effect = "Permanent: " + sign + str(power) + " " + effect
+        if "Diminisher" in name or "Burden" in name:
+            effect += " cost"
+        return [name, cost, card_data["rarity"], effect, durability]
 
     def create_creature(self, name_or_power: str | int | None = None) -> Card:
-        name: str
+        name: str = ""
         cost: int
         rarity: str
-        attack: int
+        attack: int = 0
         health: int
-        card_rarity: str
-        if not name_or_power:
-            name, cost, rarity, attack, health = self.generate_creature_data()
+        card_category: str = ""
         if isinstance(name_or_power, str):
             cards: list[str] = [
                 key for key in self.creatures.keys()
@@ -296,17 +371,14 @@ class FantasyCardFactory(CardFactory):
                 for card_name in self.creatures[card_type]:
                     print(f"CARD NAME: {card_name}\n\n")
                     if card_name in name_or_power:
-                        card_rarity = card_type
-                        print(f"CATEGORY: {card_rarity}\n\n")
-            name, cost, rarity, attack, health = self.generate_creature_data(
-                card_rarity
-            )
+                        card_category = card_type
+                        print(f"CATEGORY: {card_category}\n\n")
             name = name_or_power
         if isinstance(name_or_power, int):
-            if name_or_power >= self.leg_attr["attack"]:
-                card_rarity = "leg"
+            if name_or_power >= self.leg_attr["attack"][1]:
+                card_category = "leg"
             else:
-                categories: list[dict[str, int | str]] = [
+                categories: list[dict[str, tuple[int, int] | str]] = [
                     self.leg_attr,
                     self.srare_attr,
                     self.orare_attr,
@@ -314,39 +386,38 @@ class FantasyCardFactory(CardFactory):
                 ]
                 for category in categories:
                     if (
-                        category["attack"] - self.attack_range <=
+                        category["attack"][0] <=
                         name_or_power <
-                        category["attack"]
+                        category["attack"][1]
                     ):
-                        card_rarity = category["type"]
-                        print(f"CATEGORY: {card_rarity}\n\n")
-            name, cost, rarity, attack, health = self.generate_creature_data(
-                card_rarity
-            )
-            attack = name_or_power
+                        card_category = category["type"]
+                        print(f"CATEGORY: {card_category}\n\n")
+            effect = name_or_power
+        name, cost, rarity, attack, health = self.generate_creature_data(
+            name, effect, card_category
+        )
         return CreatureCard(name, cost, rarity, attack, health)
 
     def create_spell(self, name_or_power: str | int | None = None) -> Card:
-        name: str
+        name: str = ""
         cost: int
         rarity: str
-        effect: str
-        card_rarity: str
-        if not name_or_power:
-            name, cost, rarity, effect = self.generate_spell_data()
-        elif isinstance(name_or_power, str):
-            cards: list[str] = [key for key in self.spells.keys()]
-            for card_type in cards:
-                for name in self.spells[card_type]:
-                    if name in name_or_power:
-                        card_rarity = card_type
-            name, cost, rarity, effect = self.generate_spell_data(card_rarity)
-            name = name_or_power
+        effect: str = 0
+        card_category: str = ""
+        if isinstance(name_or_power, str):
+            for card_type in [key for key in self.spells.keys()]:
+                if card_type in name_or_power:
+                    card_category = card_type
+                    break
+                for card_name in self.spells[card_type]:
+                    if card_name in name_or_power:
+                        card_category = card_type
+                        name = name_or_power
         elif isinstance(name_or_power, int):
             if name_or_power >= self.leg_attr["effect"]:
-                card_rarity = "leg"
+                card_category = "leg"
             else:
-                categories: list[dict[str, int | str]] = [
+                categories: list[dict[str, tuple[int, int] | str]] = [
                     self.leg_attr,
                     self.srare_attr,
                     self.orare_attr,
@@ -354,29 +425,125 @@ class FantasyCardFactory(CardFactory):
                 ]
                 for category in categories:
                     if (
-                        category["effect"] - self.effect_range <=
+                        category["effect"][0] <=
                         name_or_power <
-                        category["effect"]
+                        category["effect"][1]
                     ):
-                        card_rarity = category["type"]
-            name, cost, rarity, effect = self.generate_spell_data(card_rarity)
-            split_effect: list[str] = effect.split(" ")
-            split_effect[1] = str(name_or_power)
-            effect = " ".join(split_effect)
+                        card_category = category["type"]
+            effect = name_or_power
+        name, cost, rarity, effect = self.generate_spell_data(
+            name, effect, card_category
+        )
         return SpellCard(name, cost, rarity, effect)
+
+    def create_artifact(self, name_or_power: str | int | None = None) -> Card:
+        name: str = ""
+        cost: int
+        rarity: str
+        effect: str = ""
+        durability: int
+        card_category: str = ""
+        if isinstance(name_or_power, str):
+            if name_or_power in self.artifacts["objects"]:
+                name = name_or_power
+            elif name_or_power in [
+                cat for cat in self.artifacts["abjs_plus"].keys()
+            ]:
+                card_category = name_or_power + "_cards"
+        elif isinstance(name_or_power, int):
+            if name_or_power >= self.leg_attr["effect"][1]:
+                card_category = "leg"
+            else:
+                categories: list[dict[str, tuple[int, int] | str]] = [
+                    self.leg_attr,
+                    self.srare_attr,
+                    self.orare_attr,
+                    self.common_attr
+                ]
+                for category in categories:
+                    if (
+                        category["effect"][0] <=
+                        name_or_power <
+                        category["effect"][1]
+                    ):
+                        card_category = category["type"]
+            effect = name_or_power
+        name, cost, rarity, effect, durability = self.generate_artifact_data(
+            name, effect, card_category
+        )
+        return ArtifactCard(name, cost, rarity, effect, durability)
+
+    def create_themed_deck(self, size: int) -> dict:
+        all_cards: list[Card] = []
+        for card in range(size):
+            card_type = random.choice([
+                "creature",
+                "spell",
+                "artifact"
+            ])
+            match card_type:
+                case "creature":
+                    card_name: str = random.choice((
+                        self.creatures["leg_cards"] +
+                        self.creatures["srare_cards"] +
+                        self.creatures["orare_cards"] +
+                        self.creatures["common_cards"]
+                    ))
+                    card_power: int | str = random.randint(
+                        1, self.leg_attr["attack"][1]
+                    )
+                    creation_func = self.create_creature
+                case "spell":
+                    card_name = random.choice((
+                        self.spells["offensive_cards"]["card_names"] +
+                        self.spells["healing_cards"]["card_names"] +
+                        self.spells["support_cards"]["card_names"]
+                    ))
+                    card_power = random.choice([
+                        random.randint(1, self.leg_attr["effect"][1]),
+                        random.choice("offensive", "healing", "support")
+                    ])
+                    creation_func = self.create_spell
+                case "artifact":
+                    card_name = random.choice(self.artifacts["objects"])
+                    card_power = random.choice([
+                        random.randint(1, self.leg_attr["effect"][1]),
+                        random.choice([
+                            cat for cat in self.artifacts["adjs_plus"].keys()
+                        ])
+                    ])
+                    creation_func = self.create_artifact
+            all_cards.append(creation_func(
+                random.choice([card_name, card_power, None])
+            ))
+        return {
+            "total_cards": all_cards,
+            "creature_cards": [
+                card for card in all_cards
+                if isinstance(card, CreatureCard)
+            ],
+            "spell_cards": [
+                card for card in all_cards
+                if isinstance(card, SpellCard)
+            ],
+            "artifact_cards": [
+                card for card in all_cards
+                if isinstance(card, ArtifactCard)
+            ]
+        }
 
 
 def test_factory() -> None:
-    creature_values: list[str | int] = ["Fire Dragon", 12, 7, 5, 4, "Sacred Unicorn", "Warrior Goblin", "Malicious Spirit"]
-    spell_values: list[str | int] = ["Fire Ball", 5, "Lightning Bolt", 13, "Healing Charm", 8, "Attack Diminisher", 2, "Healing Fountain", 9]
-    factory: FantasyCardFactory = FantasyCardFactory()
-    for i in range(5):
-        creat_name_or_power: str | int = random.choice(creature_values)
-        print(f"\ncreature name or power: {creat_name_or_power}\n")
-        print(factory.create_creature(creat_name_or_power).get_card_info())
-        spell_name_or_power: str | int = random.choice(spell_values)
-        print(f"\nspell name or power: {spell_name_or_power}\n")
-        print(factory.create_spell(spell_name_or_power).get_card_info())
+    if len(sys.argv) == 1:
+        print(FantasyCardFactory.create_themed_deck(random.choice(1, 11)))
+        return None
+    for arg in sys.argv:
+        try:
+            print(
+                FantasyCardFactory.create_themed_deck(int(arg))
+            )
+        except ValueError as ve:
+            print(f"Caught ValueError while parsing arguments: {ve}")
 
 
 if __name__ == "__main__":
