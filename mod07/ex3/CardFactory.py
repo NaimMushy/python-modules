@@ -11,6 +11,8 @@ class CardFactory(ABC):
     def create_spell(self, name_or_power: str | int | None = None) -> Card:
         pass
 
+
+"""
     @abstractmethod
     def create_artifact(self, name_or_power: str | int | None = None) -> Card:
         pass
@@ -22,3 +24,4 @@ class CardFactory(ABC):
     @abstractmethod
     def get_supported_types(self) -> dict:
         pass
+"""
