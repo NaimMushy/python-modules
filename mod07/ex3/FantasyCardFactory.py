@@ -183,20 +183,26 @@ class FantasyCardFactory(CardFactory):
             "Shadow "
         ])
 
-    def generate_rarity(self) -> tuple[str, tuple[str, str]]:
+    def generate_rarity(
+        self,
+        card_category: str = ""
+    ) -> tuple[str, tuple[str, str]]:
         probability: float = random.random()
-        if probability < 0.05:
+        if probability < 0.05 or "leg" in card_category:
             return "Legendary", ["leg_attr", "leg_cards"]
-        if 0.1 <= probability < 0.2:
+        if 0.1 <= probability < 0.2 or "srare" in card_category:
             return "Super Rare", ["srare_attr", "srare_cards"]
-        if 0.2 <= probability < 0.5:
+        if 0.2 <= probability < 0.5 or "rare" in card_category:
             return "Rare", ["rare_attr", "rare_cards"]
-        if 0.5 <= probability <= 1:
+        if 0.5 <= probability <= 1 or "common" in card_category:
             return "Common", ["common_attr", "common_cards"]
         return "Unknown"
 
-    def generate_creature_data(self) -> list[str | int]:
-        rarity, rarity_keys = self.generate_rarity()
+    def generate_creature_data(
+        self,
+        card_category: str = ""
+    ) -> list[str | int]:
+        rarity, rarity_keys = self.generate_rarity(card_category)
         name: str = random.choice(
             self.creatures[rarity_keys[0]]
         ) + random.choice(
@@ -236,10 +242,26 @@ class FantasyCardFactory(CardFactory):
         return [name, cost, rarity, effect]
 
     def create_creature(self, name_or_power: str | int | None = None) -> Card:
-        name, cost, rarity, attack, health = self.generate_creature_data()
         if not name_or_power:
+            name, cost, rarity, attack, health = self.generate_creature_data()
             return CreatureCard(name, cost, rarity, attack, health)
         if isinstance(name_or_power, str):
+            card_category: str = (
+                cards for cards in self.creatures.keys()
+                for card in cards
+                if card in name_or_power
+            )
+            name, cost, rarity, attack, health = self.generate_creature_data(
+                card_category
+            )
             return CreatureCard(name_or_power, cost, rarity, attack, health)
         if isinstance(name_or_power, int):
+            card_category = (
+                category for category in ["leg", "srare", "rare", "common"]
+                if self.categories+"_attr"["attack"] - 4
+                <= name_or_power < self.categories+"_attr"["attack"]
+            )
+            name, cost, rarity, attack, health = self.generate_creature_data(
+                card_category
+            )
             return CreatureCard(name, cost, rarity, name_or_power, health)
