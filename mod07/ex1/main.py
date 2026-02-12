@@ -181,16 +181,16 @@ def build_decks(deck1: Deck, deck2: Deck) -> None:
 
 
 def main() -> None:
-    deck1: Deck = Deck()
-    deck2: Deck = Deck()
+    deck1: Deck = Deck("Gabach")
+    deck2: Deck = Deck("Ibady")
     build_decks(deck1, deck2)
     deck1.shuffle()
     deck2.shuffle()
     print("Drawing and playing cards:\n")
     for i in range(1, 6):
-        print(f"=== Turn {i}: Deck One ===\n")
+        print(f"=== Turn {i}: Player {deck1.player} ===\n")
         execute_turn(deck1, deck2)
-        print(f"=== Turn {i}: Deck Two ===\n")
+        print(f"=== Turn {i}: Player {deck2.player} ===\n")
         execute_turn(deck2, deck1)
     print("Polymorphism in action: Same interface, different card behaviors!")
 

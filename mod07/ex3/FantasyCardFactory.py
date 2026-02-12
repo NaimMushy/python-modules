@@ -34,19 +34,19 @@ CREATURES: dict[str, list[str]] = {
 SPELLS: dict[str, dict[str, list[str] | str]] = {
     "offensive_cards": {
         "card_names": ["Bolt", "Ray", "Ball", "Tornado", "Gun"],
-        "effect_prefix": "Deals",
-        "effect_suffix": "damage"
+        "effect_prefix": ["Deals"],
+        "effect_suffix": ["damage"]
     },
     "healing_cards": {
         "card_names": ["Balm", "Fountain", "Hug", "Charm"],
-        "name_prefix": "Healing",
+        "name_prefix": ["Healing"],
         "effect_prefix": "Restores",
-        "effect_suffix": "health"
+        "effect_suffix": ["health"]
     },
     "support_cards": {
         "card_names": ["Curse", "Blessing"],
-        "name_prefix": "Mana",
-        "effect_suffix": "mana cost"
+        "name_prefix": ["Mana", "Attack"],
+        "effect_suffix": ["mana cost", "attack"]
     }
 }
 
@@ -265,7 +265,7 @@ class FantasyCardFactory(CardFactory):
             effect_type = random.choice([cat for cat in self.spells.keys()])
         if not name:
             name = random.choice(self.spells[effect_type]["card_names"])
-        if effect_type != "offensive_cards":
+        if effect_type == "_cards":
             name = self.spells[effect_type]["name_prefix"] + " " + name
         else:
             name = self.get_element() + " " + name
@@ -273,6 +273,9 @@ class FantasyCardFactory(CardFactory):
             self.spells[effect_type]["effect_prefix"] = (
                 "Adds" if "Curse" in name else "Removes"
             )
+            effect_suffix: str = (
+                self.spells[effect_type]["name_prefix"]
+                    )
         effect_type = (
             " "
             + self.spells[effect_type]["effect_prefix"]
@@ -484,8 +487,8 @@ class FantasyCardFactory(CardFactory):
                 ] + [
                     power.replace("_cards", "") for power in self.spells.keys()
                 ] + [
-                    self.spells[card_types]["effect_suffix"]
-                    for card_types in self.spells.keys()
+                    suffix for card_types in self.spells.keys()
+                    for suffix in self.spells[card_types]["effect_suffix"]
                 ],
                 "creation_func": self.create_spell
             },
@@ -499,24 +502,3 @@ class FantasyCardFactory(CardFactory):
                 "creation_func": self.create_artifact
             }
         }
-
-
-def test_factory() -> None:
-    factory: FantasyCardFactory = FantasyCardFactory()
-    args: list[str] = sys.argv[1:]
-    if not args:
-        args.append(str(random.randint(1, 11)))
-    for arg in args:
-        try:
-            arg = int(arg)
-        except ValueError as ve:
-            print(f"Caught ValueError while parsing arguments: {ve}")
-        else:
-            deck_created = factory.create_themed_deck(arg)
-            print(f"=== CREATING DECK OF {arg} CARDS ===\n")
-            for card in deck_created["total_cards"]:
-                print(f"CARD CREATED: {card.get_card_info()}\n")
-
-
-if __name__ == "__main__":
-    test_factory()

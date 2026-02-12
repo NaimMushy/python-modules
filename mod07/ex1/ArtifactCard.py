@@ -1,5 +1,4 @@
 from ex0.Card import Card
-from .Deck import Deck
 import re
 
 
@@ -15,6 +14,7 @@ class ArtifactCard(Card):
         super().__init__(name, cost, rarity)
         self.durability: int = durability
         self.effect: str = effect
+        self.effect_value: int = self.get_effect_value()
 
     def play(self, game_state: dict) -> dict:
         if not self.is_playable(game_state["available_mana"]):
@@ -24,25 +24,15 @@ class ArtifactCard(Card):
                 f"{self.cost} needed\n"
             )
             return {}
-        effect: str | list = self.activate_ability()["effect"]
-        target: str = self.activate_ability()["target"]
-        if "ally" in target:
-            game_state["all_targets"] = game_state["hand"]
-            game_state["living_targets"] = game_state["ally_beings"]
-        if "beings" in target:
-            game_state["all_targets"] = game_state["living_targets"]
-        if "mana" in target:
-            game_state["enemy_mana"] -= self.effect[1]
-            self.durability -= 1
-        elif game_state["all_targets"]:
-            self.apply_effect(
-                effect,
-                game_state["all_targets"]
-            )
-            self.durability -= 1
-        else:
-            print(f"No targets available for {self.name}\n")
+        targets: str = self.activate_ability()["targets"]
+        if not game_state[targets]:
+            print(f"No available targets for {self.name}\n")
             return {}
+        if "mana" in targets:
+            game_state[targets] += self.effect_value
+        else:
+            self.apply_effect(game_state[targets])
+        self.durability -= 1
         play_result: dict = {
             "card_played": self.name,
             "mana_used": self.cost,
@@ -58,87 +48,67 @@ class ArtifactCard(Card):
             game_state["cards_to_remove"].append(self)
         return play_result
 
-    def activate_ability(self) -> dict:
+    def get_effect_value(self) -> int:
         if (match := re.match(
-            "([a-z]+): ([-+][0-9]+) ([a-z ]+)",
+            "[a-z]+: ([-+][0-9]+) [a-z ]+",
             self.effect,
             re.I
         )):
-            permanent: bool = match.group(1) == "Permanent"
-            effect_value: int = int(match.group(2))
-            effect_type: str = match.group(3)
-            repeat_per_turn: bool = "per turn" in match.group(3)
-            if (
-                ("mana cost" in effect_type and effect_value < 0) or
-                ("mana cost" not in effect_type and effect_value > 0)
-            ):
-                target: str = "ally"
-            elif "mana" in effect_type and "cost" not in effect_type:
-                if effect_value < 0:
-                    target = "enemy_deck_mana"
-                else:
-                    target = "ally_deck_mana"
-            else:
-                target = "enemy"
-            if "attack" in effect_type or "health" in effect_type:
-                target += " beings"
-            return {
-                "permanent": permanent,
-                "effect": [effect_type, effect_value],
-                "target": target,
-                "repeat": repeat_per_turn
-            }
-        else:
-            return {"effect": "unknown", "target": None}
+            return int(match.group(1))
+        return 0
 
-    def apply_effect(self, effect: list | str, targets: list[Card]) -> None:
-        if isinstance(effect, str) and effect == "unknown":
-            print("No card effect for this turn\n")
-            return None
+    def activate_ability(self) -> dict:
+        if "attack" in self.effect or "health" in self.effect:
+            targets: str = (
+                "ally_beings" if self.effect_value > 0
+                else "living_targets"
+            )
+        elif "mana cost" in self.effect:
+            targets = (
+                "hand" if self.effect_value < 0
+                else "all_targets"
+            )
+        else:
+            targets = (
+                "available_mana" if self.effect_value > 0
+                else "enemy_mana"
+            )
+        return {
+            "effect": self.effect,
+            "targets": targets
+        }
+
+    def apply_effect(self, targets: list[Card]) -> None:
         if not targets:
             print(f"No available targets for {self.name}\n")
             return None
-        if "health" in effect[0]:
+        sign: str = "+" if self.effect_value > 0 else ""
+        if "health" in self.effect:
             for target in targets:
-                target.set_health(target.get_health() + effect[1])
-                if isinstance(effect[1], int) and effect[1] > 0:
-                    print(
-                        f"Effect < +{effect[1]} health points > "
-                        f"applied to {target.name}"
-                    )
-                else:
-                    print(
-                        f"Effect < {effect[1]} health points > "
-                        f"applied to {target.name}"
-                    )
-        elif "attack" in effect[0]:
+                target.set_health(target.get_health() + self.effect_value)
+                print(
+                    f"Effect < {sign}"
+                    f"{self.effect_value} health points > "
+                    f"applied to {target.name}"
+                )
+        elif "attack" in self.effect:
             for target in targets:
                 target.set_attack(
-                    target.get_attack() + effect[1]
+                    target.get_attack() + self.effect_value
                 )
-                if isinstance(effect[1], int) and effect[1] > 0:
-                    print(
-                        f"Effect < +{effect[1]} attack > "
-                        f"applied to {target.name}"
-                    )
-                else:
-                    print(
-                        f"Effect < {effect[1]} attack > "
-                        f"applied to {target.name}"
-                    )
-        elif "mana cost" in effect[0]:
+                print(
+                    f"Effect < {sign}"
+                    f"{self.effect_value} attack > "
+                    f"applied to {target.name}"
+                )
+        elif "mana cost" in self.effect:
             for target in targets:
-                target.cost += effect[1]
-                if isinstance(effect[1], int) and effect[1] > 0:
-                    print(
-                        f"Effect < +{effect[1]} mana cost > "
-                        f"applied to {target.name}"
-                    )
-                else:
-                    print(
-                        f"Effect < {effect[1]} mana cost > "
-                        f"applied to {target.name}"
-                    )
+                target.cost += self.effect_value
+                print(
+                    f"Effect < {sign}"
+                    f"{self.effect_value} mana cost > "
+                    f"applied to {target.name}"
+                )
         print("")
 
     def get_card_info(self) -> dict:

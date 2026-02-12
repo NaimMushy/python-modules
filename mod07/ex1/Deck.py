@@ -3,12 +3,13 @@ import random
 
 
 class Deck:
-    def __init__(self, hand: list[Card] = []) -> None:
+    def __init__(self, player: str = "Anonymous") -> None:
         self.stack_cards: list[Card] = []
-        self.hand: list[Card] = hand
+        self.hand: list[Card] = []
         self.living_beings: list[Card] = []
         self.collection: dict[str, list[Card]] = {}
         self.available_mana: int = 50
+        self.player: str = player
 
     def add_card(self, card: Card) -> None:
         self.stack_cards.append(card)

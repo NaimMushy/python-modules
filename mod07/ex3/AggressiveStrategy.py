@@ -3,8 +3,6 @@ from ex0.Card import Card
 from ex0.CreatureCard import CreatureCard
 from ex1.SpellCard import SpellCard
 from ex1.ArtifactCard import ArtifactCard
-from ex1.Deck import Deck
-from ex2.EliteCard import EliteCard
 import random
 
 
@@ -23,14 +21,8 @@ class AggressiveStrategy(GameStrategy):
             ),
             "cards_to_remove": []
         }
-        turn_result: dict = {
-            "cards_played": [],
-            "targets_attacked": [],
-            "mana_used": 0,
-            "damage_dealt": 0
-        }
         if not game_state["hand"] and not game_state["all_targets"]:
-            return turn_result
+            return {}
         attacker: Card | None = (
             None if not self.prioritize_targets(game_state["ally_beings"])
             else random.choice(self.prioritize_targets(
@@ -39,54 +31,56 @@ class AggressiveStrategy(GameStrategy):
         )
         if attacker:
             attack_result: dict = attacker.play(game_state)
-            if attack_result:
-                if attacker.name not in turn_result["cards_played"]:
-                    turn_result["cards_played"].append(attacker.name)
-                if (
-                    game_state["priority_target"].name
-                    not in turn_result["targets_attacked"]
-                ):
-                    turn_result["targets_attacked"].append(
-                        game_state["priority_target"].name
-                    )
-                turn_result["mana_used"] += attacker.cost
-                turn_result["damage_dealt"] += attacker.get_attack()
-                game_state["available_mana"] -= attacker.cost
-        card_to_play: Card = random.choice([
+            if not attack_result:
+                return {}
+            return {
+                "card_played": attacker,
+                "targets": [game_state["priority_target"]],
+                "mana_used": attacker.cost,
+                "damage_dealt": attacker.get_attack(),
+                "game_state": game_state
+            }
+        card_chosen: Card = random.choice([
             card for card in hand
             if isinstance(card, (SpellCard, ArtifactCard))
         ])
-        if not card_to_play:
-            return turn_result
-        play_result: dict = card_to_play.play(game_state)
+        if not card_chosen:
+            return {}
+        play_result: dict = card_chosen.play(game_state)
         if not play_result:
-            return turn_result
-        targets: list[Card] = []
-        if isinstance(card_to_play, SpellCard):
-            spell_targets: list[Card] = card_to_play.get_correct_targets(
-                game_state
+            return {}
+        if isinstance(card_chosen, SpellCard):
+            targets: str = card_chosen.get_correct_targets()
+            offensive: bool = (
+                True if "damage" in card_chosen.effect_type
+                else False
             )
-            if spell_targets and (
-                spell_targets == game_state["living_targets"]
-                or spell_targets == game_state["all_targets"]
-            ):
-                targets = spell_targets
-                turn_result["damage_dealt"] += card_to_play.get_effect_value()
-        elif isinstance(card_to_play, ArtifactCard):
-            artifact_target: str = card_to_play.activate_ability()["target"]
-            if "mana" not in artifact_target and "enemy" in artifact_target:
-                targets = (
-                    game_state["living_targets"] if "beings" in artifact_target
-                    else game_state["all_targets"]
+        elif isinstance(card_chosen, ArtifactCard):
+            targets = card_chosen.activate_ability()["targets"]
+            offensive = (
+                True if (
+                    "health" in card_chosen.effect
+                    and card_chosen.effect_value < 0
                 )
-                turn_result["damage_dealt"] += card_to_play.get_effect_value()
-        if card_to_play.name not in turn_result["cards_played"]:
-            turn_result["cards_played"].append(card_to_play.name)
-        turn_result["mana_used"] += play_result["mana_used"]
-        for target in targets:
-            if target.name not in turn_result["targets_attacked"]:
-                turn_result["targets_attacked"].append(target.name)
-        return turn_result
+                else False
+            )
+        targets_attacked: list[Card] = [
+            target for target in game_state[targets]
+            if targets == "livings_targets" or targets == "all_targets"
+        ]
+        return {
+            "card_played": card_chosen,
+            "targets": targets_attacked,
+            "mana_used": card_chosen.cost,
+            "damage_dealt": (
+                card_chosen.effect_value * (
+                    -1 if card_chosen.effect_value < 0
+                    else 1
+                ) if offensive
+                else 0
+            ),
+            "game_state": game_state
+        }
 
     def prioritize_targets(self, available_targets: list) -> list:
         return [
