@@ -48,11 +48,8 @@ class CreatureCard(Card):
                 f" - {self.cost} needed\n"
             )
             return {}
-        if (
-            "targets" not in game_state.keys() or
-            not game_state["targets"]
-        ):
-            print(f"No targets available for {self.name} to attack")
+        if not game_state["priority_target"]:
+            print(f"No target available for {self.name} to attack")
             return {}
         play_result: dict = {
             "card_played": self.name,
@@ -61,7 +58,7 @@ class CreatureCard(Card):
         }
         print(f"Playing creature {self.name}...")
         print(f"Play result: {play_result}\n")
-        self.attack_target(random.choice(game_state["targets"]))
+        self.attack_target(game_state["priority_target"])
         return play_result
 
     def attack_target(self, target) -> dict:

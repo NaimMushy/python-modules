@@ -3,6 +3,7 @@ from ex0.CreatureCard import CreatureCard
 from ex1.SpellCard import SpellCard
 from ex1.ArtifactCard import ArtifactCard
 from .CardFactory import CardFactory
+from typing import Any as any
 import random
 import sys
 
@@ -128,7 +129,7 @@ ELITES: list[list[str | int | list]] = [
 class FantasyCardFactory(CardFactory):
     def __init__(self) -> None:
         self.creatures: dict[str, list[str]] = CREATURES
-        self.spells: dict[str, list[str]] = SPELLS
+        self.spells: dict[str, dict[str, list[str] | str]] = SPELLS
         self.artifacts: dict[str, list[str] | dict[str, list[str]]] = ARTIFACTS
         # self.elites: list[list[str | int]] = ELITES
 
@@ -441,12 +442,11 @@ class FantasyCardFactory(CardFactory):
     def create_themed_deck(self, size: int) -> dict:
         all_cards: dict[str, list[Card]] = {}
         if size:
-            supported_types: dict = self.get_supported_types()
             all_cards["total_cards"] = []
         for card in range(size):
             card_type, card_values = random.choice([
                 (types, type_values)
-                for types, type_values in supported_types.items()
+                for types, type_values in self.get_supported_types().items()
             ])
             card_created: Card = card_values["creation_func"](
                 random.choice([
@@ -461,8 +461,8 @@ class FantasyCardFactory(CardFactory):
             all_cards[card_type].append(card_created)
         return all_cards
 
-    def get_supported_types(self) -> dict:
-        supported_types: dict = {
+    def get_supported_types(self) -> dict[str, dict[str, any]]:
+        return {
             "creatures": {
                 "card_names": [
                     name for card_type in self.creatures.keys()
@@ -499,31 +499,6 @@ class FantasyCardFactory(CardFactory):
                 "creation_func": self.create_artifact
             }
         }
-        print("=== AVAILABLE TYPES ===\n")
-        for card_type, card_values in supported_types.items():
-            print(f"{card_type.capitalize()}:")
-            print("-> NAMES:")
-            for name in card_values["card_names"]:
-                print(f"< {name} >")
-            print("\n-> POWERS:")
-            power_integers: list[int] = [
-                power for power in card_values["card_powers"]
-                if isinstance(power, int)
-            ]
-            print(f"< from {min(power_integers)} to {max(power_integers)} >")
-            power_strings: list[str] = [
-                power for power in card_values["card_powers"]
-                if isinstance(power, str)
-            ]
-            if power_strings:
-                print("< ", end="")
-                for power in power_strings:
-                    if power != power_strings[0]:
-                        print(", ", end="")
-                    print(f"{power}", end="")
-                print(" >")
-            print("")
-        return supported_types
 
 
 def test_factory() -> None:

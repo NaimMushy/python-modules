@@ -13,3 +13,6 @@ class GameStrategy(ABC):
     @abstractmethod
     def prioritize_targets(self, available_targets: list) -> list:
         pass
+
+    def get_strategy_type(self) -> str:
+        return self.__class__.__name__.replace("Strategy", "")

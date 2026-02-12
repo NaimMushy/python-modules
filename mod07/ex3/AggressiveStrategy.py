@@ -10,81 +10,89 @@ import random
 
 class AggressiveStrategy(GameStrategy):
     def execute_turn(self, hand: list, battlefield: list) -> dict:
-        game_state: dict = {}
-        for item in hand:
-            if not isinstance(item, Card):
-                game_state["available_mana"] = item
-                hand.remove(item)
-        game_state["deck"] = Deck(hand)
-        game_state["enemy_deck"] = Deck(battlefield)
-        attackers: list[Card] = self.prioritize_targets(hand)
-        enemy_targets: list[Card] = self.prioritize_targets(battlefield)
-        action_result: dict = {
+        game_state: dict = {
+            "hand": hand[0],
+            "all_targets": battlefield[0],
+            "available_mana": hand[1],
+            "enemy_mana": battlefield[1],
+            "ally_beings": hand[2],
+            "living_targets": battlefield[2],
+            "priority_target": (
+                None if not battlefield[2]
+                else random.choice(battlefield[2])
+            ),
+            "cards_to_remove": []
+        }
+        turn_result: dict = {
             "cards_played": [],
             "targets_attacked": [],
             "mana_used": 0,
             "damage_dealt": 0
         }
-        if attackers and enemy_targets:
-            for card in attackers:
-                if action_result["cards_played"]:
-                    break
-                if card.cost <= 3:
-                    game_state["targets"] = [random.choice(enemy_targets)]
-                    play_result: dict = card.play(game_state)
-                    action_result["cards_played"].append(card.name)
-                    if (
-                        isinstance(card, EliteCard) and
-                        "spell" in play_result["effects"]
-                    ):
-                        game_state["targets"] = enemy_targets
-                    for target in game_state["targets"]:
-                        if (
-                            target.name not in
-                            action_result["targets_attacked"]
-                        ):
-                            action_result["targets_attacked"].append(
-                                target.name
-                            )
+        if not game_state["hand"] and not game_state["all_targets"]:
+            return turn_result
+        attacker: Card | None = (
+            None if not self.prioritize_targets(game_state["ally_beings"])
+            else random.choice(self.prioritize_targets(
+                game_state["ally_beings"]
+            ))
+        )
+        if attacker:
+            attack_result: dict = attacker.play(game_state)
+            if attack_result:
+                if attacker.name not in turn_result["cards_played"]:
+                    turn_result["cards_played"].append(attacker.name)
+                if (
+                    game_state["priority_target"].name
+                    not in turn_result["targets_attacked"]
+                ):
+                    turn_result["targets_attacked"].append(
+                        game_state["priority_target"].name
+                    )
+                turn_result["mana_used"] += attacker.cost
+                turn_result["damage_dealt"] += attacker.get_attack()
+                game_state["available_mana"] -= attacker.cost
         card_to_play: Card = random.choice([
             card for card in hand
             if isinstance(card, (SpellCard, ArtifactCard))
         ])
         if not card_to_play:
-            return action_result
+            return turn_result
+        play_result: dict = card_to_play.play(game_state)
+        if not play_result:
+            return turn_result
+        targets: list[Card] = []
         if isinstance(card_to_play, SpellCard):
-            play_result = card_to_play.resolve_effect(enemy_targets)
-            action_result["mana_used"] += (
-                0 if play_result["target"]
-                else card_to_play.cost
+            spell_targets: list[Card] = card_to_play.get_correct_targets(
+                game_state
             )
-            targets: list[Card] = (
-                battlefield
-                if card_to_play.get_correct_targets(
-                    hand,
-                    battlefield
-                ) == battlefield
-                and play_result["target"]
-                else []
-            )
-        elif isinstance(card, ArtifactCard):
-            play_result = card_to_play.play(game_state)
-            if not play_result:
-                return action_result
-            if "mana" not in card_to_play.activate_ability()["target"]:
-                if "ally" in card_to_play.activate_ability()["target"]:
-                    targets = hand
-                else:
-                    targets = battlefield
+            if spell_targets and (
+                spell_targets == game_state["living_targets"]
+                or spell_targets == game_state["all_targets"]
+            ):
+                targets = spell_targets
+                turn_result["damage_dealt"] += card_to_play.get_effect_value()
+        elif isinstance(card_to_play, ArtifactCard):
+            artifact_target: str = card_to_play.activate_ability()["target"]
+            if "mana" not in artifact_target and "enemy" in artifact_target:
+                targets = (
+                    game_state["living_targets"] if "beings" in artifact_target
+                    else game_state["all_targets"]
+                )
+                turn_result["damage_dealt"] += card_to_play.get_effect_value()
+        if card_to_play.name not in turn_result["cards_played"]:
+            turn_result["cards_played"].append(card_to_play.name)
+        turn_result["mana_used"] += play_result["mana_used"]
         for target in targets:
-            if target.name not in action_result["targets_attacked"]:
-                action_result["targets_attacked"].append(target.name)
-        return action_result
+            if target.name not in turn_result["targets_attacked"]:
+                turn_result["targets_attacked"].append(target.name)
+        return turn_result
 
     def prioritize_targets(self, available_targets: list) -> list:
         return [
             card for card in available_targets
-            if isinstance(card, (CreatureCard, EliteCard))
+            if isinstance(card, CreatureCard)
+            and card.cost <= 7
         ]
 
     def get_strategy_name(self) -> str:

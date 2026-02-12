@@ -3,6 +3,7 @@ from ex0.CreatureCard import CreatureCard
 from .ArtifactCard import ArtifactCard
 from .SpellCard import SpellCard
 from .Deck import Deck
+import random
 
 # creature cards
 fire_dragon: CreatureCard = CreatureCard(
@@ -128,28 +129,31 @@ def execute_turn(
     deck: Deck,
     enemy_deck: Deck
 ) -> None:
-    game_state: dict = {}
     card_drawn: Card = deck.draw_card()
-    if card_drawn not in deck.active_cards:
-        deck.active_cards.append(card_drawn)
+    if card_drawn not in deck.hand:
+        deck.hand.append(card_drawn)
         if isinstance(card_drawn, CreatureCard):
-            deck.possible_targets.append(card_drawn)
-    game_state["available_mana"] = deck.available_mana
-    for card in deck.active_cards:
-        game_state["deck"] = deck
-        game_state["enemy_deck"] = enemy_deck
-        game_state["targets"] = enemy_deck.possible_targets
-        play_result: dict = card.play(game_state)
-        if play_result:
-            game_state["available_mana"] -= play_result["mana_used"]
-    for card in deck.possible_targets:
-        if isinstance(card, CreatureCard) and not card.get_health():
-            print(
-                f"{card.__class__.__name__.replace('Card', '')} {card.name} "
-                "has been defeated - Destroying the card\n"
-            )
-            deck.remove_from_all(card)
-    deck.available_mana = game_state["available_mana"]
+            deck.living_beings.append(card_drawn)
+    game_state: dict = {
+        "hand": deck.hand,
+        "all_targets": enemy_deck.hand,
+        "available_mana": deck.available_mana,
+        "enemy_mana": enemy_deck.available_mana,
+        "ally_beings": deck.living_beings,
+        "living_targets": enemy_deck.living_beings,
+        "priority_target": (
+            None if not enemy_deck.living_beings
+            else random.choice(enemy_deck.living_beings)
+        ),
+        "cards_to_remove": []
+    }
+    play_result: dict = (random.choice(game_state["hand"])).play(game_state)
+    if not play_result:
+        return None
+    deck.available_mana -= play_result["mana_used"]
+    for card in game_state["cards_to_remove"]:
+        deck.remove_from_all(card)
+    enemy_deck.check_card_health()
 
 
 def build_decks(deck1: Deck, deck2: Deck) -> None:

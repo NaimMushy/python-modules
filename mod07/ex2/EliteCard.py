@@ -2,7 +2,6 @@ from .Combatable import Combatable
 from .Magical import Magical
 from ex0.Card import Card
 from ex1.SpellCard import SpellCard
-from ex1.Deck import Deck
 import random
 
 
@@ -148,9 +147,9 @@ class EliteCard(Card, Combatable, Magical):
                 f" - {self.cost} needed\n"
             )
             return {}
-        play_result: dict = {"card_played": self.name}
+        play_result: dict = {}
         active_spells: list[SpellCard] = [
-            card for card in game_state["deck"].active_cards
+            card for card in game_state["hand"]
             if isinstance(card, SpellCard) and
             card in self.known_spells
         ]
@@ -159,26 +158,27 @@ class EliteCard(Card, Combatable, Magical):
             cast_result: dict = self.cast_spell(
                 spell_to_cast.name,
                 spell_to_cast.get_correct_targets(
-                    game_state["deck"].possible_targets,
-                    game_state["enemy_deck"].possible_targets
+                    game_state["ally_beings"],
+                    game_state["living_targets"]
                 )
             )
             if cast_result["success"]:
-                game_state["deck"].remove_from_all(spell_to_cast)
+                game_state["cards_to_remove"].append(spell_to_cast)
                 play_result["effects"] = (
                     f"Cast spell {spell_to_cast.name} "
                     f"on {cast_result['targets']}"
                 )
             play_result["mana_used"] = cast_result["mana_used"]
-        elif game_state["enemy_deck"].possible_targets:
+        elif game_state["living_targets"]:
             attack_result: dict = self.attack(
-                random.choice(game_state["targets"])
+                random.choice(game_state["living_targets"])
             )
             play_result["mana_used"] = self.cost
             play_result["effects"] = f"Attacked {attack_result['target']}"
         else:
             print(f"No available targets for {self.name}\n")
             return {}
+        play_result = {"card_played": self.name}
         print(f"Play result: {play_result}\n")
         return play_result
 
