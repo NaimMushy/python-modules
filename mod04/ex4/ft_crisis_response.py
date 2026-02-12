@@ -1,37 +1,43 @@
-ACCESS_MSG: str = "attempting access to"
-FILENOTFOUNDERR_RES: str = "[response] archive not found in storage matrix"
-FILENOTFOUNDERR_STATUS: str = "[status] crisis handled - system stable\n"
-PERMISSIONERR_RES: str = "[response] security protocols deny access"
-PERMISSIONERR_STATUS: str = "[status] crisis handled - security maintained\n"
-SUCCESS_MSG: str = "[success] archive recovered - "
-SUCCESS_STATUS: str = "[status] normal operations resumed\n"
-
-
 def main() -> None:
-    """
-    Attemps secure access to different archives, and handles errors properly.
-    """
     print("=== CYBER ARCHIVES - CRISIS RESPONSE SYSTEM ===\n")
-    files: list[str] = (
+
+    files: list[str] = [
         "lost_archive.txt",
         "classified_vault.txt",
         "standard_archive.txt"
-    )
+    ]
+
+    messages: dict[str, str | dict[str, str]] = {
+        "access_msg": "Attempting access to",
+        "FileNotFoundError": {
+            "resp": "[RESPONSE] Archive not found in storage matrix",
+            "status": "[STATUS] Crisis handled - System stable\n"
+        },
+        "PermissionError": {
+            "resp": "[RESPONSE] Security protocols deny access",
+            "status": "[STATUS] Crisis handled - Security maintained\n"
+        },
+        "success_msg": "[SUCCESS] Archive recovered - ",
+        "success_status": "[STATUS] Normal operations resumed\n"
+    }
+
     for filename in files:
+
         try:
             with open(filename) as file:
-                print(f"[routine access] {ACCESS_MSG} '{filename}'...")
-                print(f"{SUCCESS_MSG}'{file.read()}'")
-                print(SUCCESS_STATUS)
-        except FileNotFoundError:
-            print(f"[crisis alert] {ACCESS_MSG} '{filename}'...")
-            print(FILENOTFOUNDERR_RES)
-            print(FILENOTFOUNDERR_STATUS)
-        except PermissionError:
-            print(f"[crisis alert] {ACCESS_MSG} '{filename}'...")
-            print(PERMISSIONERR_RES)
-            print(PERMISSIONERR_STATUS)
-    print("all crisis scenarios handled successfully - archive secure")
+                print(
+                    f"[ROUTINE ACCESS] {messages['access_msg']} "
+                    f"'{filename}'..."
+                )
+                print(f"{messages['success_msg']}'{file.read()}'")
+                print(messages["success_status"])
+
+        except (FileNotFoundError, PermissionError) as err:
+            print(f"[CRISIS ALERT] {messages['access_msg']} '{filename}'...")
+            print(messages[err.__class__.__name__]["resp"])
+            print(messages[err.__class__.__name__]["status"])
+
+    print("All crisis scenarios handled successfully - Archive secure")
 
 
 if __name__ == "__main__":

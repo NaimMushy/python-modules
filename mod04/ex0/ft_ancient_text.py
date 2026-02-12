@@ -1,20 +1,25 @@
-def main() -> None:
-    """
-    Extracts and displays the recovered fragments from the ancient file.
-    """
-    print("=== CYBER ARCHIVES - DATA RECOVERY SYSTEM ===\n")
-    try:
-        print("accessing storage vault: ancient_fragment.txt")
-        file = open("ancient_fragment.txt")
-    except FileNotFoundError:
-        print("error: storage vault not found")
-    else:
-        print("connection established...\n")
-        print("<recovered data>")
-        for fragment in file:
-            print(f"{fragment}")
+from typing import TextIO
 
-        print("\ndata recovery complete - storage unit disconnected")
+
+def main() -> None:
+    print("=== CYBER ARCHIVES - DATA RECOVERY SYSTEM ===\n")
+
+    try:
+        print("Accessing storage vault: ancient_fragment.txt")
+        file: TextIO = open("ancient_fragment.txt")
+
+    except (FileNotFoundError, PermissionError):
+        print("ERROR: Storage vault not found")
+
+    else:
+        print("Connection established...\n")
+
+        print("< RECOVERED DATA >")
+        print(file.read())
+        file.close()
+
+    finally:
+        print("\nData recovery complete - Storage unit disconnected")
 
 
 if __name__ == "__main__":

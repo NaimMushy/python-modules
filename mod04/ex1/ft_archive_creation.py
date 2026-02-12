@@ -1,35 +1,44 @@
-ENTRY_001: str = (
-    "---- [entry 001] new quantum algorithm discovered, "
-    "isn't that great? ----\n"
-)
-ENTRY_002: str = (
-    "---- [entry 002] efficiency increased by 347% "
-    "(we replaced the IA by humans) ----\n"
-)
-ENTRY_003: str = (
-    "---- [entry 003] archived by data archivist trainee "
-    "(i really hope i get a permanent job, times are hard "
-    "dans la france de macron) ----\n"
-)
+from typing import TextIO
+
+
+def inscribe_entry(filename: str, entries: list[str]) -> None:
+    try:
+        file: TextIO = open(filename, "w")
+    except (FileNotFoundError, PermissionError):
+        print(
+            f"ERROR: Cannot access '{filename}' "
+            "- Check the file's existence and permissions"
+        )
+    else:
+        for entry in range(len(entries)):
+            entries[entry] = (
+                f"--- [ENTRY 00{entry + 1}] "
+                + entries[entry]
+                + " ---"
+            )
+            file.write(entries[entry])
+            print(entries[entry])
+        file.close()
 
 
 def main() -> None:
-    """
-    Writes a few entries to a new file.
-    """
     print("=== CYBER ARCHIVES - PRESERVATION SYSTEM ===\n")
-    print("initializing new storage unit: new_discovery.txt")
-    with open("new_discovery.txt", "w") as new:
-        print("storage unit created successfully...\n")
-        print("inscribing preservation data...")
-        new.write(ENTRY_001)
-        print(f"{ENTRY_001}")
-        new.write(ENTRY_002)
-        print(f"{ENTRY_002}")
-        new.write(ENTRY_003)
-        print(f"{ENTRY_003}")
-    print("\ndata inscription complete - storage unit sealed")
-    print("archive 'new_discovery.txt' ready for long-term preservation")
+
+    filename: str = "new_discovery.txt"
+    print(f"Initializing new storage unit: {filename}")
+
+    entries: list[str] = [
+        "New quantum algorithm discovered",
+        "Efficiency increased by 347%",
+        "Archived by Data Archivist Trainee"
+    ]
+    print("Storage unit created successfully...\n")
+    print("Inscribing preservation data...")
+
+    inscribe_entry(filename, entries)
+
+    print("\nData inscription complete - Storage unit sealed")
+    print(f"Archive '{filename}' ready for long-term preservation")
 
 
 if __name__ == "__main__":
