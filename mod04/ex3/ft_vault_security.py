@@ -15,8 +15,8 @@ def secure_access(filename: str) -> None:
                     print(line)
                     classified.write(line)
 
-    except (FileNotFoundError, PermissionError) as ve:
-        print(f"ERROR: {ve}")
+    except (FileNotFoundError, PermissionError) as err:
+        print(f"ERROR: {err}")
 
     finally:
         print("Vault automatically sealed upon completion")

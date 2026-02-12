@@ -4,11 +4,8 @@ from typing import TextIO
 def inscribe_entry(filename: str, entries: list[str]) -> None:
     try:
         file: TextIO = open(filename, "w")
-    except (FileNotFoundError, PermissionError):
-        print(
-            f"ERROR: Cannot access '{filename}' "
-            "- Check the file's existence and permissions"
-        )
+    except (FileNotFoundError, PermissionError) as err:
+        print(f"ERROR: {err}")
     else:
         for entry in range(len(entries)):
             entries[entry] = (
