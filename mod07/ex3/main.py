@@ -27,19 +27,20 @@ def main() -> None:
         turn_number = DEFAULT_TURN_NB
 
     continuing: bool = (
-        True if input("\n-> STARTING GAME? (y/n): ") in ["y", ""]
+        True if input("\n-> STARTING GAME? (Y/n): ") in ["y", "Y", ""]
         else False
     )
-    while continuing and turn_number > game_engine.turns_simulated + 1:
+    while continuing and turn_number > game_engine.turns_simulated:
         print("")
         game_engine.simulate_turn()
-        continuing = (
-            True if input(
-                f"\n[{game_engine.turns_simulated}/{turn_number}]"
-                " -> NEXT TURN? (y/n): "
-            ) in ["y", ""]
-            else False
-        )
+        if turn_number > game_engine.turns_simulated:
+            continuing = (
+                True if input(
+                    f"\n[{game_engine.turns_simulated}/{turn_number}]"
+                    " -> NEXT TURN? (Y/n): "
+                ) in ["y", "Y", ""]
+                else False
+            )
 
     game_engine.get_engine_status()
     print(

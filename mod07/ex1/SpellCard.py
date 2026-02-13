@@ -67,7 +67,6 @@ class SpellCard(Card):
         if not targets:
             print(f"No targets available for {self.name}\n")
             return {"effect": "unknown", "target": None}
-        print(f"SPELL TARGETS: {[target.name for target in targets]}\n")
         for target in targets:
             if "damage" in self.effect_type or "health" in self.effect_type:
                 target.set_health(
