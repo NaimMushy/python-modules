@@ -142,11 +142,12 @@ class EliteCard(Card, Combatable, Magical):
     def play(self, game_state: dict) -> dict:
         if not self.is_playable(game_state["available_mana"]):
             print(
-                f"Play result: Impossible to play {self.name} with "
+                f"\nImpossible to play {self.name} with "
                 f"{game_state['available_mana']} mana available"
                 f" - {self.cost} needed\n"
             )
             return {}
+        print(f"\n-> Playing Elite {self.name}...\n")
         play_result: dict = {}
         active_spells: list[SpellCard] = [
             card for card in game_state["hand"]

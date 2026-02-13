@@ -1,5 +1,4 @@
 from .Card import Card
-import random
 
 
 class CreatureCard(Card):
@@ -43,22 +42,22 @@ class CreatureCard(Card):
     def play(self, game_state: dict) -> dict:
         if not self.is_playable(game_state["available_mana"]):
             print(
-                f"Play result: Impossible to play {self.name} with "
+                f"\nImpossible to play {self.name} with "
                 f"{game_state['available_mana']} mana available"
                 f" - {self.cost} needed\n"
             )
             return {}
+        print(f"\n-> Playing Creature {self.name}...\n")
         if not game_state["priority_target"]:
-            print(f"No target available for {self.name} to attack")
+            print(f"No available target for {self.name} to attack\n")
             return {}
         play_result: dict = {
             "card_played": self.name,
             "mana_used": self.cost,
             "effect": "Creature summoned to battlefield",
         }
-        print(f"Playing creature {self.name}...")
-        print(f"Play result: {play_result}\n")
         self.attack_target(game_state["priority_target"])
+        print(f"Play result: {play_result}\n")
         return play_result
 
     def attack_target(self, target) -> dict:

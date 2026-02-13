@@ -19,17 +19,25 @@ class ArtifactCard(Card):
     def play(self, game_state: dict) -> dict:
         if not self.is_playable(game_state["available_mana"]):
             print(
-                f"Impossible to play {self.name} "
+                f"\nImpossible to play {self.name} "
                 f"with {game_state['available_mana']} available: "
                 f"{self.cost} needed\n"
             )
             return {}
+        print(f"\n-> Playing Artifact {self.name}...\n")
         targets: str = self.activate_ability()["targets"]
         if not game_state[targets]:
             print(f"No available targets for {self.name}\n")
             return {}
         if "mana" in targets:
             game_state[targets] += self.effect_value
+            print(
+                f"Effect < {'+' if self.effect_value > 0 else ''}"
+                f"{self.effect_value} available mana > "
+                f"applied to {targets.replace('_', ' ')}\n"
+            )
+            if game_state[targets] < 0:
+                game_state[targets] = 0
         else:
             self.apply_effect(game_state[targets])
         self.durability -= 1
@@ -38,12 +46,11 @@ class ArtifactCard(Card):
             "mana_used": self.cost,
             "effect": self.effect
         }
-        print(f"Playing artifact {self.name}...")
         print(f"Play result: {play_result}\n")
         if self.durability <= 0:
             print(
                 f"Artifact {self.name} "
-                "destroyed - durability depleted\n"
+                "destroyed - Durability depleted\n"
             )
             game_state["cards_to_remove"].append(self)
         return play_result
@@ -109,6 +116,8 @@ class ArtifactCard(Card):
                     f"{self.effect_value} mana cost > "
                     f"applied to {target.name}"
                 )
+                if target.cost < 0:
+                    target.cost = 0
         print("")
 
     def get_card_info(self) -> dict:

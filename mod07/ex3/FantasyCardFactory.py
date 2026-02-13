@@ -5,7 +5,6 @@ from ex1.ArtifactCard import ArtifactCard
 from .CardFactory import CardFactory
 from typing import Any as any
 import random
-import sys
 
 
 # creature cards
@@ -34,94 +33,99 @@ CREATURES: dict[str, list[str]] = {
 SPELLS: dict[str, dict[str, list[str] | str]] = {
     "offensive_cards": {
         "card_names": ["Bolt", "Ray", "Ball", "Tornado", "Gun"],
-        "effect_prefix": ["Deals"],
-        "effect_suffix": ["damage"]
+        "effect_prefix": "Deals",
+        "effect_suffix": "damage"
     },
     "healing_cards": {
         "card_names": ["Balm", "Fountain", "Hug", "Charm"],
-        "name_prefix": ["Healing"],
+        "name_prefix": "Healing",
         "effect_prefix": "Restores",
-        "effect_suffix": ["health"]
+        "effect_suffix": "health"
     },
-    "support_cards": {
+    "mana_cards": {
         "card_names": ["Curse", "Blessing"],
-        "name_prefix": ["Mana", "Attack"],
-        "effect_suffix": ["mana cost", "attack"]
-    }
+        "name_prefix": "Mana",
+        "effect_suffix": "mana cost"
+    },
+    "attack_cards": {
+        "card_names": ["Buff", "Debuff"],
+    "name_prefix": "Attack",
+    "effect_suffix": "attack power"
+}
 }
 
 # artifact cards
 ARTIFACTS: dict[str, list[str] | dict[str, list[str]]] = {
-    "objects": [
-        "Staff",
-        "Ring",
-        "Belt",
-        "Crystal",
-        "Potion",
-        "Watch",
-        "Earring",
-        "Dagger"
-    ],
-    "adjs_plus": {
-        "mana": ["Mana Booster", "Mana Burden"],
-        "attack": ["Power", "Atomic", "Strength", "Enchanted"],
-        "health": ["Heal", "Soothing", "Blessed"]
-    },
-    "adjs_minus": {
-        "mana": ["Mana Diminisher", "Mana Lightener"],
-        "attack": ["Weakness", "Diminisher", "Debuff"],
-        "health": ["Cursed", "Poisoning", "Bloodthirsty"]
-    }
+"objects": [
+    "Staff",
+    "Ring",
+    "Belt",
+    "Crystal",
+    "Potion",
+    "Watch",
+    "Earring",
+    "Dagger"
+],
+"adjs_plus": {
+    "mana": ["Mana Booster", "Mana Burden"],
+    "attack": ["Power", "Atomic", "Strength", "Enchanted"],
+    "health": ["Heal", "Soothing", "Blessed"]
+},
+"adjs_minus": {
+    "mana": ["Mana Diminisher", "Mana Lightener"],
+    "attack": ["Weakness", "Diminisher", "Debuff"],
+    "health": ["Cursed", "Poisoning", "Bloodthirsty"]
+}
 }
 
 
 """
 # elite cards
 ELITES: list[list[str | int | list]] = [
-    [
-        "Dark Sorcerer",
-        3,
-        "Super Rare",
-        5,
-        2,
-        20,
-        10,
-        "long-range",
-        [lightning_spell, fire_spell]
-    ],
-    [
-        "Divine Healer",
-        2,
-        "Legendary",
-        1,
-        4,
-        20,
-        15,
-        "long-range",
-        [healing_spell, super_healing_spell]
-    ],
-    [
-        "Acrobatic Monk",
-        3,
-        "Super Rare",
-        8,
-        6,
-        10,
-        15,
-        "melee",
-        [attack_buff_spell, attack_debuff_spell]
-    ],
-    [
-        "Forest Elf",
-        3,
-        "Super Rare",
-        4,
-        5,
-        18,
-        12,
-        "versatile",
-        [lightning_spell, healing_spell, attack_buff_spell]
-    ]
+[
+    "Dark Sorcerer",
+    3,
+    "Super Rare",
+    5,
+    2,
+    20,
+    10,
+    "long-range",
+    [lightning_spell, fire_spell]
+],
+[
+    "Divine Healer",
+    2,
+    "Legendary",
+    1,
+    4,
+    20,
+    15,
+    "long-range",
+    [healing_spell, super_healing_spell]
+],
+[
+    "Acrobatic Monk",
+    3,
+    "Super Rare",
+    8,
+    6,
+    10,
+    15,
+    "melee",
+    [attack_buff_spell, attack_debuff_spell]
+],
+[
+    "Forest Elf",
+    3,
+    "Super Rare",
+    4,
+    5,
+    18,
+    12,
+    "versatile",
+    [lightning_spell, healing_spell, attack_buff_spell]
+]
 ]
 """
 
@@ -131,7 +135,6 @@ class FantasyCardFactory(CardFactory):
         self.creatures: dict[str, list[str]] = CREATURES
         self.spells: dict[str, dict[str, list[str] | str]] = SPELLS
         self.artifacts: dict[str, list[str] | dict[str, list[str]]] = ARTIFACTS
-        # self.elites: list[list[str | int]] = ELITES
 
         self.cost_range: int = 3
         self.effect_range: int = 3
@@ -260,29 +263,26 @@ class FantasyCardFactory(CardFactory):
             card_data["attr"]["cost"][0],
             card_data["attr"]["cost"][1]
         )
-        effect_type: str = card_category
-        if not effect_type:
-            effect_type = random.choice([cat for cat in self.spells.keys()])
+        if not card_category:
+            card_category = random.choice([cat for cat in self.spells.keys()])
         if not name:
-            name = random.choice(self.spells[effect_type]["card_names"])
-        if effect_type == "_cards":
-            name = self.spells[effect_type]["name_prefix"] + " " + name
-        else:
-            name = self.get_element() + " " + name
-        if effect_type == "support_cards":
-            self.spells[effect_type]["effect_prefix"] = (
-                "Adds" if "Curse" in name else "Removes"
-            )
-            effect_suffix: str = (
-                self.spells[effect_type]["name_prefix"]
-                    )
+            name = random.choice(self.spells[card_category]["card_names"])
+        name = (
+            (self.spells[card_category]["name_prefix"] + " " + name)
+            if "offensive" not in card_category
+            else self.get_element() + " " + name
+        )
+        prefix: str = (
+            ("Adds" if "Curse" in name or "Buff" in name else "Removes")
+            if "attack" in card_category or "mana" in card_category
+            else self.spells[card_category]["effect_prefix"]
+        )
         effect_type = (
-            " "
-            + self.spells[effect_type]["effect_prefix"]
+            prefix
             + " "
             + str(power)
             + " "
-            + self.spells[effect_type]["effect_suffix"]
+            + self.spells[card_category]["effect_suffix"]
             + " to target"
         )
         return [name, cost, card_data["rarity"], effect_type]
@@ -321,7 +321,7 @@ class FantasyCardFactory(CardFactory):
         effect = "Permanent: " + sign + str(power) + " " + effect
         if "Lightener" in name or "Burden" in name:
             effect += " cost"
-        return [name, cost, card_data["rarity"], effect, durability]
+        return [name, cost, card_data["rarity"], durability, effect]
 
     def create_creature(self, name_or_power: str | int | None = None) -> Card:
         name: str = ""
@@ -376,14 +376,14 @@ class FantasyCardFactory(CardFactory):
                 if name_or_power in card_type:
                     card_category = card_type
                     break
-                for card_name in self.spells[card_type]:
-                    if (
-                        name_or_power in card_name["card_names"]
-                    ) or (
-                        name_or_power in card_name["effect_suffix"]
-                    ):
-                        card_category = card_type
-                        name = name_or_power
+                card_name: dict = self.spells[card_type]
+                if (
+                    name_or_power in card_name["card_names"]
+                ) or (
+                    name_or_power in card_name["effect_suffix"]
+                ):
+                    card_category = card_type
+                    name = name_or_power
         elif isinstance(name_or_power, int):
             if name_or_power >= self.leg_attr["effect"]:
                 card_category = "leg"
@@ -437,14 +437,15 @@ class FantasyCardFactory(CardFactory):
                     ):
                         card_category = category["type"]
             effect = name_or_power
-        name, cost, rarity, effect, durability = self.generate_artifact_data(
+        name, cost, rarity, durability, effect = self.generate_artifact_data(
             name, effect, card_category
         )
-        return ArtifactCard(name, cost, rarity, effect, durability)
+        return ArtifactCard(name, cost, rarity, durability, effect)
 
     def create_themed_deck(self, size: int) -> dict:
         all_cards: dict[str, list[Card]] = {}
         if size:
+            print(f"\n=== CREATING DECK OF {size} CARDS ===\n\n")
             all_cards["total_cards"] = []
         for card in range(size):
             card_type, card_values = random.choice([
@@ -462,6 +463,7 @@ class FantasyCardFactory(CardFactory):
                 all_cards[card_type] = []
             all_cards["total_cards"].append(card_created)
             all_cards[card_type].append(card_created)
+            print(f"[CARD CREATED]: {card_created.get_card_info()}\n")
         return all_cards
 
     def get_supported_types(self) -> dict[str, dict[str, any]]:
@@ -487,8 +489,8 @@ class FantasyCardFactory(CardFactory):
                 ] + [
                     power.replace("_cards", "") for power in self.spells.keys()
                 ] + [
-                    suffix for card_types in self.spells.keys()
-                    for suffix in self.spells[card_types]["effect_suffix"]
+                    self.spells[card_type]["effect_suffix"]
+                    for card_type in self.spells.keys()
                 ],
                 "creation_func": self.create_spell
             },

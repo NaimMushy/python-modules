@@ -28,11 +28,12 @@ class SpellCard(Card):
     def play(self, game_state: dict) -> dict:
         if not self.is_playable(game_state["available_mana"]):
             print(
-                f"Impossible to play {self.name} "
+                f"\nImpossible to play {self.name} "
                 f"with {game_state['available_mana']} available: "
                 f"{self.cost} needed\n"
             )
             return {}
+        print(f"\n-> Playing Spell {self.name}...\n")
         targets: list[Card] = game_state[self.get_correct_targets()]
         if not targets:
             print(f"No targets available for {self.name}\n")
@@ -42,17 +43,21 @@ class SpellCard(Card):
             "mana_used": self.cost,
             "effect": self.effect_type
         }
-        print(f"Playing spell {self.name}...")
-        print(f"Play result: {play_result}\n")
         self.resolve_effect(targets)
+        print(f"Play result: {play_result}\n")
         game_state["cards_to_remove"].append(self)
         return play_result
 
     def get_correct_targets(self) -> str:
-        if "mana cost" in self.effect_type or "attack" in self.effect_type:
+        if "mana cost" in self.effect_type:
             return (
                 "hand" if "Removes" in self.effect_type
                 else "all_targets"
+            )
+        if "attack" in self.effect_type:
+            return (
+                "ally_beings" if "Adds" in self.effect_type
+                else "living_targets"
             )
         if "damage" in self.effect_type:
             return "living_targets"
@@ -62,6 +67,7 @@ class SpellCard(Card):
         if not targets:
             print(f"No targets available for {self.name}\n")
             return {"effect": "unknown", "target": None}
+        print(f"SPELL TARGETS: {[target.name for target in targets]}\n")
         for target in targets:
             if "damage" in self.effect_type or "health" in self.effect_type:
                 target.set_health(
@@ -73,11 +79,13 @@ class SpellCard(Card):
                 )
             elif "mana" in self.effect_type:
                 target.cost += self.effect_value
+                if target.cost < 0:
+                    target.cost = 0
             else:
                 return {"effect": "unknown", "targets": None}
             print(
                 f"Spell effect < {self.effect_type} > "
-                f"applied to {target}\n"
+                f"applied to {target.name}"
             )
         print("")
         return {

@@ -1,12 +1,11 @@
 from .CardFactory import CardFactory
 from .GameStrategy import GameStrategy
 from ex0.Card import Card
-from ex0.CreatureCard import CreatureCard
 from ex1.Deck import Deck
 import random
 
 
-MAX_DECK_SIZE: int = 16
+MAX_DECK_SIZE: int = 21
 
 
 class GameEngine:
@@ -26,11 +25,13 @@ class GameEngine:
             f"Configuring {self.factory.get_factory_type()} Card Game..."
         )
         print(f"Factory: {self.factory.__class__.__name__}")
-        print(f"Strategy: {self.strategy.__class__.__name__}")
+        print(f"Strategy: {self.strategy.__class__.__name__}\n")
         self.factory.display_supported_types()
 
-        self.player1: Deck = self.create_deck(random.randint(1, MAX_DECK_SIZE))
-        self.player2: Deck = self.create_deck(random.randint(1, MAX_DECK_SIZE))
+        deck_size: int = random.randint(3, MAX_DECK_SIZE)
+
+        self.player1: Deck = self.create_deck(deck_size)
+        self.player2: Deck = self.create_deck(deck_size)
 
         self.player1.shuffle()
         self.player2.shuffle()
@@ -47,20 +48,24 @@ class GameEngine:
 
     def simulate_turn(self) -> dict:
         print(f"Simulating {self.strategy.get_strategy_type()} turn...")
+        print(f"< Player {self.player1.player}'s turn >\n")
 
-        self.player1, self.player2 = self.player2, self.player1
-        cards_played: list[str] = []
+        cards_played: list[Card] = []
         targets_attacked: list[str] = []
         total_mana_used: int = 0
+        total_damage: int = 0
+        draw_number: int = (
+            3 if len(self.player1.stack_cards) >= 3
+            else len(self.player1.stack_cards)
+        )
 
-        for draw in range(3):
-            card_drawn: Card = self.player1.draw_card()
-            if card_drawn not in self.player1.hand:
-                self.player1.hand.append(card_drawn)
-            if isinstance(card_drawn, (CreatureCard)):
-                self.player1.living_beings.append(card_drawn)
+        if not draw_number:
+            print(f"No cards left to draw for {self.player1.player}!")
+        else:
+            for draw in range(draw_number):
+                self.player1.draw_card()
 
-        self.display_hand(self.player1)
+        self.player1.display_hand()
 
         for play in range(2):
             turn_result: dict = self.strategy.execute_turn(
@@ -82,37 +87,36 @@ class GameEngine:
                 )
                 for card in turn_result["game_state"]["cards_to_remove"]:
                     self.player1.remove_from_all(card)
-                if turn_result["card_played"].name not in cards_played:
-                    cards_played.append(turn_result["card_played"].name)
+                if turn_result["card_played"] not in cards_played:
+                    cards_played.append(turn_result["card_played"])
                 targets_attacked += [
-                    target.name for target in turn_result["targets_attacked"]
+                    target.name for target in turn_result["targets"]
                     if target.name not in targets_attacked
                 ]
-                self.turns_simulated += 1
-                self.total_damage += turn_result["damage_dealt"]
-                total_mana_used += turn_result["mana_used"]
                 self.player2.check_card_health()
+                total_damage += turn_result["damage_dealt"]
+                total_mana_used += turn_result["mana_used"]
 
         actions_result: dict = {
-            "cards_played": cards_played,
+            "cards_played": [card.name for card in cards_played],
             "mana_used": total_mana_used,
             "targets_attacked": targets_attacked,
-            "damage_dealt": self.total_damage
+            "damage_dealt": total_damage
         }
-        print("Turn execution:")
+        self.turns_simulated += 1
+        self.total_damage += total_damage
+        print("\nTurn execution:")
         print(f"Strategy: {self.strategy.get_strategy_name()}")
         print(f"Actions: {actions_result}\n")
+        if (
+            not self.player2.hand and not self.player2.stack_cards
+        ) or not self.player2.available_mana:
+            print(f"\n=== [END] Player {self.player1.player} has won!!! ===")
+        if not self.player1.available_mana:
+            print(f"\n=== [END] Player {self.player2.player} has won!!! ===")
+        else:
+            self.player1, self.player2 = self.player2, self.player1
         return actions_result
-
-    def display_hand(self, player: Deck) -> None:
-        print("Hand: [", end="")
-        fst: bool = True
-        for card in player.hand:
-            if not fst:
-                print(", ", end="")
-            print(f"{card.name} ({card.cost})", end="")
-            fst = False
-        print("]\n")
 
     def get_engine_status(self) -> dict:
         report: dict = {
@@ -121,5 +125,5 @@ class GameEngine:
             "total_damage": self.total_damage,
             "cards_created": self.cards_created
         }
-        print(f"Game Report:\n{report}")
+        print(f"\nGame Report:\n{report}\n")
         return report

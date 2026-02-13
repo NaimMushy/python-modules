@@ -11,18 +11,16 @@ class AggressiveStrategy(GameStrategy):
         game_state: dict = {
             "hand": hand[0],
             "all_targets": battlefield[0],
-            "available_mana": hand[1],
-            "enemy_mana": battlefield[1],
-            "ally_beings": hand[2],
-            "living_targets": battlefield[2],
+            "ally_beings": hand[1],
+            "living_targets": battlefield[1],
+            "available_mana": hand[2],
+            "enemy_mana": battlefield[2],
             "priority_target": (
-                None if not battlefield[2]
-                else random.choice(battlefield[2])
+                None if not battlefield[1]
+                else random.choice(battlefield[1])
             ),
             "cards_to_remove": []
         }
-        if not game_state["hand"] and not game_state["all_targets"]:
-            return {}
         attacker: Card | None = (
             None if not self.prioritize_targets(game_state["ally_beings"])
             else random.choice(self.prioritize_targets(
@@ -30,22 +28,22 @@ class AggressiveStrategy(GameStrategy):
             ))
         )
         if attacker:
-            attack_result: dict = attacker.play(game_state)
-            if not attack_result:
-                return {}
-            return {
-                "card_played": attacker,
-                "targets": [game_state["priority_target"]],
-                "mana_used": attacker.cost,
-                "damage_dealt": attacker.get_attack(),
-                "game_state": game_state
-            }
-        card_chosen: Card = random.choice([
-            card for card in hand
+            if attacker.play(game_state):
+                return {
+                    "card_played": attacker,
+                    "targets": [game_state["priority_target"]],
+                    "mana_used": attacker.cost,
+                    "damage_dealt": attacker.get_attack(),
+                    "game_state": game_state
+                }
+        spells_and_crafts: list[Card] = [
+            card for card in game_state["hand"]
             if isinstance(card, (SpellCard, ArtifactCard))
-        ])
-        if not card_chosen:
+        ]
+        if not spells_and_crafts:
+            print("No spells or artifacts detected in player's hand\n")
             return {}
+        card_chosen: Card = random.choice(spells_and_crafts)
         play_result: dict = card_chosen.play(game_state)
         if not play_result:
             return {}
@@ -64,13 +62,15 @@ class AggressiveStrategy(GameStrategy):
                 )
                 else False
             )
-        targets_attacked: list[Card] = [
-            target for target in game_state[targets]
-            if targets == "livings_targets" or targets == "all_targets"
-        ]
         return {
             "card_played": card_chosen,
-            "targets": targets_attacked,
+            "targets": (
+                [] if not offensive
+                else [
+                    target for target in game_state[targets]
+                    if targets == "living_targets" or targets == "all_targets"
+                ]
+            ),
             "mana_used": card_chosen.cost,
             "damage_dealt": (
                 card_chosen.effect_value * (
@@ -86,7 +86,7 @@ class AggressiveStrategy(GameStrategy):
         return [
             card for card in available_targets
             if isinstance(card, CreatureCard)
-            and card.cost <= 7
+            and card.cost <= 4
         ]
 
     def get_strategy_name(self) -> str:

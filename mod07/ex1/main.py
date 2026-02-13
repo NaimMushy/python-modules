@@ -129,11 +129,7 @@ def execute_turn(
     deck: Deck,
     enemy_deck: Deck
 ) -> None:
-    card_drawn: Card = deck.draw_card()
-    if card_drawn not in deck.hand:
-        deck.hand.append(card_drawn)
-        if isinstance(card_drawn, CreatureCard):
-            deck.living_beings.append(card_drawn)
+    deck.draw_card()
     game_state: dict = {
         "hand": deck.hand,
         "all_targets": enemy_deck.hand,

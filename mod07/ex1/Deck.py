@@ -1,4 +1,6 @@
 from ex0.Card import Card
+from .SpellCard import SpellCard
+from .ArtifactCard import ArtifactCard
 import random
 
 
@@ -9,7 +11,7 @@ class Deck:
         self.living_beings: list[Card] = []
         self.collection: dict[str, list[Card]] = {}
         self.available_mana: int = 50
-        self.player: str = player
+        self.player: str = player.capitalize()
 
     def add_card(self, card: Card) -> None:
         self.stack_cards.append(card)
@@ -30,19 +32,27 @@ class Deck:
             self.stack_cards.remove(card)
         if card in self.hand:
             self.hand.remove(card)
+        if card in self.living_beings:
+            self.living_beings.remove(card)
         if card in self.collection[card.__repr__()]:
             self.collection[card.__repr__()].remove(card)
 
     def shuffle(self) -> None:
         random.shuffle(self.stack_cards)
 
-    def draw_card(self) -> Card:
+    def draw_card(self) -> Card | None:
+        if not self.stack_cards:
+            print("Impossible to draw a card: Stack empty!\n")
+            return None
         card_drawn: Card = self.stack_cards[0]
         print(
             f"Drew: {card_drawn.name} "
-            f"({card_drawn.get_card_info()['type']})\n"
+            f"({card_drawn.get_card_info()['type']})"
         )
         self.remove_card(card_drawn.name)
+        self.hand.append(card_drawn)
+        if not isinstance(card_drawn, (SpellCard, ArtifactCard)):
+            self.living_beings.append(card_drawn)
         return card_drawn
 
     def get_deck_stats(self) -> dict:
@@ -65,6 +75,16 @@ class Deck:
             print("=== Stack Cards ===\n")
             for card in self.stack_cards:
                 print(f"{card.get_card_info()}\n")
+
+    def display_hand(self) -> None:
+        print("\nHand: [", end="")
+        fst: bool = True
+        for card in self.hand:
+            if not fst:
+                print(", ", end="")
+            print(f"{card.name} ({card.cost})", end="")
+            fst = False
+        print("]\n")
 
     def check_card_health(self) -> None:
         for card in self.living_beings:
