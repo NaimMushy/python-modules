@@ -44,9 +44,12 @@ class DataStream(ABC):
             ) for key, val in self.stats.items()
         }
 
-    def display_stats(self) -> None:
+    def display_stats(self, data_type: str) -> None:
 
-        print(f"Data analysis: {self.get_stats()}")
+        print(
+            f"- {self.__class__.__name__.replace('Stream', '')} "
+            f"data: {self.get_stats()[data_type]} data_type processed"
+        )
 
 
 class SensorStream(DataStream):
@@ -162,12 +165,24 @@ class SensorStream(DataStream):
 
         return stats
 
-    def display_stats(self) -> None:
+    def display_stats(self, display_mode: str = "detailed") -> None:
 
-        print(
-            f"Sensor analysis: {self.get_stats()['readings']} "
-            f"readings processed, avg temp: {self.get_stats()['avg_temp']}°C\n"
-        )
+        if display_mode == "detailed":
+            print(
+                f"Sensor analysis: 3 {self.stats['readings']} "
+                f"readings processed, ", end=""
+            )
+
+            for key, val in {
+                key: val for key, val in self.get_stats().items()
+                if "avg" in key
+            }.items():
+                print(f"{key.replace('_', ' ')}: {val}", end="")
+
+            print("")
+
+        else:
+            super().display_stats("readings")
 
 
 class TransactionStream(DataStream):
@@ -239,7 +254,7 @@ class TransactionStream(DataStream):
             op_val: int
 
             try:
-                op, op_val = self.validate_data(data)
+                op, op_val = self.validate_batch(data)
             except TypeError as te:
                 print(f"caught TypeError: {te}")
             else:
@@ -273,12 +288,17 @@ class TransactionStream(DataStream):
 
         return stats
 
-    def display_stats(self) -> None:
+    def display_stats(self, display_mode: str) -> None:
 
-        print(
-            f"Transaction analysis: {self.get_stats()['operations']} "
-            f"operations, net flow: {self.get_stats()['net_flow']} units\n"
-        )
+        if display_mode == "detailed":
+            print(
+                f"Transaction analysis: 3 {self.stats['operations']} "
+                f"operations processed, net flow: "
+                f"{self.get_stats()['net_flow']} units"
+            )
+
+        else:
+            super().display_stats("operations")
 
 
 class EventStream(DataStream):
