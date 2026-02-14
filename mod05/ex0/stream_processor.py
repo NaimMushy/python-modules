@@ -3,323 +3,168 @@ from typing import Any as any
 import re
 
 
-NUM_TEST: list[int] = [16, 4, 32, 44]
-TEXT_TEST: str = "i hate whoever thought this module was a good idea"
-LOG_TEST: str = "ERROR: my brain is overloading"
-
-
 class DataProcessor(ABC):
-    """
-    A class that represents a data processor.
-    """
-    def __init__(self, output_mode: str = "concise") -> None:
-        """
-        Initializes the data processor's properties.
 
-        Parameters
-        ----------
-        output_mode
-            The type of output (verbose or concise).
-        """
-        self.output_mode: str = output_mode
-        if output_mode == "verbose":
-            print(f"initializing {self.__class__.__name__}...")
+    def __init__(self) -> None:
+        print(
+            "Initializing "
+            f"{self.__class__.__name__.replace('Processor', '')} "
+            "Processor..."
+        )
 
     @abstractmethod
     def process(self, data: any) -> str:
-        """
-        Processes any type of data.
-
-        Parameters
-        ----------
-        data
-            The data to process.
-
-        Returns
-        -------
-        str
-            The processed data.
-        """
         pass
 
     @abstractmethod
     def validate(self, data: any) -> bool:
-        """
-        Checks whether or not the given data is of the correct type.
-
-        Parameters
-        ----------
-        data
-            The data to verify.
-
-        Returns
-        -------
-        bool
-            True if the data is of the correct type, False otherwise.
-        """
         pass
 
     def format_output(self, result: str) -> str:
-        """
-        Formats the output string based on the output mode.
-
-        Parameters
-        ----------
-        result
-            The processed data.
-
-        Returns
-        -------
-        str
-            The formatted output string.
-        """
-        if self.output_mode == "verbose":
-            return "output: " + result
-        return result
+        return "Output: " + result
 
 
 class NumericProcessor(DataProcessor):
-    """
-    A class that represents a processor for numeric data.
-    """
+
     def process(self, data: any) -> str:
-        """
-        Processes numeric data.
 
-        Parameters
-        ----------
-        data
-            The numeric data to process.
-
-        Returns
-        -------
-        str
-            The processed numeric data.
-
-        Raises
-        ------
-        TypeError:
-            Raised if the given data is not numeric.
-        """
-        if self.output_mode == "verbose":
-            print(f"processing data: {data}")
         if self.validate(data):
             if not isinstance(data, list):
-                data = list(data)
-            result_string: str = (
-                f"processed {len(data)} numeric values, sum={sum(data)}, "
+                data = [data]
+            return (
+                "Processed "
+                f"{len(data)} numeric value{'s' if len(data) > 1 else ''}, "
+                f"sum={sum(data)}, "
                 f"avg = {round(sum(data) / len(data), 1)}"
             )
-            return result_string
+
         else:
-            raise TypeError("invalid type for literal integer - [REJECTED]\n")
+            raise TypeError("Invalid type for literal integer - [REJECTED]")
 
     def validate(self, data: any) -> bool:
-        """
-        Checks whether or not the given data is numeric.
 
-        Parameters
-        ----------
-        data
-            The data to verify.
-
-        Returns
-        -------
-        bool
-            True if the data is numeric, False otherwise.
-        """
         if isinstance(data, list):
-            if (isinstance(d, int) for d in data):
-                if self.output_mode == "verbose":
-                    print("validation: numeric data verified")
-                return True
-            return False
+            return (
+                True if (isinstance(d, int) for d in data)
+                else False
+            )
+
         elif isinstance(data, int):
-            if self.output_mode == "verbose":
-                print("validation: numeric data verified")
             return True
+
         else:
             return False
 
 
 class TextProcessor(DataProcessor):
-    """
-    A class that represents a processor for text data.
-    """
+
     def process(self, data: any) -> str:
-        """
-        Processes text data.
 
-        Parameters
-        ----------
-        data
-            The text data to process.
-
-        Returns
-        -------
-        str
-            The processed text data.
-
-        Raises
-        ------
-        TypeError:
-            Raised if the data is not text.
-        """
-        if self.output_mode == "verbose":
-            print(f"processing data: {data}")
         if self.validate(data):
-            result_string: str = (
-                f"processed text: {len(data)} characters, "
-                f"{len(data.split())} words"
+            word_count: int = len(data.split())
+            return (
+                f"Processed text: {len(data)} "
+                f"character{'s' if len(data) > 1 else ''}, "
+                f"{word_count} word{'s' if word_count > 1 else ''}"
             )
-            return result_string
+
         else:
-            raise TypeError("invalid type for literal string - [REJECTED]\n")
+            raise TypeError("Invalid type for literal string - [REJECTED]")
 
     def validate(self, data: any) -> bool:
-        """
-        Checks whether or not the given data is text.
 
-        Parameters
-        ----------
-        data
-            The data to verify.
-
-        Returns
-        -------
-        bool
-            True if the data is text, False otherwise.
-        """
         if isinstance(data, str):
-            if self.output_mode == "verbose":
-                print("validation: text data verified")
             return True
+
         else:
             return False
 
 
 class LogProcessor(DataProcessor):
-    """
-    A class that represents a processor for log entries.
-    """
+
     def process(self, data: any) -> str:
-        """
-        Processes log entries.
 
-        Parameters
-        ----------
-        data
-            The log entry to process.
-
-        Returns
-        -------
-        str
-            The processed log entry.
-
-        Raises
-        ------
-        TypeError:
-            Raised if the given data is not a log entry.
-        """
-        if self.output_mode == "verbose":
-            print(f"processing data: {data}")
         if self.validate(data):
-            if (match := re.match("([a-z]+):([a-z ]+)", data, re.I)):
+
+            if (match := re.match("([a-z]+): ([a-z ]+)", data, re.I)):
                 log_type: str = match.group(1)
-                if log_type == "ERROR":
-                    result_string: str = (
-                        f"[ALERT] {log_type} level detected: "
-                        f"{match.group(2)}"
-                    )
-                else:
-                    result_string = (
-                        f"[{log_type}] {log_type} level detected: "
-                        f"{match.group(2)}"
-                    )
-                return result_string
+                return (
+                    f"[{log_type if log_type != 'ERROR' else 'ALERT'}] "
+                    f"{log_type} level detected: "
+                    f"{match.group(2)}"
+                )
+
             else:
-                raise TypeError("invalid type for log entry - [REJECTED]\n")
+                raise TypeError("Invalid type for log entry - [REJECTED]")
+
         else:
-            raise TypeError("invalid type for log entry - [REJECTED]\n")
+            raise TypeError("Invalid type for log entry - [REJECTED]")
 
     def validate(self, data: any) -> bool:
-        """
-        Checks whether or not the given data is a log entry.
 
-        Parameters
-        ----------
-        data
-            The data to verify.
-
-        Returns
-        -------
-        bool
-            True if the data is a log entry, False otherwise.
-        """
         if isinstance(data, str):
-            if (re.match("([a-z]+):([a-z ]+)", data, re.I)):
-                if self.output_mode == "verbose":
-                    print("validation: log entry verified")
-                return True
-            else:
-                return False
+            return (
+                True if (re.match("([a-z]+):([a-z ]+)", data, re.I))
+                else False
+            )
+
         else:
             return False
 
 
+def single_processing(proc: DataProcessor, data: any) -> None:
+
+    print(f"Processing data: {data}")
+    try:
+        print(
+            f"Validation: {proc.__class__.__name__.replace('Processor', '')} "
+            f"{'entry' if isinstance(proc, LogProcessor) else 'data'} "
+            f"{'verified' if proc.validate(data) else 'rejected'}"
+        )
+        print(f"{proc.format_output(proc.process(data))}\n")
+    except TypeError as te:
+        print(f"Caught TypeError: {te}")
+
+
+def multiple_processing(
+    processors: list[DataProcessor],
+    data: list[any]
+) -> None:
+
+    print("Processing multiple data types through same interface...")
+
+    for proc in range(len(processors)):
+        try:
+            print(f"Result {proc + 1}: {processors[proc].process(data[proc])}")
+        except TypeError as te:
+            print(f"Caught TypeError: {te}")
+
+
 def main() -> None:
-    """
-    Tests different data processors.
-    """
+
     print("=== CODE NEXUS - DATA PROCESSOR FOUNDATION ===\n")
-    num_proc: NumericProcessor = NumericProcessor("verbose")
-    try:
-        print(f"{num_proc.format_output(num_proc.process(NUM_TEST))}\n")
-    except TypeError as te:
-        print(f"caught TypeError: {te}")
-    text_proc: TextProcessor = TextProcessor("verbose")
-    try:
-        print(f"{text_proc.format_output(text_proc.process(TEXT_TEST))}\n")
-    except TypeError as te:
-        print(f"caught TypeError: {te}")
-    log_proc: LogProcessor = LogProcessor("verbose")
-    try:
-        print(f"{log_proc.format_output(log_proc.process(LOG_TEST))}\n")
-    except TypeError as te:
-        print(f"caught TypeError: {te}")
+
+    num_test: any = "blabla"
+    text_test: any = [4, 5, 8]
+    log_test: any = "not a log entry"
+
+    num_proc: NumericProcessor = NumericProcessor()
+    single_processing(num_proc, num_test)
+
+    text_proc: TextProcessor = TextProcessor()
+    single_processing(text_proc, text_test)
+
+    log_proc: LogProcessor = LogProcessor()
+    single_processing(log_proc, log_test)
+
     print("=== Polymorphic Processing Demo ===\n")
-    print("processing multiple data types through same interface...")
-    num_proc.output_mode = "concise"
-    text_proc.output_mode = "concise"
-    log_proc.output_mode = "concise"
-    try:
-        result: str = (
-            "result 1: "
-            + num_proc.format_output(num_proc.process(NUM_TEST))
-        )
-    except TypeError as te:
-        print(f"caught TypeError: {te}")
-    else:
-        print(result)
-    try:
-        result = (
-            "result 2: "
-            + text_proc.format_output(text_proc.process(TEXT_TEST))
-        )
-    except TypeError as te:
-        print(f"caught TypeError: {te}")
-    else:
-        print(result)
-    try:
-        result = (
-            "result 3: "
-            + log_proc.format_output(log_proc.process(LOG_TEST))
-        )
-    except TypeError as te:
-        print(f"caught TypeError: {te}")
-    else:
-        print(result)
-    print("\nfoundation system online - nexus ready for advanced streams")
+
+    multiple_processing(
+        [num_proc, text_proc, log_proc],
+        [num_test, text_test, log_test]
+    )
+
+    print("\nFoundation system online - Nexus ready for advanced streams")
 
 
 if __name__ == "__main__":
