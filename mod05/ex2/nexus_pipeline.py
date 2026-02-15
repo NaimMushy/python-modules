@@ -119,40 +119,33 @@ class TransformStage:
             return self.transform_sensor(data)
         else:
             raise TypeError(
-                "invalid data - doesn't correspond to any of the adapters"
+                "Invalid data - Doesn't correspond to any of the adapters"
                 " - [REJECTED]"
             )
 
     def get_range(self, sensor_type: str, value: str) -> str:
-        if sensor_type == "temp":
-            if float(value) > 40 or float(value) < -10:
-                return "critical"
-            else:
-                return "normal"
-        elif sensor_type == "pressure":
-            if float(value) > 2000 or float(value) < 0:
-                return "critical"
-            else:
-                return "normal"
-        elif sensor_type == "humidity":
-            if float(value) > 80 or float(value) < 10:
-                return "critical"
-            else:
-                return "normal"
-        else:
-            if float(value) > 100 or float(value) < 0:
-                return "critical"
-            else:
-                return "normal"
+        match sensor_type:
+            case "temp":
+                sensor_range: tuple[int, int] = (-10, 40)
+            case "pressure":
+                sensor_range = (0, 2000)
+            case "humidity":
+                sensor_range = (10, 80)
+            case _:
+                sensor_range = (0, 100)
+        return (
+            "normal"
+            if sensor_range[0] <= float(value) <= sensor_range[1]
+            else "critical"
+        )
 
     def transform_json(self, data: any) -> dict:
         if not isinstance(data, dict):
             raise TypeError(
-                "invalid format for "
-                "json data - [REJECTED]"
+                "Invalid format for "
+                "JSON data - [REJECTED]"
             )
-        trans_dict: dict = {}
-        trans_dict["adapter"] = "json"
+        trans_dict: dict = {"adapter": "json"}
         for key, val in data.items():
             if val[0] == "temp":
                 trans_dict[key] = "temperature"
@@ -160,19 +153,16 @@ class TransformStage:
                 if "sensor" in data.keys():
                     trans_dict[key] = 0
                     for value in val:
-                        if self.get_range(
-                            data["sensor"],
-                            value
-                        ) == "critical":
-                            trans_dict["range"] = "critical"
+                        trans_dict["range"] = self.get_range(
+                            data["sensor"], value
+                        )
                         trans_dict[key] += round(float(value), 1)
-                    if "range" not in trans_dict.keys():
-                        trans_dict["range"] = "normal"
             elif key == "unit":
-                if val[0] == "C" or val[0] == "F":
-                    trans_dict[key] = "°" + val[0]
-                else:
-                    trans_dict[key] = val[0]
+                trans_dict[key] = (
+                    ("°" + val[0])
+                    if val[0] == "C" or val[0] == "F"
+                    else val[0]
+                )
             else:
                 trans_dict[key] = val
         return trans_dict
@@ -180,19 +170,18 @@ class TransformStage:
     def transform_csv(self, data: any) -> dict:
         if not isinstance(data, dict):
             raise TypeError(
-                "invalid format for "
-                "csv data - [REJECTED]"
+                "Invalid format for "
+                "CSV data - [REJECTED]"
             )
-        trans_dict: dict = {}
-        trans_dict["adapter"] = "csv"
+        trans_dict: dict = {"adapter": "csv"}
         if "user" not in data.keys():
             trans_dict["user_activity"] = "not detected"
         for key, val in data.items():
             if key == "user":
-                if val > 0:
-                    trans_dict["user_activity"] = "logged"
-                else:
-                    trans_dict["user_activity"] = "not detected"
+                trans_dict["user_activity"] = (
+                    "logged" if val > 0
+                    else "not detected"
+                )
             elif key != "adapter":
                 trans_dict[key] = val
         return trans_dict
@@ -200,35 +189,31 @@ class TransformStage:
     def transform_sensor(self, data: any) -> dict:
         if not isinstance(data, dict):
             raise TypeError(
-                "invalid format for "
+                "Invalid format for "
                 "sensor data - [REJECTED]"
             )
         del data["adapter"]
-        trans_dict: dict = {}
-        trans_dict["adapter"] = "sensor"
-        trans_dict["readings"] = 0
+        trans_dict: dict = {
+            "adapter": "sensor",
+            "readings": 0
+        }
         for key, val in data.items():
             if isinstance(val, list):
                 for mesure in val:
                     if self.get_range(key, mesure) == "critical":
-                        if "critical" in trans_dict.keys():
-                            trans_dict["critical"].append(
-                                key + ":" + str(round(float(mesure), 1))
-                            )
-                        else:
-                            trans_dict["critical"] = [
-                                key + ":" + str(round(float(mesure), 1))
-                            ]
-                    if "avg_"+key in trans_dict.keys():
-                        trans_dict["avg_"+key] += round(float(mesure), 1)
-                    else:
-                        trans_dict["avg_"+key] = round(float(mesure), 1)
-                    trans_dict["readings"] += 1
-                if len(val) > 1:
-                    if "avg_"+key in trans_dict.keys():
-                        trans_dict["avg_"+key] = round(
-                            trans_dict["avg_"+key] / len(val), 1
+                        if "critical" not in trans_dict.keys():
+                            trans_dict["critical"] = []
+                        trans_dict["critical"].append(
+                            key + ":" + str(round(float(mesure), 1))
                         )
+                    if "avg_"+key not in trans_dict.keys():
+                        trans_dict["avg_"+key] = 0
+                    trans_dict["avg_"+key] += round(float(mesure), 1)
+                    trans_dict["readings"] += 1
+                if len(val) > 1 and "avg_"+key in trans_dict.keys():
+                    trans_dict["avg_"+key] = round(
+                        trans_dict["avg_"+key] / len(val), 1
+                    )
             else:
                 trans_dict[key] = val
                 trans_dict["readings"] += val
@@ -251,75 +236,83 @@ class OutputStage:
             return self.output_sensor(data)
         else:
             raise TypeError(
-                "invalid data - doesn't correspond to any of the adapters"
+                "Invalid data - Doesn't correspond to any of the adapters"
                 " - [REJECTED]"
             )
 
     def output_json(self, data: any) -> str:
         if not isinstance(data, dict):
             raise TypeError(
-                "invalid format for "
-                "json data - [REJECTED]"
+                "Invalid format for "
+                "JSON data - [REJECTED]"
             )
         output_string: str = ""
         del data["adapter"]
-        if "sensor" in data.keys():
-            output_string += f"processed {data['sensor']} reading"
-        else:
-            output_string += "processed sensor reading"
-        if "value" in data.keys():
-            output_string += f": {data['value']}"
-        else:
-            output_string += ": no reading value provided"
+        output_string += (
+            "processed sensor reading"
+            if "sensor" not in data.keys()
+            else f"processed {data['sensor']} reading"
+        )
+        output_string += (
+            ": no reading value provided"
+            if "value" not in data.keys()
+            else f": {data['value']}"
+        )
         if "unit" in data.keys():
             output_string += data["unit"]
         if "range" in data.keys():
             output_string += f" ({data['range']} range)"
-        if not (("sensor" or "value" or "unit" or "range") in data.keys()):
-            for key, val in data.items():
-                if key != ("sensor", "value", "unit", "range"):
-                    output_string += f" - {key}: {val}"
+        output_string += (
+            f" - {key}: {val}"
+            for key, val in data.items()
+            if key not in ["sensor", "value", "unit", "range"]
+        )
         return output_string
 
     def output_csv(self, data: any) -> str:
         if not isinstance(data, dict):
             raise TypeError(
-                "invalid format for "
-                "csv data - [REJECTED]"
+                "Invalid format for "
+                "CSV data - [REJECTED]"
             )
         output_string: str = ""
         output_string += f"user activity {data['user_activity']}: "
         new_dict: dict = {
             key: val for key, val in data.items()
-            if key != "user_activity" and key != "adapter"
+            if key not in ["user_activity", "adapter"]
         }
-        if new_dict == {}:
+        if not new_dict:
             output_string += "no additional data provided"
             return output_string
         count: int = 0
         for key, val in new_dict.items():
             count += 1
-            if not isinstance(val, list) and val <= 1:
-                output_string += f"{val} {key} processed"
-            else:
-                output_string += f"{val} {key}s processed"
-            if count < len(new_dict):
-                output_string += " - "
+            output_string += (
+                f"{val} {key}"
+                + (
+                    "s" if isinstance(val, list) or val > 1
+                    else ""
+                )
+                + " processed"
+            )
+            output_string += (" - " if count < len(new_dict) else "")
         return output_string
 
     def output_sensor(self, data: any) -> str:
         if not isinstance(data, dict):
             raise TypeError(
-                "invalid format for "
+                "Invalid format for "
                 "sensor data - [REJECTED]"
             )
-        output_string: str = f"stream summary: {data['readings']} readings"
+        output_string: str = f"Stream summary: {data['readings']} readings"
         new_dict: dict = {
             key: val for key, val in data.items()
-            if key != "readings" and key != "adapter"
+            if key not in ["adapter", "readings"]
         }
-        for key, val in new_dict.items():
-            output_string += f" - {key}: {val}"
+        output_string += (
+            f" - {key}: {val}"
+            for key, val in new_dict.items()
+        )
         return output_string
 
 
