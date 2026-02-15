@@ -42,14 +42,18 @@ class AggressiveStrategy(GameStrategy):
             return {}
         match card_chosen.__repr__():
             case "spells":
-                targets: str = card_chosen.get_correct_targets()
+                targets: list[Card] = game_state[
+                    card_chosen.get_correct_targets()
+                ]
                 offensive: bool = (
                     True if "damage" in card_chosen.effect_type
                     else False
                 )
                 effect_val: int = card_chosen.effect_value
             case "artifacts":
-                targets = card_chosen.activate_ability()["targets"]
+                targets = game_state[
+                    card_chosen.activate_ability()["targets"]
+                ]
                 effect_val = card_chosen.effect_value
                 offensive = (
                     True if (
@@ -59,17 +63,14 @@ class AggressiveStrategy(GameStrategy):
                     else False
                 )
             case "creatures":
-                targets = "priority_target"
+                targets = [game_state["priority_target"]]
                 offensive = True
                 effect_val = card_chosen.get_attack()
         return {
             "card_played": card_chosen,
             "targets": (
                 [] if not offensive
-                else [
-                    target for target in game_state[targets]
-                    if "target" in targets
-                ]
+                else targets
             ),
             "mana_used": card_chosen.cost,
             "damage_dealt": (
