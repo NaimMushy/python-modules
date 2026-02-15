@@ -22,63 +22,53 @@ class InputStage:
             return self.input_sensor(data["rawdata"])
         else:
             raise TypeError(
-                "invalid data - doesn't correspond to any of the adapters"
+                "Invalid data - Doesn't correspond to any of the adapters"
                 " - [REJECTED]"
             )
 
     def input_json(self, data: any) -> dict:
-        validated_dict: dict = {}
+        validated_dict: dict = {"adapter": "json"}
         if isinstance(data, (list, Generator)):
             for d in data:
-                if isinstance(d, str):
-                    if (match := re.match("([a-z]+):([a-z0-9.]+)", d, re.I)):
-                        if match.group(1) in validated_dict.keys():
-                            validated_dict[
-                                match.group(1)
-                            ].append(match.group(2))
-                        else:
-                            validated_dict[match.group(1)] = [match.group(2)]
-                    else:
-                        raise TypeError(
-                            "invalid format for "
-                            "json data - [REJECTED]"
-                        )
-                else:
+                if not isinstance(d, str) or not (
+                    match := re.match("([a-z]+):([a-z0-9.]+)", d, re.I)
+                ):
                     raise TypeError(
-                        "invalid format for "
-                        "json data - [REJECTED]"
+                        "Invalid format for "
+                        "JSON data - [REJECTED]"
                     )
+                if match.group(1) not in validated_dict.keys():
+                    validated_dict[match.group(1)] = []
+                validated_dict[
+                    match.group(1)
+                ].append(match.group(2))
         elif isinstance(data, dict):
             for key, val in data.items():
                 if (
-                    isinstance(key, str)
-                    and isinstance(val, (str, int, float, list))
+                    not isinstance(key, str)
+                    and not isinstance(val, (str, int, float, list))
                 ):
-                    if key in validated_dict.keys():
-                        validated_dict[key].append(val)
-                    else:
-                        validated_dict[key] = [val]
-                else:
                     raise TypeError(
-                        "invalid format for "
-                        "json data - [REJECTED]"
+                        "Invalid format for "
+                        "JSON data - [REJECTED]"
                     )
+                if key not in validated_dict.keys():
+                    validated_dict[key] = []
+                validated_dict[key].append(val)
         else:
             raise TypeError("invalid format for json data - [REJECTED]")
-        validated_dict["adapter"] = "json"
         return validated_dict
 
     def input_csv(self, data: any) -> dict:
-        validated_dict: dict = {}
+        validated_dict: dict = {"adapter": "csv"}
         if isinstance(data, str):
             data = data.split(",")
             for d in data:
                 if not (match := re.match("([a-z]+)", d, re.I)):
-                    raise TypeError("invalid format for csv data - [REJECTED]")
-                if match.group(1) in validated_dict.keys():
-                    validated_dict[match.group(1)] += 1
-                else:
-                    validated_dict[match.group(1)] = 1
+                    raise TypeError("Invalid format for CSV data - [REJECTED]")
+                if match.group(1) not in validated_dict.keys():
+                    validated_dict[match.group(1)] = 0
+                validated_dict[match.group(1)] += 1
         elif isinstance(data, dict):
             new_dict: dict = {
                 key: val for key, val in data.items()
@@ -89,38 +79,33 @@ class InputStage:
                     isinstance(key, str)
                     and isinstance(val, (str, int, float, list))
                 ):
-                    raise TypeError("invalid format for csv data - [REJECTED]")
-                if isinstance(val, float):
-                    validated_dict[key] = int(val)
-                elif isinstance(val, str):
-                    validated_dict[key] = 1
-                validated_dict[key] = val
+                    raise TypeError("Invalid format for CSV data - [REJECTED]")
+                validated_dict[key] = (
+                    int(val) if isinstance(val, (int, float))
+                    else 1
+                )
         else:
-            raise TypeError("invalid format for csv data - [REJECTED]")
-        validated_dict["adapter"] = "csv"
+            raise TypeError("Invalid format for CSV data - [REJECTED]")
         return validated_dict
 
     def input_sensor(self, data: any) -> dict:
-        validated_dict: dict = {}
+        validated_dict: dict = {"adapter": "sensor"}
         if not isinstance(data, Generator):
-            raise TypeError("invalid format for sensor data - [REJECTED]")
+            raise TypeError("Invalid format for sensor data - [REJECTED]")
         for d in data:
             if (match := re.match("([a-z]+):([a-z0-9.]+)", d, re.I)):
-                if match.group(1) in validated_dict.keys():
-                    validated_dict[match.group(1)].append(match.group(2))
-                else:
-                    validated_dict[match.group(1)] = [match.group(2)]
+                if match.group(1) not in validated_dict.keys():
+                    validated_dict[match.group(1)] = []
+                validated_dict[match.group(1)].append(match.group(2))
             elif (match := re.match("([a-z]+)", d, re.I)):
                 if match.group(1) in validated_dict.keys():
-                    validated_dict[match.group(1)] += 1
-                else:
-                    validated_dict[match.group(1)] = 1
+                    validated_dict[match.group(1)] = 0
+                validated_dict[match.group(1)] += 1
             else:
                 raise TypeError(
-                    "invalid format for "
+                    "Invalid format for "
                     "sensor data - [REJECTED]"
                 )
-        validated_dict["adapter"] = "sensor"
         return validated_dict
 
 
