@@ -1,52 +1,41 @@
-def main() -> None:
-    """
-    Demonstrates how to access modules securely in different ways.
-    """
-    print("\n=== Sacred Scroll Mastery ===\n")
-    print("testing direct module access:")
-    import alchemy
+import alchemy
+
+
+def direct_access(elements: list[str]) -> None:
+    print("\nTesting direct module access:")
+    for element in elements:
+        print(
+            f"alchemy.elements.{element}(): "
+            f"{getattr(alchemy.elements, element)()}"
+        )
+
+
+def package_lvl_access(elements: list[str]) -> None:
     print(
-        "alchemy.elements.create_fire(): "
-        f"{alchemy.elements.create_fire()}"
-    )
-    print(
-        "alchemy.elements.create_water(): "
-        f"{alchemy.elements.create_water()}"
-    )
-    print(
-        "alchemy.elements.create_earth(): "
-        f"{alchemy.elements.create_earth()}"
-    )
-    print(
-        "alchemy.elements.create_air(): "
-        f"{alchemy.elements.create_air()}"
-    )
-    print(
-        "\ntesting package-level access"
+        "\nTesting package-level access"
         "(controlled by __init__.py):"
     )
-    print(
+    for element in elements:
+        try:
+            print(f"alchemy.{element}(): ", end="")
+            print(getattr(alchemy, element)())
+        except AttributeError:
+            print("AttributeError - Not exposed")
 
-        "alchemy.create_fire(): "
-        f"{alchemy.create_fire()}"
-    )
-    print(
-        "alchemy.create_water(): "
-        f"{alchemy.create_water()}"
-    )
-    print("alchemy.create_earth(): ", end="")
-    try:
-        print(alchemy.create_earth())
-    except AttributeError:
-        print("AttributeError - not exposed")
-    print("alchemy.create_air(): ", end="")
-    try:
-        print(alchemy.create_air())
-    except AttributeError:
-        print("AttributeError - not exposed")
-    print("\npackage metadata:")
-    print(f"version: {alchemy.__version__}")
-    print(f"author: {alchemy.__author__}")
+
+def main() -> None:
+    print("\n=== Sacred Scroll Mastery ===")
+    elements: list[str] = [
+        "create_fire",
+        "create_water",
+        "create_earth",
+        "create_air"
+    ]
+    direct_access(elements)
+    package_lvl_access(elements)
+    print("\nPackage metadata:")
+    print(f"Version: {alchemy.__version__}")
+    print(f"Author: {alchemy.__author__}")
 
 
 if __name__ == "__main__":
