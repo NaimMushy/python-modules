@@ -62,6 +62,9 @@ class EliteCard(Card, Combatable, Magical):
             "damage": self.get_attack(),
             "combat_type": self.combat_type
         }
+        target.set_health(
+            target.get_health() - self.get_attack()
+        )
         print(
             "Combat phase:\n"
             f"Attack result: {attack_result}\n"
@@ -158,10 +161,7 @@ class EliteCard(Card, Combatable, Magical):
             spell_to_cast: SpellCard = random.choice(active_spells)
             cast_result: dict = self.cast_spell(
                 spell_to_cast.name,
-                spell_to_cast.get_correct_targets(
-                    game_state["ally_beings"],
-                    game_state["living_targets"]
-                )
+                game_state[spell_to_cast.get_correct_targets()]
             )
             if cast_result["success"]:
                 game_state["cards_to_remove"].append(spell_to_cast)
