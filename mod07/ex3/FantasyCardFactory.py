@@ -49,85 +49,34 @@ SPELLS: dict[str, dict[str, list[str] | str]] = {
     },
     "attack_cards": {
         "card_names": ["Buff", "Debuff"],
-    "name_prefix": "Attack",
-    "effect_suffix": "attack power"
-}
+        "name_prefix": "Attack",
+        "effect_suffix": "attack power"
+    }
 }
 
 # artifact cards
 ARTIFACTS: dict[str, list[str] | dict[str, list[str]]] = {
-"objects": [
-    "Staff",
-    "Ring",
-    "Belt",
-    "Crystal",
-    "Potion",
-    "Watch",
-    "Earring",
-    "Dagger"
-],
-"adjs_plus": {
-    "mana": ["Mana Booster", "Mana Burden"],
-    "attack": ["Power", "Atomic", "Strength", "Enchanted"],
-    "health": ["Heal", "Soothing", "Blessed"]
-},
-"adjs_minus": {
-    "mana": ["Mana Diminisher", "Mana Lightener"],
-    "attack": ["Weakness", "Diminisher", "Debuff"],
-    "health": ["Cursed", "Poisoning", "Bloodthirsty"]
+    "objects": [
+        "Staff",
+        "Ring",
+        "Belt",
+        "Crystal",
+        "Potion",
+        "Watch",
+        "Earring",
+        "Dagger"
+    ],
+    "adjs_plus": {
+        "mana": ["Mana Booster", "Mana Burden"],
+        "attack": ["Power", "Atomic", "Strength", "Enchanted"],
+        "health": ["Heal", "Soothing", "Blessed"]
+    },
+    "adjs_minus": {
+        "mana": ["Mana Diminisher", "Mana Lightener"],
+        "attack": ["Weakness", "Diminisher", "Debuff"],
+        "health": ["Cursed", "Poisoning", "Bloodthirsty"]
+    }
 }
-}
-
-
-"""
-# elite cards
-ELITES: list[list[str | int | list]] = [
-[
-    "Dark Sorcerer",
-    3,
-    "Super Rare",
-    5,
-    2,
-    20,
-    10,
-    "long-range",
-    [lightning_spell, fire_spell]
-],
-[
-    "Divine Healer",
-    2,
-    "Legendary",
-    1,
-    4,
-    20,
-    15,
-    "long-range",
-    [healing_spell, super_healing_spell]
-],
-[
-    "Acrobatic Monk",
-    3,
-    "Super Rare",
-    8,
-    6,
-    10,
-    15,
-    "melee",
-    [attack_buff_spell, attack_debuff_spell]
-],
-[
-    "Forest Elf",
-    3,
-    "Super Rare",
-    4,
-    5,
-    18,
-    12,
-    "versatile",
-    [lightning_spell, healing_spell, attack_buff_spell]
-]
-]
-"""
 
 
 class FantasyCardFactory(CardFactory):

@@ -1,30 +1,33 @@
 def main() -> None:
+
     print("\n=== Circular Curse Breaking ===")
+
     print("\nTesting ingredient validation:")
     from alchemy.grimoire.validator import validate_ingredients
-    print(
-        "validate_ingredients('fire air'): "
-        f"{validate_ingredients('fire air')}"
-    )
-    print(
-        "validate_ingredients('dragon scales'): "
-        f"{validate_ingredients('dragon scales')}"
-    )
+    for ingredient in ["fire air", "dragon scales"]:
+        print(
+            f"validate_ingredients({ingredient}): "
+            f"{validate_ingredients(ingredient)}"
+        )
+
     print("\nTesting spell recording with validation:")
     from alchemy.grimoire.spellbook import record_spell
-    print(
-        "record_spell('Fireball', 'fire air'): "
-        f"{record_spell('Fireball', 'fire air')}"
-    )
-    print(
-        "record_spell('Dark Magic', 'shadow'): "
-        f"{record_spell('Dark Magic', 'shadow')}"
-    )
+    for spell, ingredient in {
+            "Fireball": "fire air",
+            "Dark Magic": "shadow"
+    }.items():
+        print(
+            f"record_spell({spell}, {ingredient}): "
+            f"{record_spell(spell, ingredient)}"
+        )
+
     print("\nTesting late import techniques:")
-    print(
-        "record_spell('Lightning', 'air'): "
-        f"{record_spell('Lightning', 'air')}"
-    )
+    for spell, ingredient in {"Lightning": "air"}.items():
+        print(
+            f"record_spell({spell}, {ingredient}): "
+            f"{record_spell(spell, ingredient)}"
+        )
+
     print("\nCircular dependency curse avoided using late imports!")
     print("All spells processed safely!")
 

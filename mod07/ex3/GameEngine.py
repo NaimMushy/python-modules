@@ -95,9 +95,9 @@ class GameEngine:
                         target.name for target in turn_result["targets"]
                         if target.name not in targets_attacked
                     ]
-                    self.player2.check_card_health()
                     total_damage += turn_result["damage_dealt"]
                     total_mana_used += turn_result["mana_used"]
+                self.player2.check_card_health()
 
             actions_result: dict = {
                 "cards_played": [card.name for card in cards_played],
@@ -105,7 +105,6 @@ class GameEngine:
                 "targets_attacked": targets_attacked,
                 "damage_dealt": total_damage
             }
-            self.turns_simulated += 1
             self.total_damage += total_damage
             print("\nTurn execution:")
             print(f"Strategy: {self.strategy.get_strategy_name()}")
@@ -121,6 +120,7 @@ class GameEngine:
             else:
                 self.player1.available_mana += 5
                 self.player1, self.player2 = self.player2, self.player1
+        self.turns_simulated += 1
         return actions_result
 
     def get_engine_status(self) -> dict:

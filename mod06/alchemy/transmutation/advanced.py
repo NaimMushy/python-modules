@@ -4,10 +4,10 @@ from ..potions import healing_potion
 
 def philosophers_stone() -> str:
     return (
-        "philosopher's stone created using "
+        "Philosopher's stone created using "
         f"{lead_to_gold()} and {healing_potion()}"
     )
 
 
 def elixir_of_life() -> str:
-    return "elixir of life: eternal youth achieved!"
+    return "Elixir of life: Eternal youth achieved!"
