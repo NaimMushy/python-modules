@@ -415,9 +415,9 @@ class StreamProcessor:
         data_batches: list[list[any]],
         streams: dict[str, DataStream],
         criteria: optional[str] = None
-    ) -> dict[str, int]:
+    ) -> dict[str, union[any, list[any]]]:
 
-        results: dict[str, list[any]] = {}
+        results: dict[str, union[any, list[any]]] = {}
 
         print("Processing mixed stream types through unified interface...\n")
 
@@ -428,17 +428,21 @@ class StreamProcessor:
             )
 
         for data_batch in range(len(data_batches)):
-            results["sensor"]: list[any] = [
+            results["sensor"] = [
                 data for data in data_batches[data_batch]
-                if data in ["humidity", "temp", "pressure"]
+                if (
+                    "humidity" in data or
+                    "temp" in data or
+                    "pressure" in data
+                )
             ]
 
-            results["trans"]: list[any] = [
+            results["trans"] = [
                 data for data in data_batches[data_batch]
-                if data in ["buy", "sell"]
+                if "buy" in data or "sell" in data
             ]
 
-            results["event"]: list[any] = [
+            results["event"] = [
                 data for data in data_batches[data_batch]
                 if data in ["login", "error", "warning", "logout"]
             ]

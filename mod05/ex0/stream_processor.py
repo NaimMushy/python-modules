@@ -123,7 +123,7 @@ def single_processing(proc: DataProcessor, data: any) -> None:
         )
         print(f"{proc.format_output(proc.process(data))}\n")
     except TypeError as te:
-        print(f"Caught TypeError: {te}")
+        print(f"Caught TypeError: {te}\n")
 
 
 def multiple_processing(
@@ -144,9 +144,9 @@ def main() -> None:
 
     print("=== CODE NEXUS - DATA PROCESSOR FOUNDATION ===\n")
 
-    num_test: any = "blabla"
-    text_test: any = [4, 5, 8]
-    log_test: any = "not a log entry"
+    num_test: any = [4, 5, 8]
+    text_test: any = "blabla"
+    log_test: any = "INFO: a log entry"
 
     num_proc: NumericProcessor = NumericProcessor()
     single_processing(num_proc, num_test)

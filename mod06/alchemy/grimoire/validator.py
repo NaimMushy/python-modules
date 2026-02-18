@@ -1,4 +1,5 @@
 def validate_ingredients(ingredients: str) -> str:
+
     if (
         "fire" in ingredients or
         "water" in ingredients or
@@ -6,5 +7,6 @@ def validate_ingredients(ingredients: str) -> str:
         "air" in ingredients
     ):
         return f"{ingredients} - VALID"
+
     else:
         return f"{ingredients} - INVALID"

@@ -10,7 +10,7 @@ class Deck:
         self.hand: list[Card] = []
         self.living_beings: list[Card] = []
         self.collection: dict[str, list[Card]] = {}
-        self.available_mana: int = 50
+        self.available_mana: int = 40
         self.player: str = player.capitalize()
 
     def add_card(self, card: Card) -> None:
