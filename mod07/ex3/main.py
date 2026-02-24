@@ -1,39 +1,48 @@
 from .AggressiveStrategy import AggressiveStrategy
 from .FantasyCardFactory import FantasyCardFactory
 from .GameEngine import GameEngine
-import sys
-
-
-DEFAULT_TURN_NB: int = 5
 
 
 def main() -> None:
+
     print("\n=== DataDeck Game Engine ===\n")
+
     game_engine: GameEngine = GameEngine()
+
     game_engine.configure_engine(
         FantasyCardFactory(),
         AggressiveStrategy()
     )
-    if len(sys.argv) >= 2:
-        try:
-            turn_number: int = int(sys.argv[1])
-        except ValueError:
-            print("Caught ValueError: Integer required for number of turns!")
-    else:
+
+    default_turn_nb: int = 10
+
+    try:
+
+        turn_number: int = int(input(
+            "\n\nEnter the number of turns to simulate: "
+        ))
+
+    except ValueError:
+
         print(
-            "No specific number of turns provided - "
-            f"Resorting to default number {DEFAULT_TURN_NB}"
+            f"\nInvalid value given for number of turns"
+            f" - Resorting to default number [{default_turn_nb}]\n"
         )
-        turn_number = DEFAULT_TURN_NB
+        turn_number = default_turn_nb
 
     continuing: bool = (
-        True if input("\n-> STARTING GAME? (Y/n): ") in ["y", "Y", ""]
+        True if input("\n\n-> STARTING GAME? (Y/n): ") in ["y", "Y", ""]
         else False
     )
+
     while continuing and turn_number > game_engine.turns_simulated:
+
         print("")
+
         game_engine.simulate_turn()
+
         if turn_number > game_engine.turns_simulated:
+
             continuing = (
                 True if input(
                     f"\n[{game_engine.turns_simulated}/{turn_number}]"
@@ -43,9 +52,10 @@ def main() -> None:
             )
 
     game_engine.get_engine_status()
+
     print(
-        "Abstract Factory + Strategy Pattern: "
-        "Maximum flexibility achieved!"
+        "\nAbstract Factory + Strategy Pattern: "
+        "Maximum flexibility achieved!\n"
     )
 
 

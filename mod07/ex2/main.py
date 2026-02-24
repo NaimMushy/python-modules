@@ -4,6 +4,8 @@ from ex1.SpellCard import SpellCard
 from ex1.ArtifactCard import ArtifactCard
 from ex1.Deck import Deck
 from .EliteCard import EliteCard
+from .Combatable import Combatable
+from .Magical import Magical
 import random
 
 
@@ -177,7 +179,9 @@ def execute_turn(
     deck: Deck,
     enemy_deck: Deck
 ) -> None:
+
     deck.draw_card()
+
     game_state: dict = {
         "hand": deck.hand,
         "all_targets": enemy_deck.hand,
@@ -191,22 +195,27 @@ def execute_turn(
         ),
         "cards_to_remove": []
     }
+
     play_result: dict = random.choice(game_state["hand"]).play(game_state)
+
     if not play_result:
         return None
+
     deck.available_mana -= play_result["mana_used"]
+
     for card in game_state["cards_to_remove"]:
         deck.remove_from_all(card)
+
     enemy_deck.check_card_health
 
 
 def build_decks(deck1: Deck, deck2: Deck) -> None:
-    print("\n=== DataDeck Deck Builder ===\n")
-    print("Building deck with different card types...")
+
+    print("\n\nBuilding deck with different card types...\n")
+
     deck1.add_card(fire_dragon)
     deck1.add_card(sacred_unicorn)
     deck1.add_card(lightning_spell)
-    deck1.add_card(healing_spell)
     deck1.add_card(super_healing_spell)
     deck1.add_card(attack_buff_spell)
     deck1.add_card(mana_artifact)
@@ -215,7 +224,7 @@ def build_decks(deck1: Deck, deck2: Deck) -> None:
     deck1.add_card(attack_booster_artifact)
     deck1.add_card(dark_sorcerer)
     deck1.add_card(divine_healer)
-    deck1.add_card(mana_buff)
+
     deck2.add_card(goblin_warrior)
     deck2.add_card(acromentula)
     deck2.add_card(fire_spell)
@@ -224,23 +233,78 @@ def build_decks(deck1: Deck, deck2: Deck) -> None:
     deck2.add_card(acrobatic_monk)
     deck2.add_card(forest_elf)
     deck2.add_card(mana_debuff)
+    deck2.add_card(healing_spell)
+    deck2.add_card(mana_buff)
+
     print(f"Deck One stats: {deck1.get_deck_stats()}")
     print(f"Deck Two stats: {deck2.get_deck_stats()}\n")
 
 
 def main() -> None:
-    deck1: Deck = Deck("Gabach")
-    deck2: Deck = Deck("Ibady")
+
+    print("\n==== DataDeck Ability System ====\n\n")
+
+    print("EliteCard capabilities:\n")
+
+    capabilities: dict = {}
+
+    for card_class in [Card, Combatable, Magical]:
+        capabilities[card_class.__name__] = [
+            method for method in dir(card_class)
+            if callable(getattr(card_class, method))
+            and not method.startswith("__")
+        ]
+
+    for class_name, class_methods in capabilities.items():
+        print(f"- {class_name}: {class_methods}")
+
+    print("\n")
+
+    deck1: Deck = Deck(input("Enter name of Player One: "))
+    deck2: Deck = Deck(input("Enter name of Player Two: "))
+
     build_decks(deck1, deck2)
+
     deck1.shuffle()
     deck2.shuffle()
-    print("Drawing and playing cards:\n")
-    for i in range(1, 6):
-        print(f"=== Turn {i}: Player {deck1.player} ===\n")
+
+    print("\nDrawing 3 initial cards:\n")
+
+    for deck in [deck1, deck2]:
+
+        print(f"\n< Player {deck.player} >\n")
+
+        deck.draw_card()
+        deck.draw_card()
+        deck.draw_card()
+
+    default_turn_nb: int = 5
+
+    try:
+
+        turn_nb: int = int(input(
+            "\n\nEnter the number of turns to simulate:"
+        ))
+
+    except ValueError:
+
+        print(
+            "Invalid value given for number of turns "
+            f"- Resorting to default number [{default_turn_nb}]\n"
+        )
+        turn_nb = default_turn_nb
+
+    print("\n\nDrawing and playing cards:\n")
+
+    for i in range(turn_nb):
+
+        print(f"\n\n==== Turn {i + 1}: Player {deck1.player} ====\n\n")
         execute_turn(deck1, deck2)
-        print(f"=== Turn {i}: Player {deck2.player} ===\n")
+
+        print(f"\n\n==== Turn {i + 1}: Player {deck2.player} ====\n\n")
         execute_turn(deck2, deck1)
-    print("Polymorphism in action: Same interface, different card behaviors!")
+
+    print("\n\nMultiple interface implementation successful!\n")
 
 
 if __name__ == "__main__":

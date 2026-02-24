@@ -5,7 +5,9 @@ import random
 
 
 class AggressiveStrategy(GameStrategy):
+
     def execute_turn(self, hand: list, battlefield: list) -> dict:
+
         game_state: dict = {
             "hand": hand[0],
             "all_targets": battlefield[0],
@@ -19,13 +21,16 @@ class AggressiveStrategy(GameStrategy):
             ),
             "cards_to_remove": []
         }
+
         attacker: Card | None = (
             None if not self.prioritize_targets(game_state["ally_beings"])
             else random.choice(self.prioritize_targets(
                 game_state["ally_beings"]
             ))
         )
+
         if attacker:
+
             if attacker.play(game_state):
                 return {
                     "card_played": attacker,
@@ -34,13 +39,18 @@ class AggressiveStrategy(GameStrategy):
                     "damage_dealt": attacker.get_attack(),
                     "game_state": game_state
                 }
+
         if not game_state["hand"]:
             return {}
+
         card_chosen: Card = random.choice(game_state["hand"])
         play_result: dict = card_chosen.play(game_state)
+
         if not play_result:
             return {}
-        match card_chosen.__repr__():
+
+        match card_chosen.card_type:
+
             case "spells":
                 targets: list[Card] = game_state[
                     card_chosen.get_correct_targets()
@@ -50,6 +60,7 @@ class AggressiveStrategy(GameStrategy):
                     else False
                 )
                 effect_val: int = card_chosen.effect_value
+
             case "artifacts":
                 targets = game_state[
                     card_chosen.activate_ability()["targets"]
@@ -62,10 +73,12 @@ class AggressiveStrategy(GameStrategy):
                     )
                     else False
                 )
+
             case "creatures":
                 targets = [game_state["priority_target"]]
                 offensive = True
                 effect_val = card_chosen.get_attack()
+
         return {
             "card_played": card_chosen,
             "targets": (
@@ -84,6 +97,7 @@ class AggressiveStrategy(GameStrategy):
         }
 
     def prioritize_targets(self, available_targets: list) -> list:
+
         return [
             card for card in available_targets
             if isinstance(card, CreatureCard)
@@ -91,4 +105,5 @@ class AggressiveStrategy(GameStrategy):
         ]
 
     def get_strategy_name(self) -> str:
+
         return "Aggressive Strategy"

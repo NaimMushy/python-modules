@@ -3,7 +3,6 @@ from enum import Enum
 from datetime import datetime
 from typing import Optional as optional
 from typing import Self as self
-import random
 
 
 class ContactType(Enum):
