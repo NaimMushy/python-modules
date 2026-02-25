@@ -59,11 +59,11 @@ class CreatureCard(Card):
             )
             return {}
 
-        print(f"\n-> Playing Creature {self.name}...\n")
+        print(f"\n{' ' * 6}-> Playing Creature {self.name}...\n")
 
         if not game_state["priority_target"]:
 
-            print(f"No available target for {self.name} to attack\n")
+            print(f"{' ' * 2}No available target for {self.name} to attack\n")
             return {}
 
         play_result: dict = {
@@ -74,13 +74,16 @@ class CreatureCard(Card):
 
         self.attack_target(game_state["priority_target"])
 
-        print(f"Play result: {play_result}\n")
+        print(f"\n{' ' * 2}[Play Result]\n")
+        for play_name, play_info in play_result.items():
+            print(f"{' ' * 4}=> {play_name}: {play_info}")
 
+        print("")
         return play_result
 
     def attack_target(self, target) -> dict:
 
-        print(f"{self.name} attacks {target.name}:")
+        print(f"\n{' ' * 4}< {self.name} attacks {target.name} >\n")
 
         target.set_health(target.get_health() - self.get_attack())
 
@@ -91,6 +94,9 @@ class CreatureCard(Card):
             "combat_resolved": target.get_health() == 0
         }
 
-        print(f"Attack result: {attack_result}\n")
+        print(f"\n{' ' * 2}[Attack Result]\n")
+        for attack_name, attack_info in attack_result.items():
+            print(f"{' ' * 4}=> {attack_name}: {attack_info}")
 
+        print("")
         return attack_result

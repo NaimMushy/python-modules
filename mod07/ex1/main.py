@@ -160,7 +160,7 @@ def execute_turn(
 
 def build_decks(deck1: Deck, deck2: Deck) -> None:
 
-    print("Building deck with different card types...\n")
+    print("\n\n{' ' * 6}Building deck with different card types...\n")
 
     deck1.add_card(fire_dragon)
     deck1.add_card(sacred_unicorn)
@@ -181,13 +181,18 @@ def build_decks(deck1: Deck, deck2: Deck) -> None:
     deck2.add_card(healing_spell)
     deck2.add_card(mana_buff)
 
-    print(f"Deck One stats: {deck1.get_deck_stats()}")
-    print(f"Deck Two stats: {deck2.get_deck_stats()}\n")
+    print(f"\n{' ' * 2}[Deck One Stats]\n")
+    for stat_name, stat_val in deck1.get_deck_stats().items():
+        print(f"{' ' * 4}{stat_name}: {stat_val}")
+
+    print(f"\n{' ' * 2}[Deck Two Stats]\n")
+    for stat_name, stat_val in deck2.get_deck_stats().items():
+        print(f"{' ' * 4}{stat_name}: {stat_val}")
 
 
 def main() -> None:
 
-    print("\n\n=== DataDeck Deck Builder ===\n")
+    print("\n\n==== DataDeck Deck Builder ====\n")
 
     deck1: Deck = Deck(input("Enter name of Player One: "))
     deck2: Deck = Deck(input("Enter name of Player Two: "))
@@ -201,36 +206,42 @@ def main() -> None:
 
     for deck in [deck1, deck2]:
 
-        print(f"\n< Player {deck.player} >\n")
+        print(f"\n{' ' * 6}< Player {deck.player} >\n")
 
         deck.draw_card()
         deck.draw_card()
         deck.draw_card()
 
-    default_turn_nb: int = 5
+    default_turn_nb: int = 3
 
     try:
 
         turn_nb: int = int(input(
-            "\n\nEnter the number of turns to simulate:"
+            "\n\nEnter the number of turns to simulate: "
         ))
 
     except ValueError:
 
         print(
-            "Invalid value given for number of turns "
-            f"- Resorting to default number [{default_turn_nb}]\n"
+            "\nInvalid value given for number of turns "
+            f"- Resorting to default number [{default_turn_nb}]"
         )
         turn_nb = default_turn_nb
 
-    print("\n\n\nDrawing and playing cards:")
+    print("\n\nDrawing and playing cards:")
 
     for i in range(turn_nb):
 
-        print(f"\n\n==== Turn {i + 1}: Player {deck1.player} ====\n\n")
+        print(
+            f"\n\n{' ' * 4}==== Turn {i + 1}: "
+            f"Player {deck1.player} ====\n\n"
+        )
         execute_turn(deck1, deck2)
 
-        print(f"\n\n==== Turn {i + 1}: Player {deck2.player} ====\n\n")
+        print(
+            f"\n\n{' ' * 4}==== Turn {i + 1}: "
+            f"Player {deck2.player} ====\n\n"
+        )
         execute_turn(deck2, deck1)
 
     print(

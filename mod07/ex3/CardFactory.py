@@ -32,42 +32,36 @@ class CardFactory(ABC):
 
         supported_types: dict[str, dict[str, any]] = self.get_supported_types()
 
-        print("\n\n=== AVAILABLE TYPES ===\n")
+        print(f"\n\n{' ' * 9}==== AVAILABLE TYPES ====\n")
+        print(f"\n{' ' * 2}----------------------------------------")
 
         for card_type, card_values in supported_types.items():
 
-            print(f"\n{card_type.capitalize()}:\n")
+            print(f"\n{' ' * 16}[{card_type.upper()}]\n")
 
-            print("\n-> NAMES:\n")
+            print(f"\n{' ' * 6}=> NAMES:\n")
 
             for name in card_values["card_names"]:
-                print(f"< {name} >")
+                print(f"{' ' * 10}< {name} >")
 
-            print("\n\n-> POWERS:\n")
+            print(f"\n\n{' ' * 6}=> POWERS:\n")
 
             power_integers: list[int] = [
                 power for power in card_values["card_powers"]
                 if isinstance(power, int)
             ]
 
-            print(f"< from {min(power_integers)} to {max(power_integers)} >")
+            print(
+                f"{' ' * 10}< from {min(power_integers)} "
+                f"to {max(power_integers)} >"
+            )
 
             power_strings: list[str] = [
                 power for power in card_values["card_powers"]
                 if isinstance(power, str)
             ]
 
-            if power_strings:
+            for power in power_strings:
+                print(f"{' ' * 10}< {power} >")
 
-                print("< ", end="")
-
-                for power in power_strings:
-
-                    if power != power_strings[0]:
-                        print(", ", end="")
-
-                    print(f"{power}", end="")
-
-                print(" >")
-
-            print("\n")
+            print(f"\n{' ' * 2}----------------------------------------")

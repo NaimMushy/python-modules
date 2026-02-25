@@ -115,7 +115,7 @@ def main() -> None:
 
     platform.generate_tournament_report()
 
-    print("\n\n=== Tournament Platform Successfully Deployed! ===\n")
+    print("\n\n==== Tournament Platform Successfully Deployed! ====\n")
 
     print("All abstract patterns working together harmoniously!\n")
 

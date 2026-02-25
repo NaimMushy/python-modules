@@ -5,14 +5,14 @@ class TournamentPlatform:
 
     def __init__(self) -> None:
 
-        print("\n\n=== DataDeck Tournament Platform ===\n\n")
+        print("\n\n==== DataDeck Tournament Platform ====\n\n")
 
         self.cards: dict[str, TournamentCard] = {}
         self.match_count: int = 0
 
     def register_card(self, card: TournamentCard) -> str:
 
-        print("\n\nRegistering Tournament Card...\n")
+        print(f"\n\n{' ' * 8}[Registering Tournament Card]\n")
 
         card_id: str = card.name.split(" ")[-1].lower()
 
@@ -32,16 +32,16 @@ class TournamentPlatform:
 
         self.cards[card_id] = card
 
-        print(f"\n{card.name} (ID: {card_id}):")
+        print(f"\n{' ' * 2}< {card.name} (ID: {card_id}) >\n")
 
         for stat, val in card.get_tournament_stats().items():
-            print(f"{stat.capitalize()}: {val}")
+            print(f"{' ' * 4}=> {stat.capitalize()}: {val}")
 
-        return f"\n\nRegistered {card.name} with ID: {card_id}!\n"
+        return f"\n\n{' ' * 4}Registered {card.name} with ID: {card_id}!\n"
 
     def create_match(self, card1_id: str, card2_id: str) -> dict:
 
-        print("\n\nCreating tournament match...\n")
+        print(f"\n\n{' ' * 8}[Creating Tournament Match]\n")
 
         card1: TournamentCard = self.cards[card1_id]
         card2: TournamentCard = self.cards[card2_id]
@@ -80,7 +80,9 @@ class TournamentPlatform:
             "loser_rating": self.cards[loser].calculate_rating()
         }
 
-        print(f"\nMatch result: {match_result}\n")
+        print(f"\n{' ' * 2}< Match result >\n")
+        for result_name, result_value in match_result.items():
+            print(f"{' ' * 6}=> {result_name}: {result_value}")
 
         self.match_count += 1
 
@@ -88,7 +90,7 @@ class TournamentPlatform:
 
     def get_leaderboard(self) -> list:
 
-        print("\n\nTournament Leaderboard:\n")
+        print(f"\n\n{' ' * 8}[Tournament Leaderboard]\n")
 
         leaderboard: list[TournamentCard] = []
 
@@ -110,18 +112,16 @@ class TournamentPlatform:
             ranking_cards.remove(leader)
 
             print(
-                f"{rank + 1}. {leader.name} - Rating: "
+                f"{' ' * 2}{rank + 1}. {leader.name} - Rating: "
                 f"{leader.get_rank_info()['rating']} "
                 f"({leader.get_rank_info()['record']})"
             )
-
-        print("\n")
 
         return leaderboard
 
     def generate_tournament_report(self) -> dict:
 
-        print("\n\nPlatform Report:\n")
+        print(f"\n\n{' ' * 8}[Platform Report]\n")
 
         card_nb: int = len(self.cards.keys())
 
@@ -137,6 +137,9 @@ class TournamentPlatform:
             )
         }
 
-        print(f"{platform_report}\n")
+        for report_name, report_value in platform_report.items():
+            print(f"{' ' * 2}=> {report_name}: {report_value}")
+
+        print("")
 
         return platform_report

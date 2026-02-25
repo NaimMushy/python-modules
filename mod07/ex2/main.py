@@ -236,15 +236,20 @@ def build_decks(deck1: Deck, deck2: Deck) -> None:
     deck2.add_card(healing_spell)
     deck2.add_card(mana_buff)
 
-    print(f"Deck One stats: {deck1.get_deck_stats()}")
-    print(f"Deck Two stats: {deck2.get_deck_stats()}\n")
+    print(f"\n{' ' * 2}[Deck One Stats]\n")
+    for stat_name, stat_val in deck1.get_deck_stats().items():
+        print(f"{' ' * 4}{stat_name}: {stat_val}")
+
+    print(f"\n{' ' * 2}[Deck Two Stats]\n")
+    for stat_name, stat_val in deck2.get_deck_stats().items():
+        print(f"{' ' * 4}{stat_name}: {stat_val}")
 
 
 def main() -> None:
 
     print("\n==== DataDeck Ability System ====\n\n")
 
-    print("EliteCard capabilities:\n")
+    print(f"{' ' * 2}[EliteCard Capabilities]\n")
 
     capabilities: dict = {}
 
@@ -256,7 +261,7 @@ def main() -> None:
         ]
 
     for class_name, class_methods in capabilities.items():
-        print(f"- {class_name}: {class_methods}")
+        print(f"{' ' * 4}=> {class_name}: {class_methods}")
 
     print("\n")
 
@@ -268,22 +273,22 @@ def main() -> None:
     deck1.shuffle()
     deck2.shuffle()
 
-    print("\nDrawing 3 initial cards:\n")
+    print("\n\nDrawing 3 initial cards:\n")
 
     for deck in [deck1, deck2]:
 
-        print(f"\n< Player {deck.player} >\n")
+        print(f"\n{' ' * 6}< Player {deck.player} >\n")
 
         deck.draw_card()
         deck.draw_card()
         deck.draw_card()
 
-    default_turn_nb: int = 5
+    default_turn_nb: int = 3
 
     try:
 
         turn_nb: int = int(input(
-            "\n\nEnter the number of turns to simulate:"
+            "\nEnter the number of turns to simulate: "
         ))
 
     except ValueError:
@@ -298,10 +303,16 @@ def main() -> None:
 
     for i in range(turn_nb):
 
-        print(f"\n\n==== Turn {i + 1}: Player {deck1.player} ====\n\n")
+        print(
+            f"\n\n{' ' * 4}==== Turn {i + 1}: "
+            f"Player {deck1.player} ====\n\n"
+        )
         execute_turn(deck1, deck2)
 
-        print(f"\n\n==== Turn {i + 1}: Player {deck2.player} ====\n\n")
+        print(
+            f"\n\n{' ' * 4}==== Turn {i + 1}: "
+            f"Player {deck2.player} ====\n\n"
+        )
         execute_turn(deck2, deck1)
 
     print("\n\nMultiple interface implementation successful!\n")

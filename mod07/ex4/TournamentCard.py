@@ -117,7 +117,7 @@ class TournamentCard(Card, Combatable, Rankable):
     def get_tournament_stats(self) -> dict:
 
         return {
-            "interfaces": ["Card", "Combatable", "Rankable"]
+            "interfaces": [base.__name__ for base in type(self).__bases__]
         } | self.get_rank_info()
 
     def get_card_info(self) -> dict:

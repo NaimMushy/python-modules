@@ -29,13 +29,13 @@ class ArtifactCard(Card):
             )
             return {}
 
-        print(f"\n-> Playing Artifact {self.name}...\n")
+        print(f"\n{' ' * 6}-> Playing Artifact {self.name}...\n")
 
         targets: str = self.activate_ability()["targets"]
 
         if not game_state[targets]:
 
-            print(f"No available targets for {self.name}\n")
+            print(f"{' ' * 2}No available targets for {self.name}\n")
             return {}
 
         if "mana" in targets:
@@ -43,9 +43,9 @@ class ArtifactCard(Card):
             game_state[targets] += self.effect_value
 
             print(
-                f"Effect < {'+' if self.effect_value > 0 else ''}"
+                f"\n{' ' * 2}Effect < {'+' if self.effect_value > 0 else ''}"
                 f"{self.effect_value} available mana > "
-                f"applied to {targets.replace('_', ' ')}\n"
+                f"applied to {targets.replace('_', ' ')}"
             )
 
             if game_state[targets] < 0:
@@ -62,11 +62,15 @@ class ArtifactCard(Card):
             "effect": self.effect
         }
 
-        print(f"Play result: {play_result}\n")
+        print(f"\n{' ' * 2}[Play Result]\n")
+        for play_name, play_info in play_result.items():
+            print(f"{' ' * 4}=> {play_name}: {play_info}")
+
+        print("")
 
         if self.durability <= 0:
             print(
-                f"Artifact {self.name} "
+                f"{' ' * 2}Artifact {self.name} "
                 "destroyed - Durability depleted\n"
             )
             game_state["cards_to_remove"].append(self)
@@ -113,7 +117,7 @@ class ArtifactCard(Card):
 
         if not targets:
 
-            print(f"No available targets for {self.name}\n")
+            print(f"{' ' * 2}No available targets for {self.name}\n")
             return None
 
         sign: str = "+" if self.effect_value > 0 else ""
@@ -123,7 +127,7 @@ class ArtifactCard(Card):
             for target in targets:
                 target.set_health(target.get_health() + self.effect_value)
                 print(
-                    f"Effect < {sign}"
+                    f"\n{' ' * 2}Effect < {sign}"
                     f"{self.effect_value} health points > "
                     f"applied to {target.name}"
                 )
@@ -135,7 +139,7 @@ class ArtifactCard(Card):
                     target.get_attack() + self.effect_value
                 )
                 print(
-                    f"Effect < {sign}"
+                    f"\n{' ' * 2}Effect < {sign}"
                     f"{self.effect_value} attack > "
                     f"applied to {target.name}"
                 )
@@ -145,7 +149,7 @@ class ArtifactCard(Card):
             for target in targets:
                 target.cost += self.effect_value
                 print(
-                    f"Effect < {sign}"
+                    f"\n{' ' * 2}Effect < {sign}"
                     f"{self.effect_value} mana cost > "
                     f"applied to {target.name}"
                 )

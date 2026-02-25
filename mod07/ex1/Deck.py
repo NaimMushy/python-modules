@@ -63,8 +63,8 @@ class Deck:
         card_drawn: Card = self.stack_cards[0]
 
         print(
-            f"Drew: {card_drawn.name} "
-            f"({card_drawn.get_card_info()['type']})"
+            f"{' ' * 2}Drew: {card_drawn.name} "
+            f"({card_drawn.get_card_info()['type']})\n"
         )
 
         self.remove_card(card_drawn.name)

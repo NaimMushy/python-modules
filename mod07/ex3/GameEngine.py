@@ -2,7 +2,6 @@ from .CardFactory import CardFactory
 from .GameStrategy import GameStrategy
 from ex0.Card import Card
 from ex1.Deck import Deck
-import random
 
 
 class GameEngine:
@@ -62,11 +61,14 @@ class GameEngine:
 
     def simulate_turn(self) -> dict:
 
-        print(f"Simulating {self.strategy.get_strategy_type()} turn...")
+        print(f"Simulating {self.strategy.get_strategy_type()} turn...\n")
 
         for _ in range(2):
 
-            print(f"< Player {self.player1.player}'s turn >\n")
+            print(
+                f"\n{' ' * 10}==== Player "
+                f"{self.player1.player}'s turn ====\n\n"
+            )
 
             cards_played: list[Card] = []
             targets_attacked: list[str] = []
@@ -78,7 +80,10 @@ class GameEngine:
             )
 
             if not draw_number:
-                print(f"\nNo cards left to draw for {self.player1.player}!\n")
+                print(
+                    f"\n{' ' * 6}No cards left to draw "
+                    f"for {self.player1.player}!\n"
+                )
 
             else:
                 for draw in range(draw_number):

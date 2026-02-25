@@ -517,17 +517,20 @@ class FantasyCardFactory(CardFactory):
         all_cards["total_cards"].append(card_created)
         all_cards[card_type].append(card_created)
 
-        print(f"\n\n[CARD CREATED]: {card_created.get_card_info()}\n")
+        print(f"\n\n{' ' * 6}[CARD CREATED]\n")
+
+        for info_name, info_value in card_created.get_card_info().items():
+            print(f"{' ' * 2}=> {info_name}: {info_value}")
 
     def create_themed_deck(self, size: int) -> dict:
 
         all_cards: dict[str, list[Card]] = {}
 
         if size:
-            print(f"\n=== CREATING DECK OF {size} CARDS ===\n\n")
+            print(f"\n=== CREATING DECK OF {size} CARDS ===\n")
 
             if input(
-                "Do you wish to see supported card types? (Y/n) "
+                "\nDo you wish to see supported card types? (Y/n) "
             ) in ["Y", "y", ""]:
                 self.display_supported_types()
 
@@ -536,7 +539,7 @@ class FantasyCardFactory(CardFactory):
 
         while size > 0:
 
-            custom: str = input("\nCustomize card? (y/N) ")
+            custom: str = input("\nCustomize cards? (y/N) ")
             if custom in ["Y", "y"]:
                 input_result = self.validate_input()
 

@@ -5,7 +5,7 @@ from .GameEngine import GameEngine
 
 def main() -> None:
 
-    print("\n=== DataDeck Game Engine ===\n")
+    print("\n==== DataDeck Game Engine ====\n")
 
     game_engine: GameEngine = GameEngine()
 

@@ -41,13 +41,13 @@ class SpellCard(Card):
             )
             return {}
 
-        print(f"\n-> Playing Spell {self.name}...\n")
+        print(f"\n{' ' * 6}-> Playing Spell {self.name}...\n")
 
         targets: list[Card] = game_state[self.get_correct_targets()]
 
         if not targets:
 
-            print(f"No targets available for {self.name}\n")
+            print(f"{' ' * 2}No targets available for {self.name}\n")
             return {}
 
         play_result: dict = {
@@ -58,8 +58,11 @@ class SpellCard(Card):
 
         self.resolve_effect(targets)
 
-        print(f"Play result: {play_result}\n")
+        print(f"\n{' ' * 2}[Play Result]\n")
+        for play_name, play_info in play_result.items():
+            print(f"{' ' * 4}=> {play_name}: {play_info}")
 
+        print("")
         game_state["cards_to_remove"].append(self)
 
         return play_result
@@ -90,7 +93,7 @@ class SpellCard(Card):
 
         if not targets:
 
-            print(f"No targets available for {self.name}\n")
+            print(f"{' ' * 2}No targets available for {self.name}\n")
             return {"effect": "unknown", "target": None}
 
         for target in targets:
@@ -114,7 +117,7 @@ class SpellCard(Card):
                 return {"effect": "unknown", "targets": None}
 
             print(
-                f"Spell effect < {self.effect_type} > "
+                f"\n{' ' * 2}Spell effect < {self.effect_type} > "
                 f"applied to {target.name}"
             )
 

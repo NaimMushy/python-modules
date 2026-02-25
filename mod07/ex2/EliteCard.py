@@ -58,11 +58,11 @@ class EliteCard(Card, Combatable, Magical):
     def learn_spell(self, spell_name: str, spell_cost: int) -> None:
 
         if spell_name in self.known_spells:
-            print(f"Spell {spell_name} already learned\n")
+            print(f"{' ' * 2}Spell {spell_name} already learned\n")
 
         else:
-            print(f"{self.name} is learning a new spell...")
-            print(f"{spell_name} learned!\n")
+            print(f"{' ' * 2}{self.name} is learning a new spell...")
+            print(f"{' ' * 2}{spell_name} learned!\n")
             self.known_spells.append((spell_name, spell_cost))
 
     def attack(self, target) -> dict:
@@ -78,10 +78,10 @@ class EliteCard(Card, Combatable, Magical):
             target.get_health() - self.get_attack()
         )
 
-        print(
-            "Combat phase:\n"
-            f"Attack result: {attack_result}\n"
-        )
+        print(f"{' ' * 8}< Combat phase >\n")
+        print(f"{' ' * 2}[Attack Result]\n")
+        for attack_name, attack_val in attack_result.items():
+            print(f"{' ' * 4}=> {attack_name}: {attack_val}")
 
         return attack_result
 
@@ -106,7 +106,9 @@ class EliteCard(Card, Combatable, Magical):
             "still_alive": self.get_health() > 0
         }
 
-        print(f"Defense result: {defense_result}\n")
+        print(f"\n{' ' * 2}[Defense Result]\n")
+        for def_name, def_value in defense_result.items():
+            print(f"{' ' * 4}=> {def_name}: {def_value}")
 
         return defense_result
 
@@ -129,7 +131,7 @@ class EliteCard(Card, Combatable, Magical):
                 learned = True
 
         if not learned:
-            print(f"Spell {spell_name} not learned by {self.name}\n")
+            print(f"{' ' * 2}Spell {spell_name} not learned by {self.name}\n")
 
         else:
 
@@ -138,7 +140,7 @@ class EliteCard(Card, Combatable, Magical):
             if not mana_channel_result["success"] or not targets:
                 mana_used = 0
 
-        print("Magic phase:")
+        print(f"{' ' * 8}< Magic phase >")
 
         cast_result: dict = {
             "caster": self.name,
@@ -150,10 +152,13 @@ class EliteCard(Card, Combatable, Magical):
             "success": mana_used > 0
         }
 
-        print(
-            f"Spell cast: {cast_result}"
-            f"Mana channel: {mana_channel_result}\n"
-        )
+        print(f"{' ' * 2}[Spell Cast]")
+        for cast_name, cast_val in cast_result.items():
+            print(f"{' ' * 4}=> {cast_name}: {cast_val}")
+
+        print(f"{' ' * 2}[Mana Channel]")
+        for channel_name, channel_val in mana_channel_result.items():
+            print(f"{' ' * 4}=> {channel_name}: {channel_val}")
 
         return cast_result
 
@@ -194,7 +199,7 @@ class EliteCard(Card, Combatable, Magical):
             )
             return {}
 
-        print(f"\n-> Playing Elite {self.name}...\n")
+        print(f"\n{' ' * 6}-> Playing Elite {self.name}...\n")
 
         play_result: dict = {}
 
@@ -222,7 +227,7 @@ class EliteCard(Card, Combatable, Magical):
                 game_state["cards_to_remove"].append(spell_to_cast)
 
                 play_result["effects"] = (
-                    f"Cast spell {spell_to_cast.name} "
+                    f"{' ' * 2}Cast spell {spell_to_cast.name} "
                     f"on {cast_result['targets']}"
                 )
 
@@ -238,12 +243,14 @@ class EliteCard(Card, Combatable, Magical):
             play_result["effects"] = f"Attacked {attack_result['target']}"
 
         else:
-            print(f"No available targets for {self.name}\n")
+            print(f"{' ' * 2}No available targets for {self.name}\n")
             return {}
 
         play_result["card_played"] = self.name
 
-        print(f"Play result: {play_result}\n")
+        print(f"{' ' * 2}[Play Result]\n")
+        for play_name, play_info in play_result.items():
+            print(f"{' ' * 4}=> {play_name}: {play_info}")
 
         return play_result
 

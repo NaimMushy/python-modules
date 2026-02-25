@@ -3,7 +3,7 @@ from .CreatureCard import CreatureCard
 
 def main() -> None:
 
-    print("\n=== DataDeck Card Foundation ===\n")
+    print("\n==== DataDeck Card Foundation ====\n")
 
     print("\nTesting Abstract Base Class Design:\n")
 
@@ -15,10 +15,13 @@ def main() -> None:
     }
     game_state["priority_target"] = goblin_warrior
 
-    print(f"\nCreatureCard Info:\n{fire_dragon.get_card_info()}\n")
+    print(f"\n{' ' * 8}[CreatureCard Info]\n")
+
+    for info_name, info_val in fire_dragon.get_card_info().items():
+        print(f"{' ' * 4}=> {info_name}: {info_name}")
 
     print(
-        f"\nPlaying Fire Dragon with "
+        f"\n\nPlaying Fire Dragon with "
         f"{game_state['available_mana']} mana available:\n"
     )
     print(
