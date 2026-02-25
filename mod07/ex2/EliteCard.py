@@ -16,7 +16,7 @@ class EliteCard(Card, Combatable, Magical):
         mana_pool: int,
         health: int,
         combat_type: str,
-        known_spells: list[SpellCard] = []
+        known_spells: list[tuple[str, int]] = []
     ) -> None:
 
         super().__init__(name, cost, rarity, "elites")
@@ -25,7 +25,7 @@ class EliteCard(Card, Combatable, Magical):
         self.mana_pool: int = mana_pool
         self.__health: int = health
         self.combat_type: str = combat_type
-        self.known_spells: list[tuple[int, str]] = known_spells
+        self.known_spells: list[tuple[str, int]] = known_spells
 
     def set_attack(self, new_attack: int) -> None:
 

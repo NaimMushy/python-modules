@@ -138,7 +138,12 @@ dark_sorcerer: EliteCard = EliteCard(
     20,
     10,
     "long-range",
-    [lightning_spell, fire_spell]
+    [
+        (spell.name, spell.cost)
+        for spell in [
+            lightning_spell, fire_spell
+        ]
+    ]
 )
 divine_healer: EliteCard = EliteCard(
     "Divine Healer",
@@ -149,7 +154,12 @@ divine_healer: EliteCard = EliteCard(
     20,
     15,
     "long-range",
-    [healing_spell, super_healing_spell]
+    [
+        (spell.name, spell.cost)
+        for spell in [
+            healing_spell, super_healing_spell
+        ]
+    ]
 )
 acrobatic_monk: EliteCard = EliteCard(
     "Acrobatic Monk",
@@ -160,7 +170,12 @@ acrobatic_monk: EliteCard = EliteCard(
     10,
     15,
     "melee",
-    [attack_buff_spell, attack_debuff_spell]
+    [
+        (spell.name, spell.cost)
+        for spell in [
+            attack_buff_spell, attack_debuff_spell
+        ]
+    ]
 )
 forest_elf: EliteCard = EliteCard(
     "Forest Elf",
@@ -171,7 +186,12 @@ forest_elf: EliteCard = EliteCard(
     18,
     12,
     "versatile",
-    [lightning_spell, healing_spell, attack_buff_spell]
+    [
+        (spell.name, spell.cost)
+        for spell in [
+            lightning_spell, healing_spell, attack_buff_spell
+        ]
+    ]
 )
 
 
@@ -211,7 +231,7 @@ def execute_turn(
 
 def build_decks(deck1: Deck, deck2: Deck) -> None:
 
-    print("\n\nBuilding deck with different card types...\n")
+    print(f"\n\n{' ' * 6}Building deck with different card types...\n")
 
     deck1.add_card(fire_dragon)
     deck1.add_card(sacred_unicorn)

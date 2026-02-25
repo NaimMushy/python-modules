@@ -160,7 +160,7 @@ def execute_turn(
 
 def build_decks(deck1: Deck, deck2: Deck) -> None:
 
-    print("\n\n{' ' * 6}Building deck with different card types...\n")
+    print(f"\n\n{' ' * 6}Building deck with different card types...\n")
 
     deck1.add_card(fire_dragon)
     deck1.add_card(sacred_unicorn)
