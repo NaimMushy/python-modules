@@ -215,7 +215,7 @@ def main() -> None:
 
         # displaying information about the overrided environment variables
 
-        print("[OK] Environment variables ({','.join(overrided)}) overrided")
+        print(f"[OK] Environment variables ({','.join(overrided)}) overrided")
 
     print("\nThe Oracle sees all configurations")
 
