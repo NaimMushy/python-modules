@@ -5,8 +5,12 @@ import re
 
 def security_check(api_key: str | None) -> str:
 
+    """ Checks whether or not there is a security leak for the API key """
+
     if not api_key:
         return "[WARNING] No API key detected"
+
+    # searching in every file in the git repository
 
     for to_check in [
         "../ex0/construct.py",
@@ -15,9 +19,12 @@ def security_check(api_key: str | None) -> str:
         "../ex1/pyproject.toml"
     ]:
 
+        # verifies if the API key appears in the file
+
         try:
 
             with open(to_check) as git_file:
+
                 if api_key in git_file.readlines():
                     return (
                         "[WARNING] API key has been detected "
@@ -25,6 +32,7 @@ def security_check(api_key: str | None) -> str:
                     )
 
         except OSError as oserr:
+
             print(f"Caught {oserr.__class__.__name__}: {oserr}\n")
 
     return "[OK] No hardcoded secrets detected"
@@ -32,11 +40,16 @@ def security_check(api_key: str | None) -> str:
 
 def check_dotenv_config() -> str:
 
+    """ Checks if the .env file format corresponds to what is expected """
+
     try:
 
         with open(".env") as dotenv:
 
+            # verifies the formatting of each line in the .env
+
             for line in dotenv:
+
                 if not re.match(r"[A-Z_]+=", line):
                     return (
                         "[WARNING] .env file not properly configured "
@@ -44,12 +57,20 @@ def check_dotenv_config() -> str:
                     )
 
     except OSError as oserr:
+
         return f"[ERROR] {oserr}"
 
     return "[OK] .env file properly configured"
 
 
 def load_configuration(variables: dict[str, str | None]) -> None:
+
+    """
+    Loads the matrix configuration
+    based on the environment variables recovered
+    """
+
+    # setting default values for environment variables if not set
 
     defaults: dict[str, str] = {
         "MATRIX_MODE": "No mode selected",
@@ -60,6 +81,8 @@ def load_configuration(variables: dict[str, str | None]) -> None:
     }
 
     print("Configuration loaded:\n")
+
+    # displaying the loaded configuration information
 
     print(
         "Mode: "
@@ -105,7 +128,15 @@ def load_configuration(variables: dict[str, str | None]) -> None:
 
 def main() -> None:
 
+    """
+    Recovers the environment variables
+    Loads configuration
+    Completes validation through security and formatting checks
+    """
+
     print("\nORACLE STATUS: Reading the Matrix...\n")
+
+    # initializing a dictionary to contain the environment variables
 
     variables: dict[str, str | None] = {
         var_name: None
@@ -118,31 +149,47 @@ def main() -> None:
         ]
     }
 
-    fst: bool = True
+    # recovering environment variables
+    # first checking for overrided variables from the command line
+    # then loading the remaining from the .env file
 
-    for _ in range(2):
+    for loading in range(2):
+
+        # establishing a list of environment variables to load
+        # excluding those that are already recovered
 
         to_load: list[str] = [
             var_name for var_name, var in variables.items() if not var
         ]
 
-        if not fst:
+        if loading > 0:
+
+            # storing the environment variables
+            # already recovered from the command line
+            # in a list of overrided variables
 
             overrided: list[str] = [
                 var_name for var_name, var in variables.items() if var
             ]
+
+            # getting the remaining environment variables from the .env file
+
             load_dotenv()
+
+        # storing the loaded environment variables in the variables dict
 
         for env in to_load:
             variables[env] = os.getenv(env)
 
-        fst = False
+    # setting a list of missing environment variables
 
     missing_variables: list[str] = [
         var_name for var_name, var, in variables.items() if not var
     ]
 
     if missing_variables:
+
+        # displaying information about the missing variables
 
         print("Missing configuration variables:\n")
 
@@ -154,6 +201,8 @@ def main() -> None:
             "to properly load configuration\n"
         )
 
+    # loading configuration and performing checks
+
     load_configuration(variables)
 
     print("\nEnvironment security check:\n")
@@ -164,20 +213,9 @@ def main() -> None:
 
     if overrided:
 
-        print("[OK] Environment variables (", end="")
+        # displaying information about the overrided environment variables
 
-        fst = True
-
-        for over in overrided:
-
-            if not fst:
-                print(", ", end="")
-
-            print(over, end="")
-
-            fst = False
-
-        print(") overrided")
+        print("[OK] Environment variables ({','.join(overrided)}) overrided")
 
     print("\nThe Oracle sees all configurations")
 

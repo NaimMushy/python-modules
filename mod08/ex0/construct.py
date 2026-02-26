@@ -1,23 +1,24 @@
 import sys
 import site
-import os
 
 
 def main() -> None:
 
     """
-    comparing sys.prefix
+    Comparing sys.prefix
     which refers to the virtual environment prefix (if running inside one)
     and sys.base_prefix which always refers to the base Python installation
     """
-    
+
     matrix: dict = {}
+
     if sys.prefix == sys.base_prefix:
 
         """
         Displaying the instructions
         to create and activate a virtual environment
         """
+
         matrix = {
             "\nMATRIX STATUS": "You're still plugged in\n",
             "Current Python": sys.executable,
@@ -37,10 +38,12 @@ def main() -> None:
         }
 
     else:
+
         """
         Displaying the current virtual environment's information:
         name, path, user base, global/local packages
         """
+
         matrix = {
             "\nMATRIX STATUS": "Welcome to the construct\n",
             "Current Python": sys.executable,
