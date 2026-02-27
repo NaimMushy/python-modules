@@ -6,11 +6,11 @@ from pydantic import BaseModel, Field, ValidationError, model_validator
 
 class Rank(Enum):
 
-    CADET = 1
-    OFFICER = 2
-    LIEUTENANT = 3
-    CAPTAIN = 4
-    COMMANDER = 5
+    CADET = " cadet"
+    OFFICER = "officer"
+    LIEUTENANT = "lieutenant"
+    CAPTAIN = "captain"
+    COMMANDER = "commander"
 
 
 class CrewMember(BaseModel):
@@ -23,10 +23,10 @@ class CrewMember(BaseModel):
     years_experience: int = Field(ge=0, le=50)
     is_active: bool = Field(default=True)
 
-    def get_member_info(self) -> str:
+    def __str__(self) -> str:
 
         return (
-            f"{self.name} ({self.rank.name.lower()}) "
+            f" => {self.name} ({self.rank.name.lower()}) "
             f"- {self.specialization}"
         )
 
@@ -74,21 +74,22 @@ class SpaceMission(BaseModel):
 
         return self
 
-    def display_mission_info(self) -> None:
+    def __str__(self) -> str:
 
-        print(f"ID: {self.mission_id}")
-        print(f"Mission: {self.mission_name}")
-        print(f"Destination: {self.destination}")
-        print(f"Launch Date: {self.launch_date}")
-        print(f"Duration: {self.duration_days} days")
-        print(f"Budget: {self.budget_millions}M")
-        print(f"Crew size: {len(self.crew)}")
-        print("Crew members:")
+        crew_members: str = "\n".join(
+            [member.__str__() for member in self.crew]
+        )
 
-        for member in self.crew:
-            print(f"- {member.get_member_info()}")
-
-        print("\n")
+        return (
+            f"ID: {self.mission_id}\n"
+            f"Mission: {self.mission_name}\n"
+            f"Destination: {self.destination}\n"
+            f"Duration: {self.duration_days} days\n"
+            f"Budget: ${self.budget_millions}M\n"
+            f"Crew size: {len(self.crew)}\n"
+            "Crew members:\n"
+            f"{crew_members}\n"
+        )
 
 
 def main() -> None:
@@ -123,12 +124,12 @@ def main() -> None:
     )
 
     mission_info: dict = {
-        "id": "M2024_UNKNOWN",
-        "name": "Unknown Regions Exploration",
+        "mission_id": "M2024_UNKNOWN",
+        "mission_name": "Unknown Regions Exploration",
         "destination": "Illum, Starkiller Base",
         "launch_date": datetime.now(),
-        "duration": 300,
-        "budget": 2500.5,
+        "duration_days": 300,
+        "budget_millions": 2500.5,
         "crew": [luke, han, r2d2]
     }
 
@@ -138,24 +139,17 @@ def main() -> None:
 
         try:
 
-            mission: SpaceMission = SpaceMission(
-                mission_id=mission_info["id"],
-                mission_name=mission_info["name"],
-                destination=mission_info["destination"],
-                launch_date=mission_info["launch_date"],
-                duration_days=mission_info["duration"],
-                crew=mission_info["crew"],
-                budget_millions=mission_info["budget"]
-            )
+            mission: SpaceMission = SpaceMission(**mission_info)
 
         except ValidationError as ve:
 
-            print(f"Expected validation error:\n\n{ve.errors()[0]['msg']}")
+            print("Expected validation error:\n")
+            for err in ve.errors():
+                print(err["msg"])
 
         else:
 
-            print("Valid mission created:\n")
-            mission.display_mission_info()
+            print(f"Valid mission created:\n\n{mission}")
 
         luke.rank = Rank.CADET
 

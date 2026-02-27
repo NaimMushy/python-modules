@@ -14,22 +14,18 @@ class SpaceStation(BaseModel):
     is_operational: bool = Field(default=True)
     notes: optional[str] = Field(default=None, max_length=200)
 
-    def display_station_info(self) -> None:
+    def __str__(self) -> str:
 
-        print(f"ID: {self.station_id}")
-        print(f"Name: {self.name}")
-        print(f"Crew: {self.crew_size} people")
-        print(f"Power: {self.power_level}%")
-        print(f"Oxygen: {self.oxygen_level}%")
-        print(
+        return (
+            f"ID: {self.station_id}\n"
+            f"Name: {self.name}\n"
+            f"Crew: {self.crew_size} people\n"
+            f"Power: {self.power_level}%\n"
+            f"Oxygen: {self.oxygen_level}%\n"
             "Status: "
-            f"{'Operational' if self.is_operational else 'Not operational'}"
+            f"{'Operational' if self.is_operational else 'Not operational'}\n"
+            f"{'Notes: ' + self.notes if self.notes else ''}"
         )
-
-        if self.notes:
-            print(f"Notes: {self.notes}")
-
-        print("")
 
 
 def main() -> None:
@@ -37,13 +33,13 @@ def main() -> None:
     print("\nSpace Station Data Validation\n")
 
     station_info: dict = {
-        "id": "I88001",
+        "station_id": "I88001",
         "name": "International Space Station",
         "crew_size": 6,
-        "power_lvl": 85.5,
-        "oxygen_lvl": 92.3,
-        "lst_maintenance": datetime.now(),
-        "operational": True
+        "power_level": 85.5,
+        "oxygen_level": 92.3,
+        "last_maintenance": datetime.now(),
+        "is_operational": True
     }
 
     for _ in range(2):
@@ -52,24 +48,17 @@ def main() -> None:
 
         try:
 
-            space_station: SpaceStation = SpaceStation(
-                station_id=station_info["id"],
-                name=station_info["name"],
-                crew_size=station_info["crew_size"],
-                power_level=station_info["power_lvl"],
-                oxygen_level=station_info["oxygen_lvl"],
-                last_maintenance=station_info["lst_maintenance"],
-                is_operational=station_info["operational"]
-            )
+            space_station: SpaceStation = SpaceStation(**station_info)
 
         except ValidationError as ve:
 
-            print(f"Expected validation error:\n\n{ve.errors()[0]['msg']}")
+            print("Expected validation error:\n")
+            for err in ve.errors():
+                print(err["msg"])
 
         else:
 
-            print("Valid station created:\n")
-            space_station.display_station_info()
+            print(f"Valid station created:\n\n{space_station}")
 
         station_info["crew_size"] = 30
 

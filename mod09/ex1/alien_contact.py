@@ -7,10 +7,10 @@ from typing_extensions import Self as self
 
 class ContactType(Enum):
 
-    RADIO = 1
-    VISUAL = 2
-    PHYSICAL = 3
-    TELEPATHIC = 4
+    RADIO = "radio"
+    VISUAL = "visual"
+    PHYSICAL = "physical"
+    TELEPATHIC = "telepathic"
 
 
 class AlienContact(BaseModel):
@@ -30,7 +30,9 @@ class AlienContact(BaseModel):
 
         if not self.contact_id.startswith("AC"):
 
-            raise ValueError("Contact ID must start with 'AC'!")
+            raise ValueError(
+                "Contact ID must start with 'AC' (Alien Contact)!"
+            )
 
         return self
 
@@ -63,24 +65,24 @@ class AlienContact(BaseModel):
 
         if self.signal_strength > 7.0 and not self.message_received:
 
-            raise ValueError("No message received despite strong signal!")
+            raise ValueError(
+                "Strong signals (> 7.0) should include received messages!"
+            )
 
         return self
 
-    def display_report_info(self) -> None:
+    def __str__(self) -> str:
 
-        print(f"ID: {self.contact_id}")
-        print(f"Type: {self.contact_type.name.lower()}")
-        print(f"Location: {self.location}")
-        print(f"Signal: {self.signal_strength}/10")
-        print(f"Duration: {self.duration_minutes} minutes")
-        print(f"Witnesses: {self.witness_count}")
-        print(f"Message: {self.message_received}")
-
-        if self.is_verified:
-            print("VERIFIED")
-
-        print("")
+        return (
+            f"ID: {self.contact_id}\n"
+            f"Type: {self.contact_type.name.lower()}\n"
+            f"Location: {self.location}\n"
+            f"Signal: {self.signal_strength}/10\n"
+            f"Duration: {self.duration_minutes} minutes\n"
+            f"Witnesses: {self.witness_count}\n"
+            f"Message: {self.message_received}\n"
+            f"{'[CONTACT VERIFIED]' if self.is_verified else ''}\n"
+        )
 
 
 def main() -> None:
@@ -88,14 +90,15 @@ def main() -> None:
     print("\nAlien Contact Log Validation\n")
 
     report_info: dict = {
-        "id": "AC_2024_001",
+        "contact_id": "AC_2024_001",
         "timestamp": datetime.now(),
         "location": "Area 51, Nevada",
-        "signal": 8.5,
-        "duration": 25,
-        "witnesses": 5,
-        "msg": "Greetings from Zeta Reticuli",
-        "verified": True
+        "contact_type": ContactType.PHYSICAL,
+        "signal_strength": 8.5,
+        "duration_minutes": 25,
+        "witness_count": 5,
+        "message_received": "Greetings from Zeta Reticuli",
+        "is_verified": True
     }
 
     for _ in range(2):
@@ -104,28 +107,19 @@ def main() -> None:
 
         try:
 
-            contact_report: AlienContact = AlienContact(
-               contact_id=report_info["id"],
-               timestamp=report_info["timestamp"],
-               location=report_info["location"],
-               contact_type=ContactType.PHYSICAL,
-               signal_strength=report_info["signal"],
-               duration_minutes=report_info["duration"],
-               witness_count=report_info["witnesses"],
-               message_received=report_info["msg"],
-               is_verified=report_info["verified"]
-            )
+            contact_report: AlienContact = AlienContact(**report_info)
 
         except ValidationError as ve:
 
-            print(f"Expected validation error:\n\n{ve.errors()[0]['msg']}")
+            print("Expected validation error:\n")
+            for err in ve.errors():
+                print(err["msg"])
 
         else:
 
-            print("Valid contact report:\n")
-            contact_report.display_report_info()
+            print(f"Valid contact report:\n\n{contact_report}")
 
-        report_info["verified"] = False
+        report_info["is_verified"] = False
 
     print("")
 
