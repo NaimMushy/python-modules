@@ -138,9 +138,15 @@ class GameEngine:
 
             self.total_damage += total_damage
 
-            print("\n\nTurn execution:")
-            print(f"\nStrategy: {self.strategy.get_strategy_name()}")
-            print(f"\nActions: {actions_result}\n\n")
+            print(f"\n\n{' ' * 2}==== Turn execution ====")
+            print(
+                f"\n{' ' * 6}[STRATEGY]\n"
+                f"{' ' * 4}=>{self.strategy.get_strategy_name()}"
+            )
+            print(f"\n{' ' * 6}[ACTIONS]\n")
+            for action_name, action_val in actions_result.items():
+                print(f"{' ' * 4}=> {action_name}: {action_val}")
+            print("")
 
             if (
                 not self.player2.hand and not self.player2.stack_cards
@@ -178,6 +184,9 @@ class GameEngine:
             "cards_created": self.cards_created
         }
 
-        print(f"\n\nGame Report:\n{report}\n\n")
+        print(f"{' ' * 4}\n\n[Game Report]\n")
+        for report_name, report_val in report.items():
+            print(f"{' ' * 2}=> {report_name}: {report_val}")
+        print("")
 
         return report
