@@ -1,4 +1,5 @@
 from typing import Callable as callable
+from typing import Any as any
 import random
 
 
@@ -7,8 +8,10 @@ def mage_counter() -> callable:
     counter: int = 0
 
     def increase_counter() -> int:
+
         nonlocal counter
         counter += 1
+
         return counter
 
     return increase_counter
@@ -19,8 +22,10 @@ def spell_accumulator(initial_power: int) -> callable:
     accumulated_power: int = initial_power
 
     def accumulate(amount: int) -> int:
+
         nonlocal accumulated_power
         accumulated_power += amount
+
         return accumulated_power
 
     return accumulate
@@ -29,7 +34,10 @@ def spell_accumulator(initial_power: int) -> callable:
 def enchantment_factory(enchantment_type: str) -> callable:
 
     def apply_enchantment(item_name: str) -> str:
+
         nonlocal enchantment_type
+        enchantment_type = enchantment_type
+
         return f"{enchantment_type} {item_name}"
 
     return apply_enchantment
@@ -40,14 +48,22 @@ def memory_vault() -> dict[str, callable]:
     storage: dict = {}
 
     def store(key: any, value: any) -> None:
+
         nonlocal storage
+        storage = storage
+
         storage[key] = value
 
     def recall(key: any) -> any:
+
         nonlocal storage
-        if key not in storage.keys():
-            return "Memory not found"
-        return storage[key]
+        storage = storage
+
+        return (
+            "Memory not found"
+            if key not in storage.keys()
+            else storage[key]
+        )
 
     return {"store": store, "recall": recall}
 
@@ -57,6 +73,7 @@ def test_counter() -> None:
     print("\n==== Testing mage counter ====\n")
 
     counter: callable = mage_counter()
+
     for call in range(random.randint(3, 10)):
         print(f"Call {call + 1}: {counter()}")
 
@@ -106,9 +123,13 @@ def test_factory() -> None:
     print("\n==== Testing enchantment factory ====")
 
     for _ in range(random.randint(1, len(enchantments))):
+
         enchantment_chosen: str = random.choice(enchantments)
+
         print(f"\nFactory enchantment type: < {enchantment_chosen} >")
+
         factory: callable = enchantment_factory(enchantment_chosen)
+
         for _ in range(random.randint(1, len(items))):
             print(f"Enchanted item: {factory(random.choice(items))}")
 
@@ -117,23 +138,14 @@ def test_factory() -> None:
 
 def test_memory_vault() -> None:
 
-    keys: list[str] = [
-        "worldwarII",
-        "worldwarI",
-        "frenchrevolution",
-        "youthrevolt",
-        "bolchevikrevolution",
-        "covid19"
-    ]
-
-    values: list[str, int] = [
-        "1939-1945",
-        "1914-1918",
-        1789,
-        "May 68",
-        1917,
-        2020
-    ]
+    example_dict: dict[str, str | int] = {
+        "world_war_II": "1939-1945",
+        "world_war_I": "1914-1918",
+        "french_revolution": 1789,
+        "youth_revolt": "May 68",
+        "bolchevik_revolution": 1917,
+        "covid19": 2020
+    }
 
     print("\n==== Testing memory vault system ====\n")
 
@@ -141,17 +153,19 @@ def test_memory_vault() -> None:
 
     print("[STORING MEMORIES]\n")
 
-    for to_store in range(len(keys)):
-        vault["store"](keys[to_store], values[to_store])
-        print(f"{keys[to_store]} memory stored: {values[to_store]}")
+    for key, val in example_dict.items():
+
+        vault["store"](key, val)
+        print(f"{key} memory stored: {val}")
 
     print("")
 
-    keys.append("voxmachinaseason4")
+    example_dict["vox_machina_season3"] = 2026
 
     print("[RECALLING MEMORIES]\n")
 
-    for to_recall in keys:
+    for to_recall in example_dict.keys():
+
         print(f"{to_recall}: {vault['recall'](to_recall)}")
 
     print("")
@@ -159,9 +173,15 @@ def test_memory_vault() -> None:
 
 def main() -> None:
 
-    for test in [test_counter, test_accumulator, test_factory, test_memory_vault]:
+    for test in [
+        test_counter,
+        test_accumulator,
+        test_factory,
+        test_memory_vault
+    ]:
         test()
 
 
 if __name__ == "__main__":
+
     main()

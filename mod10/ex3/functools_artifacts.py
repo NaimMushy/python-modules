@@ -40,37 +40,49 @@ def partial_enchanter(base_enchantment: callable) -> dict[str, callable]:
     enchanted: dict[str, callable] = {}
 
     for _ in range(random.randint(1, 10)):
+
         element_chosen: str = random.choice(elements)
-        enchanted[element_chosen+"_enchant"] = functools.partial(base_enchantment, 50, element_chosen)
+        enchanted[element_chosen+"_enchant"] = functools.partial(
+            base_enchantment,
+            50,
+            element_chosen
+        )
 
     return enchanted
 
 
 @functools.lru_cache
 def memoized_fibonacci(n: int) -> int:
-    if n < 2:
-        return n
-    return memoized_fibonacci(n - 1) + memoized_fibonacci(n - 2)
+
+    return (
+        n if n < 2 else
+        memoized_fibonacci(n - 1) + memoized_fibonacci(n - 2)
+    )
 
 
 @functools.singledispatch
 def spell_dispatcher(value: int | str | list[str | int]) -> callable:
+
     return spell_dispatcher(value)
 
 
 @spell_dispatcher.register(int)
 def _(value: int) -> None:
+
     print(f"Damage spell: Deals {value} damage to target")
 
 
 @spell_dispatcher.register(str)
 def _(value: str) -> None:
+
     print(f"Enchanted spell: {value}")
 
 
 @spell_dispatcher.register(list)
 def _(values: list[str | int]) -> None:
-    print("Casting multiple spells:")
+
+    print(f"Casting multiple spells ({len(values)}):\n")
+
     for value in values:
         spell_dispatcher(value)
 
@@ -88,9 +100,15 @@ def test_reducer() -> None:
     print(f"Max: {spell_reducer(spells, 'max')}")
     print(f"Min: {spell_reducer(spells, 'min')}")
 
+    print("")
+
 
 def base_enchantment(power: int, element: str, target: str) -> None:
-    print(f"{element.capitalize()} enchantment deals {power} damage to {target}")
+
+    print(
+        f"{element.capitalize()} enchantment deals "
+        f"{power} damage to {target}"
+    )
 
 
 def test_enchanter() -> None:
@@ -99,7 +117,7 @@ def test_enchanter() -> None:
 
     enchanted: dict[str, callable] = partial_enchanter(base_enchantment)
 
-    possible_targets: str = [
+    possible_targets: list[str] = [
         "Dragon",
         "Unicorn",
         "Giant",
@@ -111,6 +129,7 @@ def test_enchanter() -> None:
     ]
 
     for enchant, specialized in enchanted.items():
+
         print(f"{enchant}: ", end="")
         specialized(random.choice(possible_targets))
 
@@ -122,6 +141,7 @@ def test_mem_fibonacci() -> None:
     print("\n==== Testing memoized fibonacci ====\n")
 
     for _ in range(random.randint(1, 10)):
+
         nth_nb: int = random.randint(1, 10)
         print(f"{nth_nb}th fibonacci number: {memoized_fibonacci(nth_nb)}")
 
@@ -147,26 +167,35 @@ def test_dispatcher() -> None:
     multi_casting: list[str | int] = []
 
     for _ in range(random.randint(1, 10)):
+
         multi_casting.append(random.choice(
-            [random.choice(enchantments), random.randint(1, 20)]
+            (random.choice(enchantments), random.randint(1, 20))
         ))
 
     print("\n==== Testing spell dispatcher ====\n")
 
     for _ in range(random.randint(1, 10)):
-        spell_dispatcher(random.choice([
+
+        spell_dispatcher(random.choice((
             damage_spell,
             enchantment_spell,
             multi_casting
-        ]))
+        )))
+
         print("")
 
 
 def main() -> None:
 
-    for test in [test_reducer, test_enchanter, test_mem_fibonacci, test_dispatcher]:
+    for test in [
+        test_reducer,
+        test_enchanter,
+        test_mem_fibonacci,
+        test_dispatcher
+    ]:
         test()
 
 
 if __name__ == "__main__":
+
     main()
