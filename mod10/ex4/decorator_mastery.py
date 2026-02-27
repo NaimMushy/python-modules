@@ -34,9 +34,6 @@ def power_validator(min_power: int) -> callable:
 
             print(f"Trying to cast {args[1]}...")
 
-            nonlocal min_power
-            min_power = min_power
-
             return (
                 (
                     f"Insufficient power ({args[2]}) for this spell "
