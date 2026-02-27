@@ -12,20 +12,12 @@ def spell_combiner(spell1: callable, spell2: callable) -> callable:
         "Fairy"
     ])
 
-    def combine_spells() -> tuple[str, str]:
-
-        return (spell1(random_target), spell2(random_target))
-
-    return combine_spells
+    return lambda: (spell1(random_target), spell2(random_target))
 
 
 def power_amplifier(base_spell: callable, multiplier: int) -> callable:
 
-    def amplifier() -> int:
-
-        return base_spell() * multiplier
-
-    return amplifier
+    return lambda: base_spell() * multiplier
 
 
 def conditional_caster(condition: callable, spell: callable) -> callable:
@@ -38,15 +30,10 @@ def conditional_caster(condition: callable, spell: callable) -> callable:
         "Fairy"
     ])
 
-    def cast() -> str:
-
-        if condition(random_target):
-            return spell(random_target)
-
-        else:
-            return "Spell fizzled"
-
-    return cast
+    return lambda: (
+        spell(random_target) if condition(random_target)
+        else "Spell fizzled"
+    )
 
 
 def spell_sequence(spells: list[callable]) -> callable:
@@ -59,13 +46,9 @@ def spell_sequence(spells: list[callable]) -> callable:
         "Fairy"
     ])
 
-    def cast_all() -> list[str]:
-
-        return [
-            spell(random_target) for spell in spells
-        ]
-
-    return cast_all
+    return lambda: [
+        spell(random_target) for spell in spells
+    ]
 
 
 def fireball(target: str) -> str:
@@ -116,7 +99,7 @@ def test_amplifier() -> None:
 
     print(
         f"Original: {base_spell()} "
-        f"- Amplified: {power_amplifier(base_spell, random.randint(1, 5))()}\n"
+        f"- Amplified: {power_amplifier(base_spell, random.randint(2, 5))()}\n"
     )
 
 
