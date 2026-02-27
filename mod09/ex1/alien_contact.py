@@ -2,10 +2,11 @@ from pydantic import Field, BaseModel, ValidationError, model_validator
 from enum import Enum
 from datetime import datetime
 from typing import Optional as optional
-from typing import Self as self
+from typing_extensions import Self as self
 
 
 class ContactType(Enum):
+
     RADIO = 1
     VISUAL = 2
     PHYSICAL = 3
@@ -26,43 +27,65 @@ class AlienContact(BaseModel):
 
     @model_validator(mode="after")
     def validate_id(self) -> self:
+
         if not self.contact_id.startswith("AC"):
+
             raise ValueError("Contact ID must start with 'AC'!")
+
         return self
 
     @model_validator(mode="after")
     def validate_physical_contact(self) -> self:
+
         if self.contact_type == ContactType.PHYSICAL and not self.is_verified:
+
             raise ValueError("Physical contact report must be verified!")
+
         return self
 
     @model_validator(mode="after")
     def validate_telepathic_contact(self) -> self:
-        if self.contact_type == ContactType.TELEPATHIC and self.witness_count < 3:
-            raise ValueError("Telepathic contact requires at least 3 witnesses!")
+
+        if (
+            self.contact_type == ContactType.TELEPATHIC
+        ) and (
+            self.witness_count < 3
+        ):
+
+            raise ValueError(
+                "Telepathic contact requires at least 3 witnesses!"
+            )
+
         return self
 
     @model_validator(mode="after")
     def validate_signal(self) -> self:
+
         if self.signal_strength > 7.0 and not self.message_received:
+
             raise ValueError("No message received despite strong signal!")
+
         return self
 
     def display_report_info(self) -> None:
+
         print(f"ID: {self.contact_id}")
         print(f"Type: {self.contact_type.name.lower()}")
         print(f"Location: {self.location}")
-        print(f"SIgnal: {self.signal_strength}/10")
+        print(f"Signal: {self.signal_strength}/10")
         print(f"Duration: {self.duration_minutes} minutes")
         print(f"Witnesses: {self.witness_count}")
         print(f"Message: {self.message_received}")
+
         if self.is_verified:
             print("VERIFIED")
+
+        print("")
 
 
 def main() -> None:
 
-    print("Alien Contact Log Validation")
+    print("\nAlien Contact Log Validation\n")
 
     report_info: dict = {
         "id": "AC_2024_001",
@@ -76,8 +99,11 @@ def main() -> None:
     }
 
     for _ in range(2):
-        print("====================================")
+
+        print("====================================\n")
+
         try:
+
             contact_report: AlienContact = AlienContact(
                contact_id=report_info["id"],
                timestamp=report_info["timestamp"],
@@ -89,13 +115,21 @@ def main() -> None:
                message_received=report_info["msg"],
                is_verified=report_info["verified"]
             )
+
         except ValidationError as ve:
-            print(f"Expected validation error:\n{ve}")
+
+            print(f"Expected validation error:\n\n{ve.errors()[0]['msg']}")
+
         else:
-            print("Valid contact report:")
+
+            print("Valid contact report:\n")
             contact_report.display_report_info()
+
         report_info["verified"] = False
+
+    print("")
 
 
 if __name__ == "__main__":
+
     main()

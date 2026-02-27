@@ -21,13 +21,20 @@ class SpaceStation(BaseModel):
         print(f"Crew: {self.crew_size} people")
         print(f"Power: {self.power_level}%")
         print(f"Oxygen: {self.oxygen_level}%")
-        print(f"Status: {'Operational' if self.is_operational else 'Not operational'}")
+        print(
+            "Status: "
+            f"{'Operational' if self.is_operational else 'Not operational'}"
+        )
+
         if self.notes:
             print(f"Notes: {self.notes}")
+
         print("")
 
 
 def main() -> None:
+
+    print("\nSpace Station Data Validation\n")
 
     station_info: dict = {
         "id": "I88001",
@@ -39,10 +46,12 @@ def main() -> None:
         "operational": True
     }
 
-    print("Space Station Data Validation")
     for _ in range(2):
-        print("=======================================")
+
+        print("=======================================\n")
+
         try:
+
             space_station: SpaceStation = SpaceStation(
                 station_id=station_info["id"],
                 name=station_info["name"],
@@ -52,13 +61,21 @@ def main() -> None:
                 last_maintenance=station_info["lst_maintenance"],
                 is_operational=station_info["operational"]
             )
+
         except ValidationError as ve:
-            print(f"Expected validation error:\n{ve}")
+
+            print(f"Expected validation error:\n\n{ve.errors()[0]['msg']}")
+
         else:
-            print("Valid station created:")
+
+            print("Valid station created:\n")
             space_station.display_station_info()
+
         station_info["crew_size"] = 30
+
+    print("")
 
 
 if __name__ == "__main__":
+
     main()
