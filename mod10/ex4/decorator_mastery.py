@@ -36,10 +36,10 @@ def power_validator(min_power: int) -> callable:
 
             return (
                 (
-                    f"Insufficient power ({args[2]}) for this spell "
+                    f"Insufficient power ({args[0]}) for this spell "
                     f"- Minimum {min_power} required\n"
                 )
-                if args[2] < min_power
+                if args[0] < min_power
                 else func(*args)
             )
 
@@ -100,10 +100,14 @@ class MageGuild:
             else False
         )
 
-    @power_validator(min_power=10)
-    def cast_spell(self, spell_name: str, power: int) -> str:
+    def cast_spell(self, spell_name: str, power: int) -> callable:
 
-        return f"Successfully cast {spell_name} with power {power}!\n"
+        @power_validator(min_power=10)
+        def validate_power(power: int, spell_name: str) -> str:
+
+            return f"Successfully cast {spell_name} with power {power}!\n"
+
+        return validate_power(power, spell_name)
 
 
 @spell_timer

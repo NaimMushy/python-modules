@@ -73,7 +73,7 @@ def test_spell_transformer() -> None:
 
 def test_filter_mages(
     mages: list[dict],
-    min_power: int = random.randint(20, 50)
+    min_power: int = random.randint(15, 40)
 ) -> None:
 
     print("\n==== Testing mage filtering ====\n")

@@ -28,20 +28,13 @@ def partial_enchanter(base_enchantment: callable) -> dict[str, callable]:
     elements: list[str] = [
         "fire",
         "ice",
-        "water",
-        "earth",
-        "air",
-        "light",
-        "shadow",
-        "poison",
         "lightning"
     ]
 
     enchanted: dict[str, callable] = {}
 
-    for _ in range(random.randint(1, 10)):
+    for element_chosen in elements:
 
-        element_chosen: str = random.choice(elements)
         enchanted[element_chosen+"_enchant"] = functools.partial(
             base_enchantment,
             50,
@@ -60,31 +53,32 @@ def memoized_fibonacci(n: int) -> int:
     )
 
 
-@functools.singledispatch
-def spell_dispatcher(value: int | str | list[str | int]) -> callable:
+def spell_dispatcher() -> callable:
 
-    return spell_dispatcher(value)
+    @functools.singledispatch
+    def cast(spell) -> None:
 
+        print(f"Unknown spell type: {type(spell).__name__}")
 
-@spell_dispatcher.register(int)
-def _(value: int) -> None:
+    @cast.register(int)
+    def _(spell: int) -> None:
 
-    print(f"Damage spell: Deals {value} damage to target")
+        print(f"Damage spell: Deals {spell} damage to target")
 
+    @cast.register(str)
+    def _(spell: str) -> None:
 
-@spell_dispatcher.register(str)
-def _(value: str) -> None:
+        print(f"Enchanted spell: {spell}")
 
-    print(f"Enchanted spell: {value}")
+    @cast.register(list)
+    def _(spells: list[str | int]) -> None:
 
+        print(f"[Casting multiple spells ({len(spells)})]\n")
 
-@spell_dispatcher.register(list)
-def _(values: list[str | int]) -> None:
+        for spell in spells:
+            cast(spell)
 
-    print(f"Casting multiple spells ({len(values)}):\n")
-
-    for value in values:
-        spell_dispatcher(value)
+    return cast
 
 
 def test_reducer() -> None:
@@ -176,7 +170,7 @@ def test_dispatcher() -> None:
 
     for _ in range(random.randint(1, 10)):
 
-        spell_dispatcher(random.choice((
+        spell_dispatcher()(random.choice((
             damage_spell,
             enchantment_spell,
             multi_casting
